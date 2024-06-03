@@ -6,14 +6,22 @@ import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.*;
 import kr.co.dain_review.be.model.user.*;
+import kr.co.dain_review.be.util.FileUtils;
 import kr.co.dain_review.be.util.smtp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -40,22 +48,62 @@ public class UserService {
         return userMapper.checkAuthentication(map);
     }
 
-    public void register(String id, Register register) {
+    public void register(Register register) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(register, HashMap.class);
+        String id = String.valueOf(UUID.randomUUID());
+        String fileName = FileUtils.setNewName(register.getProfile());
+        FileUtils.saveFile(register.getProfile(), id+"/"+fileName);
         map.put("id", id);
-        map.put("type", 1);
-        userMapper.register(map);
+        map.put("profile", fileName);
+        map.put("email", register.getEmail());
+        map.put("pw", register.getPw());
+        map.put("name", register.getName());
+        map.put("phone", register.getPhone());
+        map.put("signUpSource", register.getSignUpSource());
+        map.put("blog", register.isBlogLink());
+        map.put("instagram", register.isInstagramLink());
+        map.put("youtube", register.isYoutubeLink());
+        map.put("tiktok", register.isTiktokLink());
+        map.put("other", register.isOtherLink());
+        map.put("postalCode", register.getPostalCode());
+        map.put("address", register.getAddress());
+        map.put("addressDetail", register.getAddressDetail());
+        map.put("nickname", register.getNickname());
+        map.put("birthdate", register.getBirthdate());
+        map.put("gender", register.getGender());
+        map.put("company", register.getCompany());
+        map.put("role", register.getRole());
+        userMapper.insert(map);
+        Integer userSeq = userMapper.getSeq(map);
+        map.put("userSeq", userSeq);
+        if(register.isBlogLink()){
+            map.put("type", 1);
+            map.put("link", register.getBlogLink());
+            userMapper.insertChennel(map);
+        }
+        if(register.isInstagramLink()){
+            map.put("type", 2);
+            map.put("link", register.getInstagramLink());
+            userMapper.insertChennel(map);
+        }
+        if(register.isYoutubeLink()){
+            map.put("type", 3);
+            map.put("link", register.getYoutubeLink());
+            userMapper.insertChennel(map);
+        }
+        if(register.isTiktokLink()){
+            map.put("type", 4);
+            map.put("link", register.getTiktokLink());
+            userMapper.insertChennel(map);
+        }
+        if(register.isOtherLink()){
+            map.put("type", 5);
+            map.put("link", register.getOtherLink());
+            userMapper.insertChennel(map);
+        }
     }
 
-    public void socialRegister(String id, String email, SocialRegister socialRegister) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        HashMap<String, Object> map = objectMapper.convertValue(socialRegister, HashMap.class);
-        map.put("id", id);
-        map.put("email", email);
-        map.put("type", 2);
-        userMapper.register(map);
-    }
 
     public String findEmail(FindEmail findEmail) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -202,13 +250,6 @@ public class UserService {
         HashMap<String, Object> map = new HashMap<>();
         map.put("email", email);
         return userMapper.checkSocialUser(map);
-    }
-
-
-    public Integer getSeq(String id) {
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("id", id);
-        return userMapper.getSeq(map);
     }
 
     public ArrayList<User> getList(Search search) {

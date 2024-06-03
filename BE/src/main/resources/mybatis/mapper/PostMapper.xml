@@ -33,6 +33,9 @@
             </set>
         WHERE seq = #{seq} AND user_seq = #{userSeq}
     </update>
+    <update id="countVisitor">
+        UPDATE posts SET view_count = view_count + 1 WHERE seq = #{seq}
+    </update>
 
     <delete id="delete">
         DELETE FROM posts WHERE seq = #{seq} AND user_seq = #{userSeq}
@@ -43,22 +46,40 @@
     </delete>
 
     <select id="select" resultType="kr.co.dain_review.be.model.post.Post">
-        SELECT pc.category,
+        SELECT category.category,
                p.title,
                u.nickname,
                p.create_date as createDate,
                p.view_count as viewCount
         FROM posts p
         LEFT JOIN users u ON p.user_seq = u.seq
-        LEFT JOIN post_categories pc on p.category_seq = pc.seq
-        WHERE p.type_seq = #{typeSeq}
+        LEFT JOIN post_categories category on p.category_seq = category.seq
+        LEFT JOIN post_comments comment on p.seq = comment.post_seq
+        <where>
+            AND p.type_seq = #{typeSeq}
+            AND p.title LIKE #{searchWord}
+            <choose>
+                <when test="searchType!=null and searchType.eqauls('myPost')"> AND p.user_seq = #{userSeq} </when>
+                <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
+            </choose>
+        </where>
+        GROUP BY (p.seq)
         LIMIT #{page}, 10
     </select>
 
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT COUNT(p.seq)
         FROM posts p
-        WHERE p.type_seq = #{typeSeq}
+        LEFT JOIN post_comments comment on p.seq = comment.post_seq
+        <where>
+            AND p.type_seq = #{typeSeq}
+            AND p.title LIKE #{searchWord}
+            <choose>
+                <when test="searchType!=null and searchType.eqauls('myPost')"> AND p.user_seq = #{userSeq} </when>
+                <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
+            </choose>
+        </where>
+        GROUP BY (p.seq)
     </select>
 
     <select id="selectDetail" resultType="kr.co.dain_review.be.model.post.Post">
@@ -67,7 +88,7 @@
                u.nickname,
                p.create_date as createDate,
                p.view_count as viewCount,
-               u.icon as userIcon,
+               CONCAT(u.id, '/', u.profile) as profile,
                p.type_seq as userType
         FROM posts p
         LEFT JOIN users u ON p.user_seq = u.seq

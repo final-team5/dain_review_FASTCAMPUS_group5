@@ -4,42 +4,52 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.co.dain_review.be.mapper.UserMapper">
-    <insert id="register"></insert>
     <insert id="insert">
         INSERT INTO users (id,
-                           nickname,
-                           pw,
-                           type,
-                           address,
-                           detailed_address,
-                           phone,
-                           point,
-                           name,
-                           gender,
-                           birthdate,
-                           rank_seq,
-                           blog,
-                           instagram,
-                           youtube,
-                           tiktok,
-                           other)
+                pw,
+                type,
+                profile,
+                email,
+                name,
+                phone,
+                sign_up_source,
+                blog,
+                instagram,
+                youtube,
+                tiktok,
+                other,
+                postal_code,
+                address,
+                address_detail,
+                nickname,
+                birthdate,
+                gender,
+                company,
+                role)
         VALUES (#{id},
-                #{nickname},
                 #{pw},
                 #{type},
-                #{address},
-                #{detailedAddress},
-                #{phone},
-                #{point},
+                #{profile},
+                #{email},
                 #{name},
-                #{gender},
-                #{birthdate},
-                #{rankSeq},
+                #{phone},
+                #{signUpSource},
                 #{blog},
                 #{instagram},
                 #{youtube},
                 #{tiktok},
-                #{other})
+                #{other},
+                #{postalCode},
+                #{address},
+                #{addressDetail},
+                #{nickname},
+                #{birthdate},
+                #{gender},
+                #{company},
+                #{role})
+    </insert>
+    <insert id="insertChennel">
+        INSERT INTO user_channels (user_seq, type, link) VALUES (#{userSeq}, #{type}, #{link})
     </insert>
     <update id="updateUser"></update>
     <update id="setVerification"></update>
@@ -55,19 +65,58 @@
     <delete id="delete"></delete>
 
 
-    <select id="getUser" resultType="kr.co.dain_review.be.model.user.User"></select>
-    <select id="checkNickname" resultType="java.lang.Boolean"></select>
-    <select id="checkAuthentication" resultType="java.lang.Boolean"></select>
-    <select id="checkPhone" resultType="java.lang.Boolean"></select>
-    <select id="findEmail" resultType="java.lang.String"></select>
-    <select id="getAuthenticationNumber" resultType="java.lang.Integer"></select>
-    <select id="findPassword" resultType="java.lang.String"></select>
-    <select id="getFindUser" resultType="java.lang.Boolean"></select>
-    <select id="findPasswordVerification" resultType="java.lang.Boolean"></select>
-    <select id="checkEmail" resultType="java.lang.Boolean"></select>
-    <select id="checkId" resultType="java.lang.Boolean"></select>
-    <select id="findEmailCheck" resultType="java.lang.Boolean"></select>
-    <select id="checkSocialUser" resultType="java.lang.Boolean"></select>
+    <select id="getUser" resultType="kr.co.dain_review.be.model.user.User">
+        SELECT * FROM users WHERE email = #{email} AND `type` = #{type} AND status = 1
+    </select>
+
+    <select id="checkNickname" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM users WHERE nickname = #{nickname})
+    </select>
+
+    <select id="checkAuthentication" resultType="java.lang.Boolean">
+        SELECT NOT EXISTS(SELECT 1 FROM verify WHERE email = #{email} AND auth_num = #{authNum})
+    </select>
+
+    <select id="checkPhone" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM users WHERE phone = #{phone})
+    </select>
+
+    <select id="findEmail" resultType="java.lang.String">
+        SELECT email FROM users WHERE name = #{name} AND phone = #{phone} AND status = 1
+    </select>
+
+    <select id="getAuthenticationNumber" resultType="java.lang.Integer">
+        SELECT auth_num FROM verify WHERE email = #{email}
+    </select>
+
+    <select id="findPassword" resultType="java.lang.String">
+        SELECT EXISTS(SELECT 1 FROM verify WHERE auth_num = #{authNum} AND email_certification = 1 AND user_certification = 1)
+    </select>
+
+    <select id="getFindUser" resultType="java.lang.Boolean">
+        SELECT pw FROM users WHERE name = #{name} AND phone = #{phone} AND email = #{email} AND status = 1
+    </select>
+
+    <select id="findPasswordVerification" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM verify WHERE auth_num = #{authNum} AND email_certification = 1 AND user_certification = 1)
+    </select>
+
+    <select id="checkEmail" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM users WHERE email = #{email})
+    </select>
+
+    <select id="checkId" resultType="java.lang.Boolean">
+        SELECT NOT EXISTS(SELECT 1 FROM users WHERE id = #{id})
+    </select>
+
+    <select id="findEmailCheck" resultType="java.lang.Boolean">
+        SELECT NOT EXISTS(SELECT 1 FROM users WHERE name = #{name} AND phone = #{phone})
+    </select>
+
+    <select id="checkSocialUser" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM users WHERE email = #{email} AND type = 2)
+    </select>
+
     <select id="getSeq" resultType="java.lang.Integer"></select>
     <select id="getList" resultType="kr.co.dain_review.be.model.user.User"></select>
     <select id="getListCount" resultType="java.lang.Integer"></select>

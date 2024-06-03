@@ -69,6 +69,7 @@ public class AdminController {
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value ="유저 삭제", tags = "관리자 - 회원")
     @DeleteMapping("/user")
     public ResponseEntity<?> user(@RequestBody Delete delete){

@@ -89,9 +89,11 @@ public class InfluencerController {
     @ApiOperation(value = "커뮤니티 리스트", tags = "인플루언서 - 커뮤니티")
     @GetMapping("/post")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        json.put("list", postService.select(search, 3));
-        json.put("totalCount", postService.selectCount(search, 3));
+        json.put("list", postService.select(search, 3, userSeq));
+        json.put("totalCount", postService.selectCount(search, 3, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 

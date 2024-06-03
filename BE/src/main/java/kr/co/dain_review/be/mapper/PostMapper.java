@@ -29,4 +29,5 @@ public interface PostMapper {
 
     void insertAdmin(HashMap<String, Object> map);
 
+    void countVisitor(HashMap<String, Object> map);
 }
