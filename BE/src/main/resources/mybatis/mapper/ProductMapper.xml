@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dain_review.be.mapper.ProductMapper">
+    <insert id="insert">
+        INSERT INTO products (user_seq,
+                              title,
+                              contents,
+                              service,
+                              keyword_1,
+                              keyword_2,
+                              keyword_3,
+                              product_link,
+                              mission,
+                              recruiter,
+                              image,
+                              category_seq,
+                              channel_seq,
+                              type_seq,
+                              application_start_date,
+                              application_end_date,
+                              selection,
+                              experience_start_date,
+                              experience_end_date,
+                              deadline,
+                              experience_start_time,
+                              experience_end_time,
+                              monday,
+                              tuesday,
+                              wednesday,
+                              thursday,
+                              friday,
+                              saturday,
+                              sunday,
+                              city,
+                              district,
+                              point,
+                              location)
+        VALUES (#{userSeq},
+                #{title},
+                #{contents},
+                #{service},
+                #{keyword1},
+                #{keyword2},
+                #{keyword3},
+                #{productLink},
+                #{mission},
+                #{recruiter},
+                #{image},
+                #{categorySeq},
+                #{channelSeq},
+                #{typeSeq},
+                #{applicationStartDate},
+                #{applicationEndDate},
+                #{selection},
+                #{experienceStartDate},
+                #{experienceEndDate},
+                #{deadline},
+                #{experienceStartTime},
+                #{experienceEndTime},
+                #{monday},
+                #{tuesday},
+                #{wednesday},
+                #{thursday},
+                #{friday},
+                #{saturday},
+                #{sunday},
+                #{city},
+                #{district},
+                #{point},
+                #{location})
+    </insert>
+    <insert id="application">
+        INSERT INTO product_applicants (product_seq, user_seq, message) VALUES (#{productSeq}, #{userSeq}, #{message})
+    </insert>
+    <update id="progress">
+
+    </update>
+
+    <update id="InfluencerSelect">
+        UPDATE product_applicants SET application = 1 - application WHERE user_seq = #{userSeq} AND product_seq = #{productSeq}
+    </update>
+    <update id="update">
+        UPDATE products
+        <set>
+            <if test="userSeq!=null">user_seq = #{userSeq}, </if>
+            <if test="title!=null">title = #{title}, </if>
+            <if test="contents!=null">contents = #{contents}, </if>
+            <if test="service!=null">service = #{service}, </if>
+            <if test="keyword1!=null">keyword1 = #{keyword1}, </if>
+            <if test="keyword2!=null">keyword2 = #{keyword2}, </if>
+            <if test="keyword3!=null">keyword3 = #{keyword3}, </if>
+            <if test="productLink!=null">product_link = #{productLink}, </if>
+            <if test="mission!=null">mission = #{mission}, </if>
+            <if test="recruiter!=null">recruiter = #{recruiter}, </if>
+            <if test="image!=null">image = #{image}, </if>
+            <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
+            <if test="channelSeq!=null">channel_seq = #{channelSeq}, </if>
+            <if test="typeSeq!=null">type_seq = #{typeSeq}, </if>
+            <if test="status!=null">`status` = #{status}, </if>
+            <if test="applicationStartDate!=null">application_start_date = #{applicationStartDate}, </if>
+            <if test="applicationEndDate!=null">application_end_date = #{applicationEndDate}, </if>
+            <if test="selection!=null">selection = #{selection}, </if>
+            <if test="experienceStartDate!=null">experience_start_date = #{experienceStartDate}, </if>
+            <if test="experienceEndDate!=null">experience_end_date = #{experienceEndDate}, </if>
+            <if test="deadline!=null">deadline = #{deadline}, </if>
+            <if test="experienceStartTime!=null">experience_start_time = #{experienceStartTime}, </if>
+            <if test="experienceEndTime!=null">experience_end_time = #{experienceEndTime}, </if>
+            <if test="monday!=null">monday = #{monday}, </if>
+            <if test="tuesday!=null">tuesday = #{tuesday}, </if>
+            <if test="wednesday!=null">wednesday = #{wednesday}, </if>
+            <if test="thursday!=null">thursday = #{thursday}, </if>
+            <if test="friday!=null">friday = #{friday}, </if>
+            <if test="saturday!=null">saturday = #{saturday}, </if>
+            <if test="sunday!=null">sunday = #{sunday}, </if>
+            <if test="city!=null">city = #{city}, </if>
+            <if test="district!=null">district = #{district}, </if>
+            <if test="point!=null">`point` = #{point}, </if>
+            <if test="location!=null">location = #{location}, </if>
+        </set>
+        WHERE seq = #{productSeq}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM products WHERE seq = #{seq}
+    </delete>
+
+    <delete id="cancellation">
+        DELETE FROM product_applicants WHERE user_seq = #{userSeq} AND product_seq = #{productSeq}
+    </delete>
+
+    <select id="selectList" resultType="kr.co.dain_review.be.model.product.Product">
+        SELECT
+            p.seq,
+            p.title,
+            p.recruiter,
+            p.image,
+            p.category_seq as categorySeq,
+            p.channel_seq as channelSeq,
+            p.type_seq as typeSeq,
+            p.status,
+            p.city,
+            p.district,
+            MAX(pa.seq) as applicant,
+            p.tag
+        FROM products p
+        LEFT JOIN product_applicants pa on p.seq = pa.product_seq
+        <where>
+            <if test="city!=null">
+                AND p.city = #{city}
+                <if test="district != null and !district.isEmpty">
+                    AND p.district IN
+                    <foreach item="item" collection="district" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="searchWord!=null"> AND p.title LIKE #{searchWord} </if>
+            <if test="userSeq!=null"> AND p.user_seq = #{userSeq} </if>
+            <if test="applicantSeq!=null"> AND pa.user_seq = #{applicantSeq}</if>
+            <choose>
+                <when test="isPremium">
+                    AND p.tag IS NOT null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+                <when test="orderParam!=null and (orderParam.equals('point') or orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
+                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+            </choose>
+        </where>
+        <if test="orderParam != null">
+            <choose>
+                <when test="orderParam.equals('point')">
+                    ORDER BY p.point DESC
+                </when>
+                <when test="orderParam.equals('latest')">
+                    ORDER BY p.application_start_date DESC
+                </when>
+                <when test="orderParam.equals('deadline')">
+                    ORDER BY application_end_date ASC
+                </when>
+                <when test="orderParam.equals('popularity')">
+                    ORDER BY applicant DESC
+                </when>
+            </choose>
+        </if>
+        GROUP BY p.seq
+        LIMIT #{page}, 10
+
+    </select>
+    <select id="selectListCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(p.seq)
+        FROM products p
+        <where>
+            <if test="city!=null">
+                AND city = #{city}
+                <if test="district != null and !district.isEmpty">
+                    AND district IN
+                    <foreach item="item" collection="district" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="searchWord!=null">AND p.title LIKE #{searchWord}</if>
+            <if test="userSeq!=null">AND p.user_seq = #{userSeq}</if>
+            <choose>
+                <when test="isPremium">
+                    AND p.tag != null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+                <when test="orderParam!=null and (orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
+                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="selectDetail" resultType="kr.co.dain_review.be.model.product.Product">
+        SELECT
+            p.seq,
+            p.user_seq as userSeq,
+            p.title,
+            p.contents,
+            p.service,
+            p.keyword_1 as keyword1,
+            p.keyword_2 as keyword2,
+            p.keyword_3 as keyword3,
+            p.product_link as productLink,
+            p.mission,
+            p.recruiter,
+            p.image,
+            p.category_seq as categorySeq,
+            p.channel_seq as channelSeq,
+            p.type_seq as typeSeq,
+            p.status,
+            p.application_start_date as applicationStartDate,
+            p.application_end_date as applicationEndDate,
+            p.selection,
+            p.experience_start_date as experienceStartDate,
+            p.experience_end_date as experienceEndDate,
+            p.deadline,
+            p.experience_start_time as experienceStartTime,
+            p.experience_end_time as experienceDndTime,
+            p.monday,
+            p.tuesday,
+            p.wednesday,
+            p.thursday,
+            p.friday,
+            p.saturday,
+            p.sunday,
+            p.city,
+            p.district,
+            p.location,
+            MAX(pa.seq) as applicant,
+            p.tag
+        FROM products p
+        LEFT JOIN product_applicants pa on p.seq = pa.product_seq
+        <where>
+            p.seq = #{seq}
+        </where>
+    </select>
+
+    <select id="selectFavoriteList" resultType="kr.co.dain_review.be.model.product.Product">
+        SELECT
+            p.seq,
+            p.title,
+            p.recruiter,
+            p.image,
+            p.category_seq as categorySeq,
+            p.channel_seq as channelSeq,
+            p.type_seq as typeSeq,
+            p.status,
+            p.city,
+            p.district,
+            MAX(pa.seq) as applicant,
+            p.tag
+        FROM products p
+        LEFT JOIN product_preference pp on pp.product_seq = p.seq
+        LEFT JOIN product_applicants pa on pa.product_seq = p.seq
+        WHERE pp.user_seq = #{userSeq}
+        GROUP BY (p.seq)
+    </select>
+
+    <select id="selectFavoriteListCount" resultType="java.lang.Integer">
+        SELECT COUNT(p.seq)
+        FROM products p
+                 LEFT JOIN product_preference pp on pp.product_seq = p.seq
+                 LEFT JOIN product_applicants pa on pa.product_seq = p.seq
+        WHERE pp.user_seq = #{userSeq}
+    </select>
+
+    <select id="myProductCheck" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM products WHERE user_seq = #{userSeq} AND seq = #{productSeq})
+    </select>
+
+    <select id="applicationInfluencer" resultType="kr.co.dain_review.be.model.product.ProductInfluencer">
+        SELECT u.seq,
+            uc.link as channelUrl,
+            u.name,
+            pa.application,
+            uc.rank,
+            uc.visitors,
+            u.rating,
+            u.cancel,
+            pa.message,
+            up.opinions
+        FROM product_applicants pa
+        LEFT JOIN products p ON pa.product_seq = p.seq
+        LEFT JOIN users u ON pa.user_seq = u.seq
+        LEFT JOIN user_channels uc on u.seq = uc.user_seq
+        LEFT JOIN user_preference up on u.seq = up.target_seq AND up.user_seq = p.user_seq
+        WHERE pa.product_seq = #{productSeq}
+    </select>
+
+    <select id="selectionInfluencer" resultType="kr.co.dain_review.be.model.product.ProductInfluencer">
+        SELECT u.seq,
+            uc.link as channelUrl,
+            u.name,
+            uc.rank,
+            uc.visitors,
+            u.rating,
+            u.phone,
+            u.address,
+            pa.message,
+            up.opinions,
+            rc.review_date as reviewDate,
+            rc.ranking_check as rankingCheck,
+            rc.link as reviewLink,
+            rc.attachments
+        FROM reports r
+        LEFT JOIN report_contents rc ON r.seq = rc.report_seq
+        LEFT JOIN product_applicants pa ON pa.product_seq = r.product_seq
+        LEFT JOIN products p ON pa.product_seq = p.seq
+        LEFT JOIN users u ON pa.user_seq = u.seq
+        LEFT JOIN user_channels uc on u.seq = uc.user_seq
+        LEFT JOIN user_preference up on u.seq = up.target_seq AND up.user_seq = p.user_seq
+        WHERE r.product_seq = #{productSeq}
+    </select>
+
+</mapper>

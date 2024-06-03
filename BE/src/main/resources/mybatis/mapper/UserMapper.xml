@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dain_review.be.mapper.UserMapper">
+    <insert id="register"></insert>
+    <insert id="insert">
+        INSERT INTO users (id,
+                           nickname,
+                           pw,
+                           type,
+                           address,
+                           detailed_address,
+                           phone,
+                           point,
+                           name,
+                           gender,
+                           birthdate,
+                           rank_seq,
+                           blog,
+                           instagram,
+                           youtube,
+                           tiktok,
+                           other)
+        VALUES (#{id},
+                #{nickname},
+                #{pw},
+                #{type},
+                #{address},
+                #{detailedAddress},
+                #{phone},
+                #{point},
+                #{name},
+                #{gender},
+                #{birthdate},
+                #{rankSeq},
+                #{blog},
+                #{instagram},
+                #{youtube},
+                #{tiktok},
+                #{other})
+    </insert>
+    <update id="updateUser"></update>
+    <update id="setVerification"></update>
+    <update id="userCertification"></update>
+    <update id="emailCertification"></update>
+    <update id="setNewPassword"></update>
+    <update id="changePassword"></update>
+    <update id="Withdrawal"></update>
+    <update id="updateProfile"></update>
+    <update id="update"></update>
+    <delete id="removeVerification"></delete>
+    <delete id="resetVerification"></delete>
+    <delete id="delete"></delete>
+
+
+    <select id="getUser" resultType="kr.co.dain_review.be.model.user.User"></select>
+    <select id="checkNickname" resultType="java.lang.Boolean"></select>
+    <select id="checkAuthentication" resultType="java.lang.Boolean"></select>
+    <select id="checkPhone" resultType="java.lang.Boolean"></select>
+    <select id="findEmail" resultType="java.lang.String"></select>
+    <select id="getAuthenticationNumber" resultType="java.lang.Integer"></select>
+    <select id="findPassword" resultType="java.lang.String"></select>
+    <select id="getFindUser" resultType="java.lang.Boolean"></select>
+    <select id="findPasswordVerification" resultType="java.lang.Boolean"></select>
+    <select id="checkEmail" resultType="java.lang.Boolean"></select>
+    <select id="checkId" resultType="java.lang.Boolean"></select>
+    <select id="findEmailCheck" resultType="java.lang.Boolean"></select>
+    <select id="checkSocialUser" resultType="java.lang.Boolean"></select>
+    <select id="getSeq" resultType="java.lang.Integer"></select>
+    <select id="getList" resultType="kr.co.dain_review.be.model.user.User"></select>
+    <select id="getListCount" resultType="java.lang.Integer"></select>
+    <select id="getDetail" resultType="kr.co.dain_review.be.model.user.User"></select>
+    <select id="selectProfile" resultType="kr.co.dain_review.be.model.user.UserProfile"></select>
+</mapper>
