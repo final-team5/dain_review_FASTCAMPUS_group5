@@ -1,0 +1,330 @@
+package kr.co.dain_review.be.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import kr.co.dain_review.be.model.list.Search;
+import kr.co.dain_review.be.model.main.*;
+import kr.co.dain_review.be.model.jwt.TokenProvider;
+import kr.co.dain_review.be.model.product.ProductSearch;
+import kr.co.dain_review.be.model.user.User;
+import kr.co.dain_review.be.service.PostService;
+import kr.co.dain_review.be.service.ProductService;
+import kr.co.dain_review.be.service.UserService;
+import kr.co.dain_review.be.util.kakao;
+import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.springframework.http.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.text.SimpleDateFormat;
+import java.util.UUID;
+
+@Api(tags = "공용")
+@RequestMapping("/api")
+@RequiredArgsConstructor
+@RestController
+public class PublicController {
+    private final ProductService productService;
+    private final UserService userService;
+    private final TokenProvider tokenProvider;
+    private final PasswordEncoder passwordEncoder;
+    private final PostService postService;
+
+    @ApiOperation(value = "로그인", tags = "공개 - 회원")
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Login login) throws ParseException {
+
+            User user = userService.getUser(login.getEmail(), 1);
+            JSONObject jo = new JSONObject();
+            if (user == null) {
+                jo.put("message", "사용자를 찾을 수 없습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+            }
+            if (!passwordEncoder.matches(login.getPw(),  user.getPw())) {
+                jo.put("message", "비밀번호가 일치하지 않습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+            }
+            jo = setReturnValue(null, user);
+            jo.put("message", "로그인 되었습니다.");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+    }
+
+    @ApiOperation(value = "닉네임 중복 체크", tags = "공개 - 회원")
+    @PostMapping("/nickname-check")
+    public ResponseEntity<?> nicknameCheck(@RequestBody Nickname nickname){
+        JSONObject jo = new JSONObject();
+
+            if (userService.checkNickname(nickname.getNickname())) {
+                jo.put("message", "이미 사용중인 닉네임 입니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            jo.put("message", "사용 가능한 닉네임 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+    }
+
+    //회원 가입
+    @ApiOperation(value = "회원 가입", tags = "공개 - 회원")
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Register register){
+
+            JSONObject jo = new JSONObject();
+            if(userService.checkAuthentication(register.getEmail(), register.getAuth())) {
+                jo.put("message", "인증번호가 일치하지 않습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+            }
+            if(userService.checkPhone(register.getPhone())){
+                jo.put("message", "이미 사용중인 전화번호 입니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            String encode = passwordEncoder.encode(register.getPw());
+            register.setPw(encode);
+            String id = String.valueOf(UUID.randomUUID());
+            userService.register(id, register);
+            Integer userSeq = userService.getSeq(id);
+
+            kakao.sendMessageRegister(register.getPhone());
+            jo.put("message", "회원가입 되었습니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+    }
+
+    //소셜 로그인
+    @ApiOperation(value = "소셜 로그인", tags = "공개 - 회원")
+    @PostMapping("/social-login")
+    public ResponseEntity<?> SocialRegister(@RequestBody SocialLogin socialLogin) throws ParseException {
+
+            JSONObject json = getUser(socialLogin.getAccessToken());
+            JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
+            String email = kakaoAccount.get("email").toString();
+            String id = json.get("id").toString();
+            JSONObject jo = new JSONObject();
+            if(userService.checkId(id)){
+                jo.put("message", "가입된 아이디가 없습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            User user = userService.getUser(email, 2);
+            jo = setReturnValue(null, user);
+            jo.put("message", "login success");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+
+    }
+
+    //소셜 회원가입
+    @ApiOperation(value = "소셜 회원 가입", tags = "공개 - 회원")
+    @PostMapping("/social-register")
+    public ResponseEntity<?> SocialRegister(@RequestBody SocialRegister socialRegister){
+
+            JSONObject json = getUser(socialRegister.getAccessToken());
+            JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
+            String email = kakaoAccount.get("email").toString();
+            String id = json.get("id").toString();
+            JSONObject jo = new JSONObject();
+            User member = userService.getUser(email, 2);
+            if (member!=null) {
+                jo.put("message", "이미 가입된 아이디가 있습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            if(userService.checkEmail(email)){
+                jo.put("message", "이미 사용중인 이메일 입니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            if(userService.checkNickname(socialRegister.getNickname())){
+                jo.put("message", "이미 사용중인 닉네임 입니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            if(userService.checkPhone(socialRegister.getPhone())){
+                jo.put("message", "이미 사용중인 전화번호 입니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+            }
+            userService.socialRegister(id, email, socialRegister);
+
+
+            kakao.sendMessageRegister(socialRegister.getPhone());
+            jo.put("code", 200);
+            jo.put("message", "sign up successful");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+
+    }
+
+    //아이디 찾기
+    @ApiOperation(value = "아이디 찾기", tags = "공개 - 회원")
+    @PostMapping("/find-email")
+    public ResponseEntity<?> findUserEmail(@RequestBody FindEmail findEmail){
+
+            JSONObject json = new JSONObject();
+            if(userService.findEmailCheck(findEmail)){
+                json.put("message", "일치하는 아이디가 없습니다");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+            json.put("email", userService.findEmail(findEmail));
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+
+    }
+
+    //이메일 인증
+    @ApiOperation(value = "이메일 인증(회원가입)", tags = "공개 - 회원")
+    @PostMapping("/email-verification")
+    public ResponseEntity<?> verification(@RequestBody Email email){
+
+            JSONObject json = new JSONObject();
+            if(userService.checkEmail(email.getEmail())){
+                json.put("message", "이미 사용중인 이메일 입니다");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+            userService.emailVerification(email);
+            json.put("message", "SUCCESS");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+
+    }
+
+
+    @ApiOperation(value = "회원 인증(비밀번호 찾기)", tags = "공개 - 회원")
+    @PostMapping("/user-verification")
+    public ResponseEntity<?> userverification(@RequestBody Email email){
+
+            JSONObject json = new JSONObject();
+            if(!userService.checkEmail(email.getEmail())){
+                json.put("message", "가입한 이메일이 없습니다.");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+            if(userService.checkSocialUser(email.getEmail())){
+                json.put("message", "소셜 가입 회원입니다.");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+            userService.emailVerification(email);
+            json.put("message", "SUCCESS");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+
+    }
+
+    @ApiOperation(value = "회원 인증 확인", tags = "공개 - 회원")
+    @PostMapping("/user-verification-check")
+    public ResponseEntity<?> userVerificationCheck(@RequestBody UserVerification userVerification){
+
+            JSONObject json = new JSONObject();
+
+            if(userService.checkSocialUser(userVerification.getEmail())){
+                json.put("message", "소셜 가입 회원입니다.");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+
+            Integer authenticationNumber = userService.getAuthenticationNumber(userVerification);
+            if(!userVerification.getAuth().equals(authenticationNumber)){
+                json.put("message", "인증번호를 확인해주세요");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+            userService.emailCertification(userVerification);
+
+            if(userService.getFindUser(userVerification)){
+                json.put("message", "일치하는 정보를 가진 회원이 없습니다");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+
+            userService.userCertification(userVerification);
+            json.put("message", "인증이 완료되었습니다");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+
+    }
+
+    @ApiOperation(value = "비밀번호 찾기", tags = "공개 - 회원")
+    @PostMapping("/find-password")
+    public ResponseEntity<?> findPassword(@RequestBody FindPassword findPassword){
+
+            JSONObject json = new JSONObject();
+
+            if(!userService.findPasswordVerification(findPassword)){
+                json.put("message", "비밀번호 변경에 실패했습니다. 회원 인증 또는 이메일 인증을 진행해주세요");
+                return new ResponseEntity<>(json.toString(), HttpStatus.BAD_REQUEST);
+            }
+            String encode = passwordEncoder.encode(findPassword.getNewPw());
+            findPassword.setNewPw(encode);
+            userService.setNewPassword(findPassword);
+            json.put("message", "비밀번호 변경이 완료되었습니다");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+
+    }
+
+    private JSONObject getUser (String accessToken){
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + accessToken);
+            headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
+            RestTemplate rt = new RestTemplate();
+            ResponseEntity<String> response = null;
+            response = rt.exchange(
+                    "https://kapi.kakao.com/v2/user/me",
+                    HttpMethod.POST,
+                    request,
+                    String.class
+            );
+            String responseBody = response.getBody();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JSONObject jsonObject = objectMapper.convertValue(responseBody, JSONObject.class);
+            return jsonObject;
+        } catch (Exception e) {
+            System.out.println(e);
+            return null;
+        }
+    }
+
+
+    public JSONObject setReturnValue(String token, User user) throws ParseException {
+        String new_token = tokenProvider.createToken(user);
+//        Date expireDate = tokenProvider.getExpireDate(new_token);
+        JSONObject jo = new JSONObject();
+        jo.put("token", new_token);
+        jo.put("name", user.getName());
+        jo.put("type", user.getType());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String strNowDate = simpleDateFormat.format(tokenProvider.getExpireDate(new_token));
+        jo.put("expireDate", strNowDate);
+        return jo;
+    }
+
+
+    //체험단
+    @ApiOperation(value = "체험단 리스트", tags = "공개 - 체험단")
+    @GetMapping("/product")
+    public ResponseEntity<?> product(ProductSearch search){
+        JSONObject json = new JSONObject();
+        json.put("list", productService.getList(search));
+        json.put("totalCount", productService.getListCount(search));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    //체험단 상세
+    @ApiOperation(value = "체험단 상세", tags = "공개 - 체험단")
+    @GetMapping("/product/{seq}")
+    public ResponseEntity<?> product(@PathVariable Integer seq){
+        return new ResponseEntity<>(productService.getDetail(seq), HttpStatus.OK);
+    }
+
+
+    @ApiOperation(value = "공지 리스트", tags = "공개 - 공지")
+    @GetMapping("/post")
+    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
+        JSONObject json = new JSONObject();
+        json.put("list", postService.select(search, 1));
+        json.put("totalCount", postService.selectCount(search, 1));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "공지 상세", tags = "공개 - 공지")
+    @GetMapping("/post/{seq}")
+    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+        JSONObject json = new JSONObject();
+        json.put("list", postService.selectDetail(seq, 1));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+}

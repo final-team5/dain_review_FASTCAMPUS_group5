@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dain_review.be.mapper.PostMapper">
+    <insert id="insertAdmin">
+        INSERT INTO posts (category_seq, type_seq, title, contents)
+        VALUES (#{categorySeq}, #{typeSeq}, #{title}, #{contents});
+    </insert>
+
+    <insert id="insert">
+        INSERT INTO posts (user_seq, category_seq, type_seq, title, contents)
+        VALUES (#{userSeq}, #{categorySeq}, #{typeSeq}, #{title}, #{contents});
+    </insert>
+
+    <update id="updateAdmin">
+        UPDATE posts
+        <set>
+            <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
+            <if test="title!=null">title = #{title}, </if>
+            <if test="contents!=null">contents = #{contents}, </if>
+        </set>
+        WHERE seq = #{seq}
+    </update>
+
+    <update id="update">
+        UPDATE posts
+            <set>
+                <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
+                <if test="title!=null">title = #{title}, </if>
+                <if test="contents!=null">contents = #{contents}, </if>
+            </set>
+        WHERE seq = #{seq} AND user_seq = #{userSeq}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM posts WHERE seq = #{seq} AND user_seq = #{userSeq}
+    </delete>
+
+    <delete id="deleteAdmin">
+        DELETE FROM posts WHERE seq = #{seq}
+    </delete>
+
+    <select id="select" resultType="kr.co.dain_review.be.model.post.Post">
+        SELECT pc.category,
+               p.title,
+               u.nickname,
+               p.create_date as createDate,
+               p.view_count as viewCount
+        FROM posts p
+        LEFT JOIN users u ON p.user_seq = u.seq
+        LEFT JOIN post_categories pc on p.category_seq = pc.seq
+        WHERE p.type_seq = #{typeSeq}
+        LIMIT #{page}, 10
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT COUNT(p.seq)
+        FROM posts p
+        WHERE p.type_seq = #{typeSeq}
+    </select>
+
+    <select id="selectDetail" resultType="kr.co.dain_review.be.model.post.Post">
+        SELECT pc.category,
+               p.title,
+               u.nickname,
+               p.create_date as createDate,
+               p.view_count as viewCount,
+               u.icon as userIcon,
+               p.type_seq as userType
+        FROM posts p
+        LEFT JOIN users u ON p.user_seq = u.seq
+        LEFT JOIN post_categories pc on p.category_seq = pc.seq
+        WHERE p.seq = #{seq} AND p.type_seq = #{typeSeq}
+    </select>
+
+
+</mapper>
