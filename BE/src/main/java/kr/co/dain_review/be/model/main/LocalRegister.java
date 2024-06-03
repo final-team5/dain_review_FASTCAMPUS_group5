@@ -8,11 +8,13 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SocialRegister {
+public class LocalRegister {
     private Boolean influencer;
     private Boolean Entrepreneur;
 
-    private String accessToken;
+    private Integer authNum;
+    private String pw;
+
     private String name;
     private String phone;
     private String signUpSource;

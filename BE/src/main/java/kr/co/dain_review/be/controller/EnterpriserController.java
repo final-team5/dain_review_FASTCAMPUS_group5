@@ -53,7 +53,7 @@ public class EnterpriserController {
     }
 
     @ApiOperation(value = "체험단 진행 상세", tags = "사업자 - 체험단")
-    @GetMapping("/product-detail/{seq}")
+    @GetMapping("/product/{seq}")
     public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
@@ -125,18 +125,20 @@ public class EnterpriserController {
     }
 
 
-    @ApiOperation(value = "커뮤니티 리스트", tags = "사업자 - 커뮤니티")
+    @ApiOperation(value = "커뮤니티 리스트", tags = "사업자 - 커뮤니티", notes = "searchType : myPost(내 글 보기), comment(댓글 단 글)")
     @GetMapping("/post")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
+    public ResponseEntity<?> post(@RequestHeader HttpHeaders header, Search search){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        json.put("list", postService.select(search, 2));
-        json.put("totalCount", postService.selectCount(search, 2));
+        json.put("list", postService.select(search, 2, userSeq));
+        json.put("totalCount", postService.selectCount(search, 2, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "커뮤니티 상세", tags = "사업자 - 커뮤니티")
     @GetMapping("/post/{seq}")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+    public ResponseEntity<?> post(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
         JSONObject json = new JSONObject();
         json.put("list", postService.selectDetail(seq, 2));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -144,7 +146,7 @@ public class EnterpriserController {
 
     @ApiOperation(value = "커뮤니티 글 추가", tags = "사업자 - 커뮤니티")
     @PostMapping("/post")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody PostInsert insert){
+    public ResponseEntity<?> post(@RequestHeader HttpHeaders header, @RequestBody PostInsert insert){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         postService.insert(insert, 2, userSeq);
@@ -155,7 +157,7 @@ public class EnterpriserController {
 
     @ApiOperation(value = "커뮤니티 글 수정", tags = "사업자 - 커뮤니티")
     @PutMapping("/post")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody PostUpdate update){
+    public ResponseEntity<?> post(@RequestHeader HttpHeaders header, @RequestBody PostUpdate update){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         postService.update(update, userSeq);
@@ -166,7 +168,7 @@ public class EnterpriserController {
 
     @ApiOperation(value = "커뮤니티 글 삭제", tags = "사업자 - 커뮤니티")
     @DeleteMapping("/post")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
+    public ResponseEntity<?> post(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         postService.delete(delete, userSeq);

@@ -12,13 +12,11 @@ import java.util.HashMap;
 @Mapper
 public interface UserMapper {
 
-    User getUser(HashMap map);
+    User getUser(HashMap<String, Object> map);
 
-    boolean checkNickname(HashMap map);
+    boolean checkNickname(HashMap<String, Object> map);
 
-    boolean checkAuthentication(HashMap map);
-
-    void register(HashMap map);
+    boolean checkAuthentication(HashMap<String, Object> map);
 
     boolean checkPhone(HashMap<String, Object> map);
 
@@ -75,4 +73,6 @@ public interface UserMapper {
     UserProfile selectProfile(HashMap<String, Object> map);
 
     void updateProfile(HashMap<String, Object> map);
+
+    void insertChennel(HashMap<String, Object> map);
 }

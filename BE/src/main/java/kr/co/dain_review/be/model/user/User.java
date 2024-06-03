@@ -16,6 +16,7 @@ public class User {
     private String pw;
     private Integer type;
     private String address;
+    private String addressDetail;
     private String phone;
     private Integer point;
     private String name;
@@ -24,6 +25,7 @@ public class User {
     private Date birthdate;
     private Integer rank;
     private Date createDate;
+    private String role;
     private ArrayList<UserChannel> userChannels;
     private ArrayList<UserPreference> userPreferences;
 }

@@ -16,16 +16,26 @@ public class PostService {
     private PostMapper postMapper;
 
     public ArrayList<Post> select(Search search, Integer type) {
+        return select(search, type, null); // userSeq 없이 호출하면 자동으로 null을 사용
+    }
+
+    public ArrayList<Post> select(Search search, Integer type, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
         map.put("type", type);
+        map.put("userSeq", userSeq);
         return postMapper.select(map);
     }
 
-    public Integer selectCount(Search search, Integer type) {
+    public ArrayList<Post> selectCount(Search search, Integer type) {
+        return select(search, type, null); // userSeq 없이 호출하면 자동으로 null을 사용
+    }
+
+    public Integer selectCount(Search search, Integer type, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
         map.put("type", type);
+        map.put("userSeq", userSeq);
         return postMapper.selectCount(map);
     }
 
@@ -33,6 +43,7 @@ public class PostService {
         HashMap<String, Object> map = new HashMap<>();
         map.put("seq", seq);
         map.put("type", type);
+        postMapper.countVisitor(map);
         return postMapper.selectDetail(map);
     }
 

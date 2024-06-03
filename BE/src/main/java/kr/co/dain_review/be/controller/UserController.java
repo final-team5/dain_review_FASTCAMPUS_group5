@@ -115,9 +115,11 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 서이추/맞팔")
     @GetMapping("/post")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        json.put("list", postService.select(search, 4));
-        json.put("totalCount", postService.selectCount(search, 4));
+        json.put("list", postService.select(search, 4, userSeq));
+        json.put("totalCount", postService.selectCount(search, 4, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 

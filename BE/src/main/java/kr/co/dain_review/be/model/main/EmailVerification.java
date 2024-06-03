@@ -9,5 +9,5 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmailVerification {
     private String email;
-    private Integer authenticationNumber;
+    private Integer authNum;
 }

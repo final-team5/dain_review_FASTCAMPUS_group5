@@ -21,7 +21,7 @@ public class Post {
     private Date createDate;
     private Date createTime;
     private Integer viewCount;
-    private String userIcon;
+    private String profile;
     private Integer userType;
 
     public String getCreateDate() {

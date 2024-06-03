@@ -49,7 +49,7 @@ public class PublicController {
                 jo.put("message", "비밀번호가 일치하지 않습니다");
                 return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
             }
-            jo = setReturnValue(null, user);
+            jo = setReturnValue(user);
             jo.put("message", "로그인 되었습니다.");
             return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
 
@@ -72,26 +72,41 @@ public class PublicController {
     //회원 가입
     @ApiOperation(value = "회원 가입", tags = "공개 - 회원")
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Register register){
+    public ResponseEntity<?> register(@RequestBody LocalRegister localRegister){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Register register = objectMapper.convertValue(localRegister, Register.class);
+        register.setType(1);
+        if (localRegister.getEntrepreneur()){
+            register.setRole("ROLE_ENTERPRISER");
+        }
+        if (localRegister.getInfluencer()){
+            register.setRole("ROLE_INFLUENCER");
+        }
 
-            JSONObject jo = new JSONObject();
-            if(userService.checkAuthentication(register.getEmail(), register.getAuth())) {
-                jo.put("message", "인증번호가 일치하지 않습니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
-            }
-            if(userService.checkPhone(register.getPhone())){
-                jo.put("message", "이미 사용중인 전화번호 입니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
-            }
-            String encode = passwordEncoder.encode(register.getPw());
-            register.setPw(encode);
-            String id = String.valueOf(UUID.randomUUID());
-            userService.register(id, register);
-            Integer userSeq = userService.getSeq(id);
-
-            kakao.sendMessageRegister(register.getPhone());
-            jo.put("message", "회원가입 되었습니다");
-            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+        JSONObject jo = new JSONObject();
+        User user = userService.getUser(register.getEmail(), 1);
+        if (user!=null) {
+            jo.put("message", "이미 가입된 아이디가 있습니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkEmail(register.getEmail())){
+            jo.put("message", "이미 사용중인 이메일 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkNickname(register.getNickname())){
+            jo.put("message", "이미 사용중인 닉네임 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkPhone(register.getPhone())){
+            jo.put("message", "이미 사용중인 전화번호 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        String pw = passwordEncoder.encode(register.getPw());
+        register.setPw(pw);
+        userService.register(register);
+//            kakao.sendMessageRegister(register.getPhone());
+        jo.put("message", "회원가입 되었습니다");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
 
     }
 
@@ -100,19 +115,25 @@ public class PublicController {
     @PostMapping("/social-login")
     public ResponseEntity<?> SocialRegister(@RequestBody SocialLogin socialLogin) throws ParseException {
 
-            JSONObject json = getUser(socialLogin.getAccessToken());
-            JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
-            String email = kakaoAccount.get("email").toString();
-            String id = json.get("id").toString();
-            JSONObject jo = new JSONObject();
-            if(userService.checkId(id)){
-                jo.put("message", "가입된 아이디가 없습니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
-            }
-            User user = userService.getUser(email, 2);
-            jo = setReturnValue(null, user);
-            jo.put("message", "login success");
-            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+        JSONObject json = getUser(socialLogin.getAccessToken());
+        JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
+        String email = kakaoAccount.get("email").toString();
+        String pw = json.get("id").toString();
+        JSONObject jo = new JSONObject();
+        User user = userService.getUser(email, 2);
+
+        if(user==null){
+            jo.put("message", "사용자를 찾을 수 없습니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+        }
+        if (!passwordEncoder.matches(pw, user.getPw())) {
+            jo.put("message", "잘못된 토큰 입니다.");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+        }
+
+        jo = setReturnValue(user);
+        jo.put("message", "로그인 되었습니다.");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
 
 
     }
@@ -122,37 +143,44 @@ public class PublicController {
     @PostMapping("/social-register")
     public ResponseEntity<?> SocialRegister(@RequestBody SocialRegister socialRegister){
 
-            JSONObject json = getUser(socialRegister.getAccessToken());
-            JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
-            String email = kakaoAccount.get("email").toString();
-            String id = json.get("id").toString();
-            JSONObject jo = new JSONObject();
-            User member = userService.getUser(email, 2);
-            if (member!=null) {
-                jo.put("message", "이미 가입된 아이디가 있습니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
-            }
-            if(userService.checkEmail(email)){
-                jo.put("message", "이미 사용중인 이메일 입니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
-            }
-            if(userService.checkNickname(socialRegister.getNickname())){
-                jo.put("message", "이미 사용중인 닉네임 입니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
-            }
-            if(userService.checkPhone(socialRegister.getPhone())){
-                jo.put("message", "이미 사용중인 전화번호 입니다");
-                return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
-            }
-            userService.socialRegister(id, email, socialRegister);
+        JSONObject json = getUser(socialRegister.getAccessToken());
+        JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
+        String email = kakaoAccount.get("email").toString();
+        String pw = json.get("id").toString();
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        Register register = objectMapper.convertValue(socialRegister, Register.class);
+        register.setEmail(email);
+        register.setPw(passwordEncoder.encode(pw));
+        register.setType(2);
+        if (socialRegister.getEntrepreneur()){
+            register.setRole("ROLE_ENTERPRISER");
+        }
+        if (socialRegister.getInfluencer()){
+            register.setRole("ROLE_INFLUENCER");
+        }
 
-            kakao.sendMessageRegister(socialRegister.getPhone());
-            jo.put("code", 200);
-            jo.put("message", "sign up successful");
-            return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
-
-
+        JSONObject jo = new JSONObject();
+        User user = userService.getUser(register.getEmail(), 2);
+        if (user!=null) {
+            jo.put("message", "이미 가입된 아이디가 있습니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkEmail(register.getEmail())){
+            jo.put("message", "이미 사용중인 이메일 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkNickname(register.getNickname())){
+            jo.put("message", "이미 사용중인 닉네임 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkPhone(register.getPhone())){
+            jo.put("message", "이미 사용중인 전화번호 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        userService.register(register);
+        jo.put("message", "회원가입 되었습니다");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
     }
 
     //아이디 찾기
@@ -278,9 +306,8 @@ public class PublicController {
     }
 
 
-    public JSONObject setReturnValue(String token, User user) throws ParseException {
+    public JSONObject setReturnValue(User user) throws ParseException {
         String new_token = tokenProvider.createToken(user);
-//        Date expireDate = tokenProvider.getExpireDate(new_token);
         JSONObject jo = new JSONObject();
         jo.put("token", new_token);
         jo.put("name", user.getName());
