@@ -8,6 +8,7 @@ import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.post.PostInsert;
 import kr.co.dain_review.be.model.post.PostUpdate;
 import kr.co.dain_review.be.model.product.*;
+import kr.co.dain_review.be.service.AlarmService;
 import kr.co.dain_review.be.service.PostService;
 import kr.co.dain_review.be.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class EnterpriserController {
     private final ProductService productService;
     private final TokenProvider tokenProvider;
     private final PostService postService;
+    private final AlarmService alarmService;
 
     @ApiOperation(value = "내 체험단 검색", tags = "사업자 - 체험단")
     @GetMapping("/my-product")
@@ -105,6 +107,7 @@ public class EnterpriserController {
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         productService.setProgress(seq, userSeq);
+        alarmService.productProgress(seq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);

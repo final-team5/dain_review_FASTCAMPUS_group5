@@ -3,6 +3,7 @@ package kr.co.dain_review.be.mapper;
 import kr.co.dain_review.be.model.product.Product;
 import kr.co.dain_review.be.model.product.ProductInfluencer;
 import kr.co.dain_review.be.model.product.ProductSchedule;
+import kr.co.dain_review.be.model.product.productApplicants;
 import kr.co.dain_review.be.model.user.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -42,4 +43,10 @@ public interface ProductMapper {
     ArrayList<ProductInfluencer> applicationInfluencer(HashMap<String, Object> map);
 
     ArrayList<ProductInfluencer> selectionInfluencer(HashMap<String, Object> map);
+
+    ArrayList<productApplicants> selectedInfluencer(HashMap<String, Object> map);
+
+    ArrayList<productApplicants> applicationInfluencerSeq(HashMap<String, Object> map);
+
+    String getProductTitle(HashMap<String, Object> map);
 }

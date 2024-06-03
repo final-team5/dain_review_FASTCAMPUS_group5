@@ -337,5 +337,15 @@
         LEFT JOIN user_preference up on u.seq = up.target_seq AND up.user_seq = p.user_seq
         WHERE r.product_seq = #{productSeq}
     </select>
+    <select id="selectedInfluencer" resultType="kr.co.dain_review.be.model.user.User">
+        SELECT seq FROm product_applicants WHERE seq = #{productSeq} AND application = 1
+    </select>
+    <select id="applicationInfluencerSeq" resultType="kr.co.dain_review.be.model.product.productApplicants">
+        SELECT user_seq as userSeq, application FROM product_applicants WHERE seq = #{productSeq}
+    </select>
+    <select id="getProductTitle" resultType="java.lang.String">
+        SELECT title FROM products WHERe seq = #{productSeq}
+    </select>
+
 
 </mapper>
