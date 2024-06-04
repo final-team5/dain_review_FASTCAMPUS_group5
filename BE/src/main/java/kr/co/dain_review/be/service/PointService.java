@@ -5,6 +5,7 @@ import kr.co.dain_review.be.mapper.PointMapper;
 import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.point.AdminPointUpdate;
+import kr.co.dain_review.be.model.point.PaymentInsert;
 import kr.co.dain_review.be.model.point.Point;
 import kr.co.dain_review.be.model.user.AdminUserInsert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class PointService {
     @Autowired
     private PointMapper pointMapper;
 
-    public ArrayList<Point> getList(Search search) {
+    public ArrayList<Point> list(Search search) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("page", search.getPage());
         map.put("searchWord", search.getSearchWord());
@@ -26,7 +27,7 @@ public class PointService {
         return pointMapper.selectList(map);
     }
 
-    public Integer getListCount(Search search){
+    public Integer listCount(Search search){
         HashMap<String, Object> map = new HashMap<>();
         map.put("page", search.getPage());
         map.put("searchWord", search.getSearchWord());
@@ -35,25 +36,25 @@ public class PointService {
     }
 
 
-    public Point getDetail(Integer seq) {
+    public Point detail(Integer seq) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("seq", seq);
         return pointMapper.selectDetail(map);
     }
 
-    public void setUpdate(AdminPointUpdate update) {
+    public void update(AdminPointUpdate update) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
         pointMapper.update(map);
     }
 
-    public void setInsert(AdminUserInsert insert) {
+    public void insert(PaymentInsert insert) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
         pointMapper.insert(map);
     }
 
-    public void setDelete(Delete delete) {
+    public void delete(Delete delete) {
         for(Integer seq : delete.getSeqs()){
             HashMap<String, Object> map = new HashMap<>();
             map.put("seq", seq);

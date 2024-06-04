@@ -17,7 +17,7 @@
                               recruiter,
                               image,
                               category_seq,
-                              channel_seq,
+                              platform_seq,
                               type_seq,
                               application_start_date,
                               application_end_date,
@@ -50,7 +50,7 @@
                 #{recruiter},
                 #{image},
                 #{categorySeq},
-                #{channelSeq},
+                #{platformSeq},
                 #{typeSeq},
                 #{applicationStartDate},
                 #{applicationEndDate},
@@ -75,6 +75,10 @@
     <insert id="application">
         INSERT INTO product_applicants (product_seq, user_seq, message) VALUES (#{productSeq}, #{userSeq}, #{message})
     </insert>
+    <insert id="report">
+        INSERT INTO product_review (product_seq, user_seq, link, attachments)
+        VALUES (#{productSeq}, #{userSeq}, #{link}, #{attachments})
+    </insert>
     <update id="progress">
 
     </update>
@@ -82,6 +86,7 @@
     <update id="InfluencerSelect">
         UPDATE product_applicants SET application = 1 - application WHERE user_seq = #{userSeq} AND product_seq = #{productSeq}
     </update>
+
     <update id="update">
         UPDATE products
         <set>
@@ -97,7 +102,7 @@
             <if test="recruiter!=null">recruiter = #{recruiter}, </if>
             <if test="image!=null">image = #{image}, </if>
             <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
-            <if test="channelSeq!=null">channel_seq = #{channelSeq}, </if>
+            <if test="platformSeq!=null">platform_seq = #{platformSeq}, </if>
             <if test="typeSeq!=null">type_seq = #{typeSeq}, </if>
             <if test="status!=null">`status` = #{status}, </if>
             <if test="applicationStartDate!=null">application_start_date = #{applicationStartDate}, </if>
@@ -138,7 +143,7 @@
             p.recruiter,
             p.image,
             p.category_seq as categorySeq,
-            p.channel_seq as channelSeq,
+            p.platform_seq as channelSeq,
             p.type_seq as typeSeq,
             p.status,
             p.city,
@@ -148,14 +153,12 @@
         FROM products p
         LEFT JOIN product_applicants pa on p.seq = pa.product_seq
         <where>
-            <if test="city!=null">
-                AND p.city = #{city}
-                <if test="district != null and !district.isEmpty">
-                    AND p.district IN
-                    <foreach item="item" collection="district" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                </if>
+            <if test="city!=null and district!=null">
+                AND (p.city, p.district) IN
+                <foreach item="location" index="index" collection="locations"
+                         open="(" separator="), (" close=")">
+                    #{location.city}, #{location.district}
+                </foreach>
             </if>
             <if test="searchWord!=null"> AND p.title LIKE #{searchWord} </if>
             <if test="userSeq!=null"> AND p.user_seq = #{userSeq} </if>
@@ -194,14 +197,12 @@
             COUNT(p.seq)
         FROM products p
         <where>
-            <if test="city!=null">
-                AND city = #{city}
-                <if test="district != null and !district.isEmpty">
-                    AND district IN
-                    <foreach item="item" collection="district" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                </if>
+            <if test="city!=null and district!=null">
+                AND (p.city, p.district) IN
+                <foreach item="location" index="index" collection="locations"
+                         open="(" separator="), (" close=")">
+                    #{location.city}, #{location.district}
+                </foreach>
             </if>
             <if test="searchWord!=null">AND p.title LIKE #{searchWord}</if>
             <if test="userSeq!=null">AND p.user_seq = #{userSeq}</if>
@@ -231,7 +232,7 @@
             p.recruiter,
             p.image,
             p.category_seq as categorySeq,
-            p.channel_seq as channelSeq,
+            p.platform_seq as platformSeq,
             p.type_seq as typeSeq,
             p.status,
             p.application_start_date as applicationStartDate,
@@ -268,7 +269,7 @@
             p.recruiter,
             p.image,
             p.category_seq as categorySeq,
-            p.channel_seq as channelSeq,
+            p.platform_seq as platformSeq,
             p.type_seq as typeSeq,
             p.status,
             p.city,
@@ -296,47 +297,53 @@
 
     <select id="applicationInfluencer" resultType="kr.co.dain_review.be.model.product.ProductInfluencer">
         SELECT u.seq,
-            uc.link as channelUrl,
-            u.name,
-            pa.application,
-            uc.rank,
-            uc.visitors,
-            u.rating,
-            u.cancel,
-            pa.message,
-            up.opinions
+               up.link,
+               u.name,
+               up.`rank`,
+               up.visitors,
+               up.follower,
+               up.subscriber_count as subscriberCount,
+               up.video_count as videoCount,
+               pa.application,
+               pa.message
         FROM product_applicants pa
-        LEFT JOIN products p ON pa.product_seq = p.seq
         LEFT JOIN users u ON pa.user_seq = u.seq
-        LEFT JOIN user_channels uc on u.seq = uc.user_seq
-        LEFT JOIN user_preference up on u.seq = up.target_seq AND up.user_seq = p.user_seq
+        LEFT JOIN user_platform up ON pa.user_seq = up.user_seq AND up.type = #{platformType}
         WHERE pa.product_seq = #{productSeq}
     </select>
 
     <select id="selectionInfluencer" resultType="kr.co.dain_review.be.model.product.ProductInfluencer">
         SELECT u.seq,
-            uc.link as channelUrl,
-            u.name,
-            uc.rank,
-            uc.visitors,
-            u.rating,
-            u.phone,
-            u.address,
-            pa.message,
-            up.opinions,
-            rc.review_date as reviewDate,
-            rc.ranking_check as rankingCheck,
-            rc.link as reviewLink,
-            rc.attachments
-        FROM reports r
-        LEFT JOIN report_contents rc ON r.seq = rc.report_seq
-        LEFT JOIN product_applicants pa ON pa.product_seq = r.product_seq
-        LEFT JOIN products p ON pa.product_seq = p.seq
+               up.link,
+               u.name,
+               up.`rank`,
+               up.visitors,
+               up.follower,
+               up.subscriber_count as subscriberCount,
+               up.video_count as videoCount,
+               u.phone,
+               u.address,
+               pa.application,
+               pa.message,
+               pr.link as reviewLink,
+               pr.date as reviewDate,
+               pr.ranking_check as rankingCheck,
+               CONCAT('attachments/', pr.attachments) as attachmentsURL
+        FROM product_applicants pa
         LEFT JOIN users u ON pa.user_seq = u.seq
-        LEFT JOIN user_channels uc on u.seq = uc.user_seq
-        LEFT JOIN user_preference up on u.seq = up.target_seq AND up.user_seq = p.user_seq
-        WHERE r.product_seq = #{productSeq}
+        LEFT JOIN user_platform up ON pa.user_seq = up.user_seq AND up.type = #{platformType}
+        LEFT JOIN product_review pr ON pr.product_seq = pa.product_seq
+        WHERE pa.product_seq = #{productSeq} AND pa.application = 1
     </select>
+
+    <select id="getProductPlatformType" resultType="integer">
+        SELECT pp.type
+        FROM products p
+        LEFT JOIN product_platform pp on p.platform_seq = pp.seq
+        WHERE seq = #{productSeq}
+    </select>
+
+
     <select id="selectedInfluencer" resultType="kr.co.dain_review.be.model.user.User">
         SELECT seq FROm product_applicants WHERE seq = #{productSeq} AND application = 1
     </select>

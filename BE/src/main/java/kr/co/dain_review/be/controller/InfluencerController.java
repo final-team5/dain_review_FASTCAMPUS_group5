@@ -9,6 +9,7 @@ import kr.co.dain_review.be.model.post.PostInsert;
 import kr.co.dain_review.be.model.post.PostUpdate;
 import kr.co.dain_review.be.model.product.InfluencerApplication;
 import kr.co.dain_review.be.model.product.ProductSearch;
+import kr.co.dain_review.be.model.product.ReportInsert;
 import kr.co.dain_review.be.service.AlarmService;
 import kr.co.dain_review.be.service.PostService;
 import kr.co.dain_review.be.service.ProductService;
@@ -85,6 +86,19 @@ public class InfluencerController {
         json.put("totalCount", alarmService.getAlarmListCount(userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
+    @ApiOperation(value = "체험 보고", tags = "인플루언서 - 체험단")
+    @PostMapping("/review")
+    public ResponseEntity<?> report(@RequestHeader HttpHeaders header, @RequestBody ReportInsert insert){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        productService.review(insert, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+
 
     @ApiOperation(value = "커뮤니티 리스트", tags = "인플루언서 - 커뮤니티")
     @GetMapping("/post")

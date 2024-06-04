@@ -1,17 +1,15 @@
-package kr.co.dain_review.be.model.report;
+package kr.co.dain_review.be.model.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-
-import java.util.ArrayList;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AdminReportInsert {
+public class ReportInsert {
     private Integer productSeq;
-    private Integer userSeq;
-    private ArrayList<ReportContent> reportContents;
-    private ArrayList<ReportKeyword> reportKeywords;
+    private String link;
+    private MultipartFile attachments;
 }

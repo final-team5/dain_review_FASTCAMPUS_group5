@@ -7,7 +7,9 @@ import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.ChangePassword;
 import kr.co.dain_review.be.model.post.PostInsert;
+import kr.co.dain_review.be.model.post.PostInsertProduct;
 import kr.co.dain_review.be.model.post.PostUpdate;
+import kr.co.dain_review.be.model.post.PostUpdateProduct;
 import kr.co.dain_review.be.model.user.User;
 import kr.co.dain_review.be.model.user.UserUpdate;
 import kr.co.dain_review.be.service.PostService;
@@ -164,8 +166,6 @@ public class UserController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-
-
     public JSONObject setReturnValue(String token, User user) throws ParseException {
         String new_token = tokenProvider.createToken(user);
 //        Date expireDate = tokenProvider.getExpireDate(new_token);
@@ -178,5 +178,39 @@ public class UserController {
         jo.put("expireDate", strNowDate);
         return jo;
     }
+
+    @ApiOperation(value = "체험단 글 추가", tags = "사용자 - 체험단")
+    @PostMapping("/product")
+    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody PostInsertProduct insert){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        postService.insertProduct(insert, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "체험단 글 수정", tags = "사용자 - 체험단")
+    @PutMapping("/product")
+    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody PostUpdateProduct update){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        postService.updateProduct(update, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "체험단 글 삭제", tags = "사용자 - 체험단")
+    @DeleteMapping("/product")
+    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        postService.deleteProduct(delete, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
 
 }

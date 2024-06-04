@@ -13,6 +13,10 @@
         INSERT INTO posts (user_seq, category_seq, type_seq, title, contents)
         VALUES (#{userSeq}, #{categorySeq}, #{typeSeq}, #{title}, #{contents});
     </insert>
+    <insert id="insertProduct">
+        INSERT INTO product_comments (user_seq, product_seq, comment_seq, comment)
+        VALUES (#{userSeq}, #{productSeq}, #{commentSeq}, #{comment})
+    </insert>
 
     <update id="updateAdmin">
         UPDATE posts
@@ -36,6 +40,9 @@
     <update id="countVisitor">
         UPDATE posts SET view_count = view_count + 1 WHERE seq = #{seq}
     </update>
+    <update id="updateProduct">
+        UPDATE product_comments SET comment = #{comment} WHERE seq = #{seq} AND user_seq = #{userSeq}
+    </update>
 
     <delete id="delete">
         DELETE FROM posts WHERE seq = #{seq} AND user_seq = #{userSeq}
@@ -43,6 +50,9 @@
 
     <delete id="deleteAdmin">
         DELETE FROM posts WHERE seq = #{seq}
+    </delete>
+    <delete id="deleteProduct">
+        DELETE FROM product_comments WHERE seq = #{seq} AND user_seq = #{userSeq}
     </delete>
 
     <select id="select" resultType="kr.co.dain_review.be.model.post.Post">

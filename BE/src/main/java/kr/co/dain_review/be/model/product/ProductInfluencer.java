@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,23 +29,24 @@ public class ProductInfluencer {
 //    +순위체크
 //    +링크주소
 //    +첨부자료
-
     private Integer seq;
-    private Integer channelUrl;
-    private String name;
-    private Boolean application; //선정 여부
-    private Integer rank;
-    private Integer visitors;
-    private Double rating;
     private Integer cancel;
-    private String message;
-    private Integer opinions;
-
+    private Boolean application; //선정 여부
+    private String link;
+    private String name;
+    private String rank;
+    private Integer visitors;
+    private Integer follower;
+    private Integer subscriberCount;
+    private Integer videoCount;
     private String phone;
     private String address;
-    private String reviewDate;
-    private String rankingCheck;
+    private String message;
+    private Date reviewDate;
     private String reviewLink;
-    private String attachments;
+    private String attachmentsURL;
+    private String rankingCheck;
+
+
 
 }

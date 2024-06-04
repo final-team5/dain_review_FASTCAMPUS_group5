@@ -12,8 +12,6 @@ import kr.co.dain_review.be.model.post.AdminPostUpdate;
 import kr.co.dain_review.be.model.product.ProductInsert;
 import kr.co.dain_review.be.model.product.ProductSearch;
 import kr.co.dain_review.be.model.product.ProductUpdate;
-import kr.co.dain_review.be.model.report.AdminReportInsert;
-import kr.co.dain_review.be.model.report.AdminReportUpdate;
 import kr.co.dain_review.be.model.user.AdminUserInsert;
 import kr.co.dain_review.be.model.user.AdminUserUpdate;
 import kr.co.dain_review.be.service.*;
@@ -33,7 +31,6 @@ public class AdminController {
     private final PointService pointService;
     private final PostService postService;
     private final ProductService productService;
-    private final ReportService reportService;
     private final AlarmService alarmService;
 
     //    ㄴ회원 관리
@@ -45,6 +42,7 @@ public class AdminController {
         json.put("totalCount", userService.getListCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value ="유저 상세", tags = "관리자 - 회원")
     @GetMapping("/user/{seq}")
     public ResponseEntity<?> user(@PathVariable Integer seq){
@@ -53,6 +51,7 @@ public class AdminController {
         json.put("detail", userService.getDetail(seq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value ="유저 추가", tags = "관리자 - 회원")
     @PostMapping("/user")
     public ResponseEntity<?> user(@RequestBody AdminUserInsert insert){
@@ -61,6 +60,7 @@ public class AdminController {
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value ="유저 수정", tags = "관리자 - 회원")
     @PutMapping("/user")
     public ResponseEntity<?> user(@RequestBody AdminUserUpdate update){
@@ -81,26 +81,28 @@ public class AdminController {
 
 
 
-//    ㄴ포인트 관리
+//   포인트 관리
     @ApiOperation(value = "포인트 내역", tags = "관리자 - 포인트")
     @GetMapping("/point")
     public ResponseEntity<?> point(Search search){
         JSONObject json = new JSONObject();
-        json.put("list", pointService.getList(search));
-        json.put("totalCount", pointService.getListCount(search));
+        json.put("list", pointService.list(search));
+        json.put("totalCount", pointService.listCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value = "포인트 상세", tags = "관리자 - 포인트")
     @GetMapping("/point/{seq}")
     public ResponseEntity<?> point(@PathVariable Integer seq){
         JSONObject json = new JSONObject();
-        json.put("detail", pointService.getDetail(seq));
+        json.put("detail", pointService.detail(seq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value = "포인트 수정", tags = "관리자 - 포인트")
     @PutMapping("/point")
     public ResponseEntity<?> point(@RequestBody AdminPointUpdate update){
-        pointService.setUpdate(update);
+        pointService.update(update);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -118,6 +120,7 @@ public class AdminController {
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value = "게시판 수정", tags = "관리자 - 게시판")
     @PutMapping("/post")
     public ResponseEntity<?> post(@RequestBody AdminPostUpdate update){
@@ -126,6 +129,7 @@ public class AdminController {
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+
     @ApiOperation(value = "게시판 삭제", tags = "관리자 - 게시판")
     @DeleteMapping("/post")
     public ResponseEntity<?> post(@RequestBody Delete delete){
@@ -190,49 +194,49 @@ public class AdminController {
 
 
     //보고서 관리
-    @ApiOperation(value = "결과보고서 리스트", tags = "관리자 - 결과보고서")
-    @GetMapping("/report")
-    public ResponseEntity<?> report(Search search){
-        JSONObject json = new JSONObject();
-        json.put("list", reportService.getList(search));
-        json.put("totalCount", reportService.getListCount(search));
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
+//    @ApiOperation(value = "결과보고서 리스트", tags = "관리자 - 결과보고서")
+//    @GetMapping("/report")
+//    public ResponseEntity<?> report(Search search){
+//        JSONObject json = new JSONObject();
+//        json.put("list", productService.getList(search));
+//        json.put("totalCount", productService.getListCount(search));
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
+//
+//    @ApiOperation(value = "결과보고서 상세", tags = "관리자 - 결과보고서")
+//    @GetMapping("/report/{seq}")
+//    public ResponseEntity<?> report(@PathVariable Integer seq){
+//        JSONObject json = new JSONObject();
+//        json.put("detail", productService.getDetail(seq));
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
+//
+//    @ApiOperation(value = "결과보고서 추가", tags = "관리자 - 결과보고서")
+//    @PostMapping("/report")
+//    public ResponseEntity<?> report(@RequestBody ReportInsert insert){
+//        productService.setInsert(insert);
+//        JSONObject json = new JSONObject();
+//        json.put("message", "SUCCESS");
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
 
-    @ApiOperation(value = "결과보고서 상세", tags = "관리자 - 결과보고서")
-    @GetMapping("/report/{seq}")
-    public ResponseEntity<?> report(@PathVariable Integer seq){
-        JSONObject json = new JSONObject();
-        json.put("detail", reportService.getDetail(seq));
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
+//    @ApiOperation(value = "결과보고서 수정", tags = "관리자 - 결과보고서")
+//    @PutMapping("/report")
+//    public ResponseEntity<?> report(@RequestBody AdminReportUpdate update){
+//        reportService.setUpdate(update);
+//        JSONObject json = new JSONObject();
+//        json.put("message", "SUCCESS");
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
 
-    @ApiOperation(value = "결과보고서 추가", tags = "관리자 - 결과보고서")
-    @PostMapping("/report")
-    public ResponseEntity<?> report(@RequestBody AdminReportInsert insert){
-        reportService.setInsert(insert);
-        JSONObject json = new JSONObject();
-        json.put("message", "SUCCESS");
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
-
-    @ApiOperation(value = "결과보고서 수정", tags = "관리자 - 결과보고서")
-    @PutMapping("/report")
-    public ResponseEntity<?> report(@RequestBody AdminReportUpdate update){
-        reportService.setUpdate(update);
-        JSONObject json = new JSONObject();
-        json.put("message", "SUCCESS");
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
-
-    @ApiOperation(value = "결과보고서 삭제", tags = "관리자 - 결과보고서")
-    @DeleteMapping("/report")
-    public ResponseEntity<?> report(@RequestBody Delete delete){
-        reportService.setDelete(delete);
-        JSONObject json = new JSONObject();
-        json.put("message", "SUCCESS");
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
+//    @ApiOperation(value = "결과보고서 삭제", tags = "관리자 - 결과보고서")
+//    @DeleteMapping("/report")
+//    public ResponseEntity<?> report(@RequestBody Delete delete){
+//        reportService.setDelete(delete);
+//        JSONObject json = new JSONObject();
+//        json.put("message", "SUCCESS");
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
 
 
 

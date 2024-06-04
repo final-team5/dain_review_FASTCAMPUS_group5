@@ -19,6 +19,7 @@ public class ProductSearch {
     private Integer status;
     private String orderParam;
     private boolean isPremium;
+    private ArrayList<Location> location;
 
     private int page = 1;
 
