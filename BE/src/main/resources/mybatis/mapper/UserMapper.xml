@@ -48,21 +48,61 @@
                 #{company},
                 #{role})
     </insert>
-    <insert id="insertChennel">
-        INSERT INTO user_channels (user_seq, type, link) VALUES (#{userSeq}, #{type}, #{link})
+
+    <insert id="insertVerification">
+        INSERT INTO verify (email, auth_num, expire_date) VALUES (#{eamil}, #{authNum}, #{expireDate})
     </insert>
-    <update id="updateUser"></update>
-    <update id="setVerification"></update>
-    <update id="userCertification"></update>
-    <update id="emailCertification"></update>
-    <update id="setNewPassword"></update>
-    <update id="changePassword"></update>
-    <update id="Withdrawal"></update>
-    <update id="updateProfile"></update>
-    <update id="update"></update>
-    <delete id="removeVerification"></delete>
-    <delete id="resetVerification"></delete>
-    <delete id="delete"></delete>
+    <insert id="insertPlatform">
+        INSERT INTO user_platform (user_seq, link, type) VALUES (#{userSeq}, #{link}, #{type})
+    </insert>
+    <update id="userCertification">
+        UPDATE verify SET user_certification = 1 WHERE email = #{email} AND auth_num = #{authNum}
+    </update>
+    <update id="emailCertification">
+        UPDATE verify SET email_certification = 1 WHERE email = #{email} AND auth_num = #{authNum}
+    </update>
+
+    <update id="setNewPassword">
+        UPDATE users SET pw = #{pw} WHERE seq = #{seq} AND (SELECT email FROM verify WHERE auth_num = #{authNum})
+    </update>
+
+    <update id="changePassword">
+        UPDATE users SET pw = #{newPw} WHERE seq = #{userSeq}
+    </update>
+
+    <update id="Withdrawal">
+        UPDATE users SET status = 1 WHERE seq = #{seq};
+    </update>
+
+    <update id="updateProfile">
+        UPDATE users
+        <set>
+            <if test="phone!=null">phone = #{phone}, </if>
+            <if test="profile!=null">`profile` = #{profile}, </if>
+            <if test="birthdate!=null">birthdate = #{birthdate}, </if>
+            <if test="gender!=null">gender = #{gender}, </if>
+            <if test="address!=null">address = #{address}, </if>
+            <if test="addressDetail!=null">addressDetail = #{addressDetail}, </if>
+            <if test="blog!=null">blog = #{blog}, </if>
+            <if test="instagram!=null">instagram = #{instagram}, </if>
+            <if test="youtube!=null">youtube = #{youtube}, </if>
+            <if test="tiktok!=null">tiktok = #{tiktok}, </if>
+            <if test="other!=null">other = #{other}, </if>
+            <if test="postalCode!=null">postal_code = #{postalCode}, </if>
+        </set>
+        WHERE seq = #{seq}
+    </update>
+
+    <update id="update">
+
+    </update>
+    <delete id="deleteVerification">
+        DELETE FROM verify WHERE email = #{email}
+    </delete>
+
+    <delete id="delete">
+        DELETE FROM users WHERE seq = #{seq}
+    </delete>
 
 
     <select id="getUser" resultType="kr.co.dain_review.be.model.user.User">
@@ -117,9 +157,61 @@
         SELECT EXISTS(SELECT 1 FROM users WHERE email = #{email} AND type = 2)
     </select>
 
-    <select id="getSeq" resultType="java.lang.Integer"></select>
-    <select id="getList" resultType="kr.co.dain_review.be.model.user.User"></select>
-    <select id="getListCount" resultType="java.lang.Integer"></select>
-    <select id="getDetail" resultType="kr.co.dain_review.be.model.user.User"></select>
-    <select id="selectProfile" resultType="kr.co.dain_review.be.model.user.UserProfile"></select>
+    <select id="getSeq" resultType="java.lang.Integer">
+        SELECT seq FROM users WHERE id = #{id}
+    </select>
+
+    <select id="getList" resultType="kr.co.dain_review.be.model.user.User">
+        SELECT * FROM users
+        <where>
+            <choose>
+                <when test="searchType!=null and searchType.equals('nickname')"> AND nickname LIKE #{searchWord} </when>
+                <when test="searchType!=null and searchType.equals('name')"> AND `name` LIKE #{searchWord} </when>
+                <when test="searchType!=null and searchType.equals('email')"> AND email LIKE #{searchWord} </when>
+            </choose>
+        </where>
+        LIMIT #{page}, 10
+    </select>
+    <select id="getListCount" resultType="java.lang.Integer">
+        SELECT COUNT(seq) FROM users
+        <where>
+            <choose>
+                <when test="searchType!=null and searchType.equals('nickname')"> AND nickname LIKE #{searchWord} </when>
+                <when test="searchType!=null and searchType.equals('name')"> AND `name` LIKE #{searchWord} </when>
+                <when test="searchType!=null and searchType.equals('email')"> AND email LIKE #{searchWord} </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getDetail" resultType="kr.co.dain_review.be.model.user.User">
+        SELECT * FROM users WHERE seq = #{seq}
+    </select>
+    <select id="selectProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
+        SELECT u.seq,
+            CONCAT(u.id, '/', u.profile) as profileImage,
+            u.nickname,
+            u.cancel,
+            blog.visitors as blogVisitors,
+            instagram.follower as instagramFollower,
+            tiktok.follower as tiktokFollower,
+            youtube.subscriber_count as youtubeSubscriberCount,
+            youtube.video_count as youtubeVideoCount
+        FROM users u
+        LEFT JOIN user_platform blog on u.seq = blog.user_seq AND blog.type = 1
+        LEFT JOIN user_platform instagram on u.seq = instagram.user_seq AND instagram.type = 2
+        LEFT JOIN user_platform youtube on u.seq = youtube.user_seq AND youtube.type = 3
+        LEFT JOIN user_platform tiktok on u.seq = tiktok.user_seq AND tiktok.type = 4
+        WHERE u.seq = #{userSeq}
+    </select>
+
+    <select id="selectPlatformInfo" resultType="kr.co.dain_review.be.model.user.UserPlatform">
+        SELECT seq,
+               link,
+               rank,
+               visitors,
+               follower,
+               subscriber_count as subscriberCount,
+               video_count as videoCount
+        FROM user_platform WHERE user_seq = #{userSeq} AND type = #{type}
+    </select>
 </mapper>

@@ -26,6 +26,6 @@ public class User {
     private Integer rank;
     private Date createDate;
     private String role;
-    private ArrayList<UserChannel> userChannels;
+    private ArrayList<UserPlatform> userPlatforms;
     private ArrayList<UserPreference> userPreferences;
 }

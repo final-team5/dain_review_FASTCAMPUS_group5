@@ -21,7 +21,7 @@ public class ProductUpdate {
     private Integer recruiter;
     private String image;
     private Integer categorySeq;
-    private Integer channelSeq;
+    private Integer platformSeq;
     private Integer typeSeq;
     private Integer status;
     private String applicationStartDate;

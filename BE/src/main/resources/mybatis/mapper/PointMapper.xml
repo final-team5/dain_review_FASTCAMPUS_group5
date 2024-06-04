@@ -4,12 +4,50 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.co.dain_review.be.mapper.PointMapper">
-    <insert id="insert"></insert>
-    <update id="update"></update>
-    <delete id="delete"></delete>
+    <insert id="insert">
+        INSERT INTO payment (user_seq,
+                             order_id,
+                             amount,
+                             payment_method,
+                             payment_status,
+                             currency,
+                             bank_name,
+                             card_type,
+                             payment_gateway,
+                             receipt_url,
+                             refund_status)
+        VALUES (#{userSeq},
+                #{orderId},
+                #{amount},
+                #{paymentMethod},
+                #{paymentStatus},
+                #{currency},
+                #{bankName},
+                #{cardType},
+                #{paymentGateway},
+                #{receiptUrl},
+                #{refundStatus})
+    </insert>
+
+    <update id="update">
+
+    </update>
+
+    <delete id="delete">
+        DELETE FROM payment WHERE seq = #{seq}
+    </delete>
 
 
-    <select id="selectList" resultType="kr.co.dain_review.be.model.point.Point"></select>
-    <select id="selectListCount" resultType="java.lang.Integer"></select>
-    <select id="selectDetail" resultType="kr.co.dain_review.be.model.point.Point"></select>
+    <select id="selectList" resultType="kr.co.dain_review.be.model.point.Point">
+        SELECT * FROM payment
+        LIMIT #{page}, 10
+    </select>
+
+    <select id="selectListCount" resultType="java.lang.Integer">
+        SELECT COUNT(seq) FROM payment
+    </select>
+
+    <select id="selectDetail" resultType="kr.co.dain_review.be.model.point.Point">
+        SELECT * FROM payment WHERE seq = #{seq}
+    </select>
 </mapper>

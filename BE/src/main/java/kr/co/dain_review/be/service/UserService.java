@@ -12,12 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,29 +72,29 @@ public class UserService {
         Integer userSeq = userMapper.getSeq(map);
         map.put("userSeq", userSeq);
         if(register.isBlogLink()){
-            map.put("type", 1);
             map.put("link", register.getBlogLink());
-            userMapper.insertChennel(map);
+            map.put("type", 1);
+            userMapper.insertPlatform(map);
         }
         if(register.isInstagramLink()){
-            map.put("type", 2);
             map.put("link", register.getInstagramLink());
-            userMapper.insertChennel(map);
+            map.put("type", 2);
+            userMapper.insertPlatform(map);
         }
         if(register.isYoutubeLink()){
-            map.put("type", 3);
             map.put("link", register.getYoutubeLink());
-            userMapper.insertChennel(map);
+            map.put("type", 3);
+            userMapper.insertPlatform(map);
         }
         if(register.isTiktokLink()){
-            map.put("type", 4);
             map.put("link", register.getTiktokLink());
-            userMapper.insertChennel(map);
+            map.put("type", 4);
+            userMapper.insertPlatform(map);
         }
         if(register.isOtherLink()){
-            map.put("type", 5);
             map.put("link", register.getOtherLink());
-            userMapper.insertChennel(map);
+            map.put("type", 5);
+            userMapper.insertPlatform(map);
         }
     }
 
@@ -131,25 +125,19 @@ public class UserService {
         userMapper.changePassword(map);
     }
 
-    public void update(Integer userSeq, Change change) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        HashMap<String, Object> map = objectMapper.convertValue(change, HashMap.class);
-        map.put("seq", userSeq);
-        userMapper.updateUser(map);
-    }
 
     @Async
     public void emailVerification(Email email) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("email", email.getEmail());
-        userMapper.resetVerification(map);
-        int authentication_number = (int)(Math.random() * 900000) + 100000;
-        map.put("auth", authentication_number);
+        userMapper.deleteVerification(map);
+        int authNUm = (int)(Math.random() * 900000) + 100000;
+        map.put("authNUm", authNUm);
         LocalDateTime now = LocalDateTime.now(); // 현재 시간을 가져옴
         LocalDateTime thirtyMinutesLater = now.plusMinutes(30); // 현재 시간에 30분을 더함
-        map.put("expire_date", thirtyMinutesLater);
-        userMapper.setVerification(map);
-        smtp.emailSend(email.getEmail(), authentication_number);
+        map.put("expireDate", thirtyMinutesLater);
+        userMapper.insertVerification(map);
+        smtp.emailSend(email.getEmail(), authNUm);
     }
 
     public boolean getFindUser(UserVerification userVerification) {
@@ -161,6 +149,7 @@ public class UserService {
     public void userCertification(UserVerification userVerification) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("email", userVerification.getEmail());
+        map.put("authNum", userVerification.getAuth());
         userMapper.userCertification(map);
     }
 
@@ -180,7 +169,7 @@ public class UserService {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(findPassword, HashMap.class);
         userMapper.setNewPassword(map);
-        userMapper.removeVerification(map);
+        userMapper.deleteVerification(map);
     }
 
     public boolean checkEmail(String email) {
@@ -285,26 +274,6 @@ public class UserService {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
         userMapper.insert(map);
-        if(insert.getBlogLink()!=null){
-            map.put("type", 1);
-
-        }
-        if(insert.getInstagramLink()!=null){
-            map.put("type", 2);
-
-        }
-        if(insert.getYoutubeLink()!=null){
-            map.put("type", 3);
-
-        }
-        if(insert.getTiktokLink()!=null){
-            map.put("type", 4);
-
-        }
-        if(insert.getOtherLink()!=null){
-            map.put("type", 5);
-
-        }
     }
 
     public void setDelete(Delete delete) {
@@ -324,7 +293,7 @@ public class UserService {
     public void setProfile(UserUpdate update, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
-        map.put("userSeq", userSeq);
+        map.put("seq", userSeq);
         userMapper.updateProfile(map);
     }
 }

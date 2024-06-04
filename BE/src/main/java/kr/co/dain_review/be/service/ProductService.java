@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.dain_review.be.mapper.AlarmMapper;
 import kr.co.dain_review.be.mapper.ProductMapper;
 import kr.co.dain_review.be.model.list.Delete;
-import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.product.*;
-import kr.co.dain_review.be.model.user.User;
+import kr.co.dain_review.be.util.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -147,15 +146,29 @@ public class ProductService {
 
     public ArrayList<ProductInfluencer> applicationInfluencer(Integer seq) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("seq", seq);
+        map.put("productSeq", seq);
+        map.put("platformType", productMapper.getProductPlatformType(map));
         return productMapper.applicationInfluencer(map);
     }
 
     public ArrayList<ProductInfluencer> selectionInfluencer(Integer seq) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("seq", seq);
+        map.put("productSeq", seq);
+        map.put("platformType", productMapper.getProductPlatformType(map));
         return productMapper.selectionInfluencer(map);
     }
 
 
+    public void review(ReportInsert insert, Integer userSeq) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("productSeq", insert.getProductSeq());
+        map.put("link", insert.getLink());
+        map.put("userSeq", userSeq);
+        if(insert.getAttachments()!=null){
+            String filename = FileUtils.setNewName(insert.getAttachments());
+            map.put("attachments", filename);
+            FileUtils.saveFile(insert.getAttachments(), "attachments/"+filename);
+        }
+        productMapper.report(map);
+    }
 }

@@ -8,7 +8,36 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserProfile {
+//    seq
+//    프로필 사진
+//    닉네임
+//    평점
+//    등급
+//    방문 수
+//    패널티
+//    블로그 일 방문자 수
+//    인스타그램 팔로워 수
+//    유튜브 구독자 수
+//    틱톡 팔로워 수
+//
+//    진행중 체험단
+//    진행 완료 체험단
     private Integer seq;
-    private String image;
+    private String profileImage;
+    private String nickname;
+    private Double rating;
+    private Integer rankSeq;
+    private Integer cancel;
+
+    private Boolean blog;
+    private Boolean instagram;
+    private Boolean youtube;
+    private Boolean tiktok;
+
+    private Integer blogVisitors;
+    private Integer instagramFollower;
+    private Integer youtubeSubscriberCount;
+    private Integer youtubeVideoCount;
+    private Integer tiktokFollower;
 
 }

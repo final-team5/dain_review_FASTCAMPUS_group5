@@ -1,6 +1,7 @@
 package kr.co.dain_review.be.mapper;
 
 import kr.co.dain_review.be.model.user.User;
+import kr.co.dain_review.be.model.user.UserPlatform;
 import kr.co.dain_review.be.model.user.UserProfile;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -20,11 +21,10 @@ public interface UserMapper {
 
     boolean checkPhone(HashMap<String, Object> map);
 
-    void updateUser(HashMap<String, Object> map);
 
     String findEmail(HashMap<String, Object> map);
 
-    void setVerification(HashMap<String, Object> map);
+    void insertVerification(HashMap<String, Object> map);
 
     Integer getAuthenticationNumber(HashMap<String, Object> map);
 
@@ -40,15 +40,13 @@ public interface UserMapper {
 
     void setNewPassword(HashMap<String, Object> map);
 
-    void removeVerification(HashMap<String, Object> map);
+    void deleteVerification(HashMap<String, Object> map);
 
     void changePassword(HashMap<String, Object> map);
 
     boolean checkEmail(HashMap<String, Object> map);
 
     boolean checkId(HashMap<String, Object> map);
-
-    void resetVerification(HashMap<String, Object> map);
 
     boolean findEmailCheck(HashMap<String, Object> map);
 
@@ -74,5 +72,7 @@ public interface UserMapper {
 
     void updateProfile(HashMap<String, Object> map);
 
-    void insertChennel(HashMap<String, Object> map);
+    void insertPlatform(HashMap<String, Object> map);
+
+    UserPlatform selectPlatformInfo(HashMap<String, Object> map);
 }
