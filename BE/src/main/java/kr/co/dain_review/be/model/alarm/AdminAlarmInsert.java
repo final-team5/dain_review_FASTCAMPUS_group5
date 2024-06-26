@@ -9,6 +9,6 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdminAlarmInsert {
     private Integer userSeq;
-    private Integer productSeq;
+    private Integer campaignSeq;
     private String contents;
 }

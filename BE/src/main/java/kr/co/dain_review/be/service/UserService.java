@@ -8,10 +8,13 @@ import kr.co.dain_review.be.model.main.*;
 import kr.co.dain_review.be.model.user.*;
 import kr.co.dain_review.be.util.FileUtils;
 import kr.co.dain_review.be.util.smtp;
+import org.apache.ibatis.ognl.ObjectElementsAccessor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,34 +71,9 @@ public class UserService {
         map.put("gender", register.getGender());
         map.put("company", register.getCompany());
         map.put("role", register.getRole());
-        userMapper.insert(map);
+        userMapper.insertUser(map);
         Integer userSeq = userMapper.getSeq(map);
         map.put("userSeq", userSeq);
-        if(register.isBlogLink()){
-            map.put("link", register.getBlogLink());
-            map.put("type", 1);
-            userMapper.insertPlatform(map);
-        }
-        if(register.isInstagramLink()){
-            map.put("link", register.getInstagramLink());
-            map.put("type", 2);
-            userMapper.insertPlatform(map);
-        }
-        if(register.isYoutubeLink()){
-            map.put("link", register.getYoutubeLink());
-            map.put("type", 3);
-            userMapper.insertPlatform(map);
-        }
-        if(register.isTiktokLink()){
-            map.put("link", register.getTiktokLink());
-            map.put("type", 4);
-            userMapper.insertPlatform(map);
-        }
-        if(register.isOtherLink()){
-            map.put("link", register.getOtherLink());
-            map.put("type", 5);
-            userMapper.insertPlatform(map);
-        }
     }
 
 
@@ -264,36 +242,193 @@ public class UserService {
         return userMapper.getDetail(map);
     }
 
-    public void setUpdate(AdminUserUpdate update) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
-        userMapper.update(map);
-    }
-
-    public void setInsert(AdminUserInsert insert) {
+    public void setInsert(InfluencerInsert insert) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
-        userMapper.insert(map);
+        userMapper.insertUser(map);
     }
 
     public void setDelete(Delete delete) {
         for(Integer seq : delete.getSeqs()){
             HashMap<String, Object> map = new HashMap<>();
             map.put("seq", seq);
-            userMapper.delete(map);
+            userMapper.deleteUser(map);
         }
     }
 
-    public UserProfile getProfile(Integer userSeq) {
+    public Object getProfile(Integer userSeq, String id) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("userSeq", userSeq);
-        return userMapper.selectProfile(map);
+        map.put("id", id);
+        UserProfile user = userMapper.selectProfile(map);
+        if(user.getRole()){
+
+        }
+
     }
 
     public void setProfile(UserUpdate update, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
         map.put("seq", userSeq);
-        userMapper.updateProfile(map);
+        userMapper.updateUser(map);
+    }
+
+    public ArrayList<Influencer> getInfluencer(Search search) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
+        map.put("role", "ROLE_INFLUENCER");
+        ArrayList<User> users = userMapper.getList(map);
+        ArrayList<Influencer> influencers = new ArrayList<>();
+        for(User user : users){
+            map.put("userSeq", user.getSeq());
+            Influencer influencer = objectMapper.convertValue(user, Influencer.class);
+
+            InfluencerDetail detail = userMapper.getInfluencerDetail(map);
+            if(detail!=null){
+                BeanUtils.copyProperties(influencer, detail);
+            }
+            influencers.add(influencer);
+        }
+        return influencers;
+    }
+
+    public Integer getInfluencerCount(Search search) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
+        map.put("role", "ROLE_INFLUENCER");
+        return userMapper.getListCount(map);
+    }
+
+    public ArrayList<Enterpriser> getEnterpriser(Search search) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
+        map.put("role", "ROLE_ENTERPRISER");
+        ArrayList<User> users = userMapper.getList(map);
+        ArrayList<Enterpriser> enterprisers = new ArrayList<>();
+        try {
+            for (User user : users) {
+                map.put("userSeq", user.getSeq());
+                Enterpriser enterpriser = objectMapper.convertValue(user, Enterpriser.class);
+                EnterpriserDetail detail = userMapper.getEnterpriserDetail(map);
+                if (detail != null) {
+                    enterpriser.setCompany(detail.getCompany());
+                    enterpriser.setType(detail.getType());
+                }
+                enterprisers.add(enterpriser);
+            }
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return enterprisers;
+    }
+
+    public Integer getEnterpriserCount(Search search) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
+        map.put("role", "ROLE_ENTERPRISER");
+        return userMapper.getListCount(map);
+    }
+
+
+
+    public InfluencerDetail getInfluencerDetail(Integer seq) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("userSeq", seq);
+        InfluencerDetail influencerDetail = null;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            influencerDetail = objectMapper.convertValue(userMapper.getUserDetail(map), InfluencerDetail.class);
+            InfluencerDetail detail = userMapper.getInfluencerDetail(map);
+            if (detail != null) {
+                BeanUtils.copyProperties(influencerDetail, detail);
+            }
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return influencerDetail;
+    }
+
+    public EnterpriserDetail getEnterpriserDetail(Integer seq) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("userSeq", seq);
+        ObjectMapper objectMapper = new ObjectMapper();
+        EnterpriserDetail enterpriserDetail = null;
+        try {
+            enterpriserDetail = objectMapper.convertValue(userMapper.getUserDetail(map), EnterpriserDetail.class);
+            EnterpriserDetail detail = userMapper.getEnterpriserDetail(map);
+            if (detail != null) {
+                BeanUtils.copyProperties(enterpriserDetail, detail);
+            }
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return enterpriserDetail;
+
+    }
+
+    public void influencerUpdate(InfluencerUpdate update) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
+        if(update.getProfile()!=null){
+            String fileName = FileUtils.setNewName(update.getProfile());
+            FileUtils.saveFile(update.getProfile(), fileName);
+            map.put("profile", fileName);
+        }
+        userMapper.updateUser(map);
+        userMapper.updateInfluencer(map);
+    }
+
+    public void enterpriserUpdate(EnterpriserUpdate update) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
+        if(update.getProfile()!=null){
+            String fileName = FileUtils.setNewName(update.getProfile());
+            FileUtils.saveFile(update.getProfile(), fileName);
+            map.put("profile", fileName);
+        }
+        if(update.getAttachment()!=null){
+            String fileName = FileUtils.setNewName(update.getProfile());
+            FileUtils.saveFile(update.getProfile(), fileName);
+            map.put("attachment", fileName);
+        }
+        userMapper.updateUser(map);
+        userMapper.updateEnterpriser(map);
+
+    }
+
+    public void influencerInsert(InfluencerInsert insert) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
+        String id = String.valueOf(UUID.randomUUID());
+        map.put("id", id);
+        if(insert.getProfile()!=null){
+            String fileName = FileUtils.setNewName(insert.getProfile());
+            FileUtils.saveFile(insert.getProfile(), fileName);
+            map.put("profile", fileName);
+        }
+        userMapper.insertUser(map);
+        map.put("userSeq", userMapper.getUserSeq(map));
+        userMapper.insertInfluencer(map);
+    }
+
+    public void insertEnterpriser(EnterpriserInsert insert) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
+        String id = String.valueOf(UUID.randomUUID());
+        map.put("id", id);
+        if(insert.getProfile()!=null){
+            String fileName = FileUtils.setNewName(insert.getProfile());
+            FileUtils.saveFile(insert.getProfile(), fileName);
+            map.put("profile", fileName);
+        }
+        if(insert.getAttachment()!=null){
+            String fileName = FileUtils.setNewName(insert.getProfile());
+            FileUtils.saveFile(insert.getProfile(), fileName);
+            map.put("attachment", fileName);
+        }
+        userMapper.insertUser(map);
+        map.put("userSeq", userMapper.getUserSeq(map));
+        userMapper.insertEnterpriser(map);
     }
 }

@@ -7,16 +7,18 @@ import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.post.PostInsert;
 import kr.co.dain_review.be.model.post.PostUpdate;
-import kr.co.dain_review.be.model.product.*;
+import kr.co.dain_review.be.model.campaign.*;
 import kr.co.dain_review.be.service.AlarmService;
 import kr.co.dain_review.be.service.PostService;
-import kr.co.dain_review.be.service.ProductService;
+import kr.co.dain_review.be.service.CampaignService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 
 @Api(tags = "사업자")
@@ -25,39 +27,40 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class EnterpriserController {
 
-    private final ProductService productService;
+    private final CampaignService campaignService;
     private final TokenProvider tokenProvider;
     private final PostService postService;
     private final AlarmService alarmService;
 
     @ApiOperation(value = "내 체험단 검색", tags = "사업자 - 체험단")
-    @GetMapping("/my-product")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, ProductSearch search){
+    @GetMapping("/my-campaign")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, CampaignSearch search){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
-        json.put("list", productService.getList(search, userSeq));
+        json.put("list", campaignService.getList(search, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험단 모집", tags = "사업자 - 체험단")
-    @PostMapping("/product")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody ProductInsert insert){
+    @PostMapping("/campaign")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody CampaignInsert insert){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        productService.setInsert(insert, userSeq);
+        String id = String.valueOf(UUID.randomUUID());
+        campaignService.setInsert(id, insert, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험단 진행 상세", tags = "사업자 - 체험단")
-    @GetMapping("/product/{seq}")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+    @GetMapping("/campaign/{seq}")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        return new ResponseEntity<>(productService.getDetail(seq, userSeq), HttpStatus.OK);
+        return new ResponseEntity<>(campaignService.getDetail(seq, userSeq), HttpStatus.OK);
     }
 
     @ApiOperation(value = "신청한 체험단 목록", tags = "사업자 - 체험단")
@@ -66,11 +69,11 @@ public class EnterpriserController {
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        if(!productService.myProductCheck(userSeq, seq)){
+        if(!campaignService.myCampaignCheck(userSeq, seq)){
             json.put("message", "확인 권한이 없습니다");
             return new ResponseEntity<>(json.toString(), HttpStatus.OK);
         }
-        json.put("list", productService.applicationInfluencer(seq));
+        json.put("list", campaignService.applicationInfluencer(seq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -80,21 +83,21 @@ public class EnterpriserController {
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        if(!productService.myProductCheck(userSeq, seq)){
+        if(!campaignService.myCampaignCheck(userSeq, seq)){
             json.put("message", "확인 권한이 없습니다");
             return new ResponseEntity<>(json.toString(), HttpStatus.OK);
         }
-        json.put("list", productService.selectionInfluencer(seq));
+        json.put("list", campaignService.selectionInfluencer(seq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험단 선정", tags = "사업자 - 체험단")
     @PostMapping("/select")
-    public ResponseEntity<?> product_(@RequestHeader HttpHeaders header, @RequestBody InfluencerSelect select) {
+    public ResponseEntity<?> campaign_(@RequestHeader HttpHeaders header, @RequestBody InfluencerSelect select) {
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        if(productService.myProductCheck(userSeq, select.getProductSeq())) {
-            productService.InfluencerSelect(select);
+        if(campaignService.myCampaignCheck(userSeq, select.getCampaignSeq())) {
+            campaignService.InfluencerSelect(select);
         }
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -102,12 +105,12 @@ public class EnterpriserController {
     }
 
     @ApiOperation(value = "체험 진행하기", tags = "사업자 - 체험단")
-    @PostMapping("/product/{seq}")
-    public ResponseEntity<?> product_(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+    @PostMapping("/campaign/{seq}")
+    public ResponseEntity<?> campaign_(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        productService.setProgress(seq, userSeq);
-        alarmService.productProgress(seq);
+        campaignService.setProgress(seq, userSeq);
+        alarmService.campaignProgress(seq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -118,7 +121,7 @@ public class EnterpriserController {
     public ResponseEntity<?> download(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        productService.setProgress(seq, userSeq);
+        campaignService.setProgress(seq, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -174,6 +177,21 @@ public class EnterpriserController {
         postService.delete(delete, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "결과보고서 (준비중)", tags = "사업자 - 체험단")
+    @GetMapping("/result")
+    public ResponseEntity<?> result(@RequestBody HttpHeaders header, @RequestBody Integer seq){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        JSONObject json = new JSONObject();
+//        json.put("campaign", campaignService.getDetail(seq, userSeq));
+//        json.put("summary", campaignService.getSummary(seq, userSeq));
+//        json.put("performance", campaignService.getPerformance(seq, userSeq));
+//        json.put("keywordView", campaignService.getKeywordView(seq, userSeq));
+//        json.put("review", campaignService.getReview(seq, userSeq));
+//        json.put("Keywords", campaignService.getKeywords(seq, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 }

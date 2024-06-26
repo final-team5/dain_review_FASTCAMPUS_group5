@@ -7,7 +7,6 @@ import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.point.AdminPointUpdate;
 import kr.co.dain_review.be.model.point.PaymentInsert;
 import kr.co.dain_review.be.model.point.Point;
-import kr.co.dain_review.be.model.user.AdminUserInsert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

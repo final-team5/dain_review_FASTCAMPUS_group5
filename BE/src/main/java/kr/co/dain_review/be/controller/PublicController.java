@@ -6,34 +6,46 @@ import io.swagger.annotations.ApiOperation;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.*;
 import kr.co.dain_review.be.model.jwt.TokenProvider;
-import kr.co.dain_review.be.model.product.ProductSearch;
+import kr.co.dain_review.be.model.campaign.CampaignSearch;
 import kr.co.dain_review.be.model.user.User;
+import kr.co.dain_review.be.service.InstagramService;
 import kr.co.dain_review.be.service.PostService;
-import kr.co.dain_review.be.service.ProductService;
+import kr.co.dain_review.be.service.CampaignService;
 import kr.co.dain_review.be.service.UserService;
-import kr.co.dain_review.be.util.kakao;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
-import java.util.UUID;
 
 @Api(tags = "공용")
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @RestController
 public class PublicController {
-    private final ProductService productService;
+    private final CampaignService campaignService;
     private final UserService userService;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final PostService postService;
+
+    private final InstagramService instagramService;
+
+    @ApiOperation(value = "프로필 보기", tags = "사용자 - 프로필")
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @PathVariable String id){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        return new ResponseEntity<>(userService.getProfile(userSeq, id), HttpStatus.OK);
+    }
+
 
     @ApiOperation(value = "로그인", tags = "공개 - 회원")
     @PostMapping("/login")
@@ -45,7 +57,7 @@ public class PublicController {
                 jo.put("message", "사용자를 찾을 수 없습니다");
                 return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
             }
-            if (!passwordEncoder.matches(login.getPw(),  user.getPw())) {
+            if (!passwordEncoder.matches(login.getPw(), user.getPw())) {
                 jo.put("message", "비밀번호가 일치하지 않습니다");
                 return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
             }
@@ -311,7 +323,6 @@ public class PublicController {
         JSONObject jo = new JSONObject();
         jo.put("token", new_token);
         jo.put("name", user.getName());
-        jo.put("type", user.getType());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String strNowDate = simpleDateFormat.format(tokenProvider.getExpireDate(new_token));
         jo.put("expireDate", strNowDate);
@@ -321,19 +332,19 @@ public class PublicController {
 
     //체험단
     @ApiOperation(value = "체험단 리스트", tags = "공개 - 체험단")
-    @GetMapping("/product")
-    public ResponseEntity<?> product(ProductSearch search){
+    @GetMapping("/campaign")
+    public ResponseEntity<?> campaign(CampaignSearch search){
         JSONObject json = new JSONObject();
-        json.put("list", productService.getList(search));
-        json.put("totalCount", productService.getListCount(search));
+        json.put("list", campaignService.getList(search));
+        json.put("totalCount", campaignService.getListCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     //체험단 상세
     @ApiOperation(value = "체험단 상세", tags = "공개 - 체험단")
-    @GetMapping("/product/{seq}")
-    public ResponseEntity<?> product(@PathVariable Integer seq){
-        return new ResponseEntity<>(productService.getDetail(seq), HttpStatus.OK);
+    @GetMapping("/campaign/{seq}")
+    public ResponseEntity<?> campaign(@PathVariable Integer seq){
+        return new ResponseEntity<>(campaignService.getDetail(seq), HttpStatus.OK);
     }
 
 
@@ -354,4 +365,18 @@ public class PublicController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
+
+    @GetMapping("/getAccessToken")
+    public String getAccessToken(@RequestParam String code) {
+        String shortLivedToken = instagramService.getAccessToken(code);
+        String longLivedAccessToken = instagramService.getLongLivedAccessToken(shortLivedToken);
+        return longLivedAccessToken;
+    }
+
+    @GetMapping("/reels/comments/count")
+    public Mono<ResponseEntity<Integer>> getReelsCommentsCount(@RequestParam String reelsId, @RequestParam String accessToken) {
+        return instagramService.getReelsCommentsCount(reelsId, accessToken)
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(0)));
+    }
 }

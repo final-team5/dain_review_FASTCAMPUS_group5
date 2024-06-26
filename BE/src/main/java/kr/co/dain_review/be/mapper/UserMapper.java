@@ -1,8 +1,6 @@
 package kr.co.dain_review.be.mapper;
 
-import kr.co.dain_review.be.model.user.User;
-import kr.co.dain_review.be.model.user.UserPlatform;
-import kr.co.dain_review.be.model.user.UserProfile;
+import kr.co.dain_review.be.model.user.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -62,17 +60,27 @@ public interface UserMapper {
 
     User getDetail(HashMap<String, Object> map);
 
-    void update(HashMap<String, Object> map);
+    void insertUser(HashMap<String, Object> map);
 
-    void insert(HashMap<String, Object> map);
-
-    void delete(HashMap<String, Object> map);
+    void deleteUser(HashMap<String, Object> map);
 
     UserProfile selectProfile(HashMap<String, Object> map);
 
-    void updateProfile(HashMap<String, Object> map);
+    void updateUser(HashMap<String, Object> map);
 
-    void insertPlatform(HashMap<String, Object> map);
+    EnterpriserDetail getEnterpriserDetail(HashMap<String, Object> map);
 
-    UserPlatform selectPlatformInfo(HashMap<String, Object> map);
+    InfluencerDetail getInfluencerDetail(HashMap<String, Object> map);
+
+    User getUserDetail(HashMap<String, Object> map);
+
+    void updateInfluencer(HashMap<String, Object> map);
+
+    void updateEnterpriser(HashMap<String, Object> map);
+
+    void insertInfluencer(HashMap<String, Object> map);
+
+    void insertEnterpriser(HashMap<String, Object> map);
+
+    Integer getUserSeq(HashMap<String, Object> map);
 }

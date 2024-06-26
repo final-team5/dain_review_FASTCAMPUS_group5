@@ -1,8 +1,10 @@
 package kr.co.dain_review.be.config;
 
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -12,6 +14,11 @@ public class WebMVCConfig implements WebMvcConfigurer {
     public static String filePath;
     public static String ffmpegPath;
     public static String filePath2;
+
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder().build();
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -36,28 +43,7 @@ public class WebMVCConfig implements WebMvcConfigurer {
         }
         else {
             filePath = "";
-//            filePath2 = "/mnt/extra02/home/mailer/BE/";
+            filePath2 = "/mnt/extra02/home/mailer/BE/";
         }
-
-//        CacheControl cacheControl = CacheControl.noStore();
-//        registry.addResourceHandler("/notice/**")
-//                .addResourceLocations("file:" + filePath2+"notice/")
-//                .setCacheControl(cacheControl);
-//
-//        registry.addResourceHandler("/inquiry/**")
-//                .addResourceLocations("file:" + filePath2+"inquiry/")
-//                .setCacheControl(cacheControl);
-//
-//        registry.addResourceHandler("/business/**")
-//                .addResourceLocations("file:" + filePath2+"business/")
-//                .setCacheControl(cacheControl);
-//
-//        registry.addResourceHandler("/banner/**")
-//                .addResourceLocations("file:" + filePath2+"banner/")
-//                .setCacheControl(cacheControl);
-//
-//        registry.addResourceHandler("/image/**")
-//                .addResourceLocations("file:" + filePath2+"image/")
-//                .setCacheControl(cacheControl);
     }
 }

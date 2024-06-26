@@ -48,9 +48,8 @@ public class TokenProvider implements InitializingBean {
         HashMap<String, Object> map = new HashMap<>();
         map.put("seq", user.getSeq());
         map.put("name", user.getName());
-        map.put("type", user.getType());
         map.put("phone", user.getPhone());
-        map.put("role", user.getRole());
+//        map.put("role", user.getRole());
 
         return Jwts.builder()
                 .setSubject("subject")

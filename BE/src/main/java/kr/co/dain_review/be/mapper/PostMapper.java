@@ -31,9 +31,9 @@ public interface PostMapper {
 
     void countVisitor(HashMap<String, Object> map);
 
-    void insertProduct(HashMap<String, Object> map);
+    void insertCampaign(HashMap<String, Object> map);
 
-    void updateProduct(HashMap<String, Object> map);
+    void updateCampaign(HashMap<String, Object> map);
 
-    void deleteProduct(HashMap<String, Object> map);
+    void deleteCampaign(HashMap<String, Object> map);
 }

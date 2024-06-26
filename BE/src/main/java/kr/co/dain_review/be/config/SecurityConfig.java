@@ -48,6 +48,10 @@ public class SecurityConfig {
             "/inf/**", "/user/**"
     };
 
+    private static final String[] LIMIT_URL_AGENCY = {
+            "/inf/**", "/user/**"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
@@ -64,14 +68,15 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                .antMatchers(LIMIT_URL_ADMIN).hasAuthority("ROLE_ADMIN")
-                .antMatchers(LIMIT_URL_ENTERPRISER).hasAuthority("ROLE_ENTERPRISER")
-                .antMatchers(LIMIT_URL_INFLUENCER).hasAuthority("ROLE_INFLUENCER")
+//                .antMatchers(LIMIT_URL_ADMIN).hasAuthority("ROLE_ADMIN")
+//                .antMatchers(LIMIT_URL_ENTERPRISER).hasAuthority("ROLE_ENTERPRISER")
+//                .antMatchers(LIMIT_URL_INFLUENCER).hasAuthority("ROLE_INFLUENCER")
+//                .antMatchers(LIMIT_URL_AGENCY).hasAuthority("ROLE_AGENCY")
                 .anyRequest().permitAll()
                 .and()
                 .addFilter(corsConfig.corsFilter())
                 .addFilterBefore(new JwtFilter(jwtService, tokenProvider, jwtDecoder()), UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+    return http.build();
     }
 
     @Bean

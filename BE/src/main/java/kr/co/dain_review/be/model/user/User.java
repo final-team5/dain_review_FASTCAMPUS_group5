@@ -14,18 +14,15 @@ public class User {
     private Integer seq;
     private String id;
     private String pw;
-    private Integer type;
+    private String name;
+    private String phone;
+    private Date createDate;
+    private String signUpSource;
+    private Integer postalCode;
     private String address;
     private String addressDetail;
-    private String phone;
     private Integer point;
-    private String name;
+    private Integer status;
     private Integer cancel;
-    private Integer gender;
-    private Date birthdate;
-    private Integer rank;
-    private Date createDate;
-    private String role;
-    private ArrayList<UserPlatform> userPlatforms;
-    private ArrayList<UserPreference> userPreferences;
+    private Integer penalty;
 }
