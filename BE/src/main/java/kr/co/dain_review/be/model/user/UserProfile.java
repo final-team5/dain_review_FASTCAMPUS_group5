@@ -23,21 +23,9 @@ public class UserProfile {
 //    진행중 체험단
 //    진행 완료 체험단
     private Integer seq;
-    private String profileImage;
-    private String nickname;
-    private Double rating;
-    private Integer rankSeq;
+    private String profile;
     private Integer cancel;
-
-    private Boolean blog;
-    private Boolean instagram;
-    private Boolean youtube;
-    private Boolean tiktok;
-
-    private Integer blogVisitors;
-    private Integer instagramFollower;
-    private Integer youtubeSubscriberCount;
-    private Integer youtubeVideoCount;
-    private Integer tiktokFollower;
+    private Integer penalty;
+    private Integer type;
 
 }

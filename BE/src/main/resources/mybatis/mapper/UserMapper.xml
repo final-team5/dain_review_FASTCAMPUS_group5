@@ -313,11 +313,49 @@
                point,
                status,
                cancel,
-               penalty
+               penalty,
+               type
         FROM users WHERE seq = #{userSeq}
     </select>
 
     <select id="getUserSeq" resultType="java.lang.Integer">
         SELECT seq FROM users WHERE id = #{id}
+    </select>
+    <select id="getUserProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
+        SELECT seq,
+               profile as profile,
+               cancel,
+               penalty,
+               type
+        FROM users WHERE id = #{id}
+    </select>
+    <select id="getInfluencerProfile" resultType="kr.co.dain_review.be.model.user.InfluencerProfile">
+        SELECT ui.nickname,
+               (SELECT COUNT(seq) FROM campaign_applicants c WHERE c.user_seq = #{userSeq}) AS appliedCampaignsCount,
+               (SELECT COUNT(seq) FROM campaign_applicants c WHERE c.user_seq = #{userSeq} AND c.application = 1) AS selectedCampaignsCount,
+               (SELECT COUNT(c.seq)
+                FROM campaigns c
+                LEFT JOIN campaign_applicants ca ON c.seq = ca.campaign_seq
+                WHERE ca.user_seq = #{userSeq}
+                AND ca.application = 1
+                AND NOW() BETWEEN c.experience_start_date AND c.experience_end_date) AS activeCampaignsCount,
+               ui.blog_link as  blogLink,
+               ui.blog_rank as blogRank,
+               ui.instagram_link as instagramLink,
+               ui.instagram_rank as instagramRank,
+               ui.youtube_link as youtubeLink,
+               ui.tiktok_rank as youtubeRank,
+               ui.tiktok_rank as  otherLink,
+               ui.tiktok_rank as tiktokRank,
+               ui.other_rank as  otherRank
+        FROM user_influencer ui
+        WHERE ui.user_seq = #{userSeq}
+    </select>
+
+    <select id="getEnterpriserProfile" resultType="kr.co.dain_review.be.model.user.EnterpriserProfile">
+        SELECT ue.company,
+        (SELECT COUNT(c.seq) FROM campaigns c WHERE c.user_seq = #{userSeq}) as activeCampaignsCount
+        FROM user_enterpriser ue
+        WHERE ue.user_seq = #{userSeq}
     </select>
 </mapper>

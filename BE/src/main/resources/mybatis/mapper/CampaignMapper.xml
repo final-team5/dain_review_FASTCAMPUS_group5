@@ -31,13 +31,20 @@
                                experience_end_date,
                                experience_start_time,
                                experience_end_time,
-                               monday,
-                               tuesday,
-                               wednesday,
-                               thursday,
-                               friday,
-                               saturday,
-                               sunday,
+                               is_monday_available,
+                               is_tuesday_available,
+                               is_wednesday_available,
+                               is_thursday_available,
+                               is_friday_available,
+                               is_saturday_available,
+                               is_sunday_available,
+                               is_monday_unavailable,
+                               is_tuesday_unavailable,
+                               is_wednesday_unavailable,
+                               is_thursday_unavailable,
+                               is_friday_unavailable,
+                               is_saturday_unavailable,
+                               is_sunday_unavailable,
                                hash_tag,
                                map,
                                link,
@@ -73,13 +80,20 @@
                 #{experienceEndDate},
                 #{experienceStartTime},
                 #{experienceEndTime},
-                #{monday},
-                #{tuesday},
-                #{wednesday},
-                #{thursday},
-                #{friday},
-                #{saturday},
-                #{sunday},
+                #{isMondayAvailable},
+                #{isTuesdayAvailable},
+                #{isWednesdayAvailable},
+                #{isThursdayAvailable},
+                #{isFridayAvailable},
+                #{isSaturdayAvailable},
+                #{isSundayAvailable},
+                #{isMondayUnavailable},
+                #{isTuesdayUnavailable},
+                #{isWednesdayUnavailable},
+                #{isThursdayUnavailable},
+                #{isFridayUnavailable},
+                #{isSaturdayUnavailable},
+                #{isSundayUnavailable},
                 #{hashTag},
                 #{map},
                 #{link},
@@ -265,41 +279,10 @@
 
     <select id="selectDetail" resultType="kr.co.dain_review.be.model.campaign.Campaign">
         SELECT
-            p.seq,
-            p.user_seq as userSeq,
-            p.title,
-            p.contents,
-            p.service,
-            p.keyword_1 as keyword1,
-            p.keyword_2 as keyword2,
-            p.keyword_3 as keyword3,
-            p.campaign_link as campaignLink,
-            p.mission,
-            p.recruiter,
-            p.image,
-            p.category as categorySeq,
-            p.platform as platformSeq,
-            p.type as typeSeq,
-            p.status,
-            p.application_start_date as applicationStartDate,
-            p.application_end_date as applicationEndDate,
-            p.experience_start_date as experienceStartDate,
-            p.experience_end_date as experienceEndDate,
-            p.experience_start_time as experienceStartTime,
-            p.experience_end_time as experienceDndTime,
-            p.monday,
-            p.tuesday,
-            p.wednesday,
-            p.thursday,
-            p.friday,
-            p.saturday,
-            p.sunday,
-            p.city,
-            p.district,
-            MAX(pa.seq) as applicant,
-            p.tag
-        FROM campaigns p
-        LEFT JOIN campaign_applicants pa on p.seq = pa.campaign_seq
+        <include refid="campaignColumns" />,
+        MAX(pa.seq) as applicant
+        FROM campaigns c
+        LEFT JOIN campaign_applicants pa on c.seq = pa.campaign_seq
         <where>
             p.seq = #{seq}
         </where>
@@ -435,6 +418,71 @@
     </select>
     <select id="getKeywordView" resultType="java.lang.Boolean">
         SELECT * FROM campaigns
+    </select>
+
+    <sql id="campaignColumns">
+        c.seq,
+        c.user_seq as userSeq,
+        c.category,
+        c.platform,
+        c.type,
+        c.title,
+        c.contents,
+        c.service,
+        c.keyword_1 as keyword1,
+        c.keyword_2 as keyword2,
+        c.keyword_3 as keyword3,
+        c.campaign_link as campaignLink,
+        c.mission,
+        c.recruiter,
+        c.image,
+        c.city,
+        c.district,
+        c.point,
+        c.tag,
+        c.`status`,
+        c.application_start_date as applicationStartDate,
+        c.application_end_date as applicationEndDate,
+        c.experience_start_date as experienceStartDate,
+        c.experience_end_date as experienceEndDate,
+        c.experience_start_time as experienceStartTime,
+        c.experience_end_time as experienceDndTime,
+        c.is_monday_available as isMondayAvailable,
+        c.is_tuesday_available as isTuesdayAvailable,
+        c.is_wednesday_available as isWednesdayAvailable,
+        c.is_thursday_available as isThursdayAvailable,
+        c.is_friday_available as isFridayAvailable,
+        c.is_saturday_available as isSaturdayAvailable,
+        c.is_sunday_available as isSundayAvailable,
+        c.is_monday_unavailable as isMondayUnavailable,
+        c.is_tuesday_unavailable as isTuesdayUnavailable,
+        c.is_wednesday_unavailable as isWednesdayUnavailable,
+        c.is_thursday_unavailable as isThursdayUnavailable,
+        c.is_friday_unavailable as isFridayUnavailable,
+        c.is_saturday_unavailable as isSaturdayUnavailable,
+        c.is_sunday_unavailable as isSundayUnavailable,
+        c.hash_tag as hashTag,
+        c.map,
+        c.link,
+        c.characters,
+        c.video_length as videoLength,
+        c.picture_count as pictureCount,
+        c.account_tag as accountTag,
+        c.sound,
+        c.advertising_display as advertisingDisplay
+    </sql>
+
+    <select id="hostedCampaigns" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT <include refid="campaignColumns" />
+        FROM campaigns c
+        WHERE c.user_seq = #{userSeq}
+    </select>
+
+    <select id="participatingCampaigns" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT <include refid="campaignColumns" />
+        FROM campaigns c
+        LEFT JOIN campaign_applicants ca on c.seq = ca.campaign_seq
+        WHERE ca.user_seq = #{userSeq} AND NOW() BETWEEN c.application_start_date AND c.experience_end_date
     </select>
 
 

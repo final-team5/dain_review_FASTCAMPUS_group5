@@ -3,27 +3,22 @@ package kr.co.dain_review.be.model.user;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.Date;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class User {
-    private Integer seq;
-    private String id;
+public class EnterpriserUpdateUser {
+    private String email;
     private String pw;
     private String name;
     private String phone;
-    private Date createDate;
-    private String signUpSource;
+    private String company;
     private Integer postalCode;
     private String address;
     private String addressDetail;
-    private Integer point;
-    private Integer status;
-    private Integer cancel;
-    private Integer penalty;
-    private Integer type;
+    private MultipartFile profile;
+    private String businessNumber;
+    private String representative;
+    private MultipartFile attachment;
 }

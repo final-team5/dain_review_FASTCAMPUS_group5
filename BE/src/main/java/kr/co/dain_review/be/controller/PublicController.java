@@ -41,8 +41,11 @@ public class PublicController {
     @ApiOperation(value = "프로필 보기", tags = "사용자 - 프로필")
     @GetMapping("/profile/{id}")
     public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @PathVariable String id){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         return new ResponseEntity<>(userService.getProfile(userSeq, id), HttpStatus.OK);
     }
 

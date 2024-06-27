@@ -8,9 +8,12 @@ import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.post.PostInsert;
 import kr.co.dain_review.be.model.post.PostUpdate;
 import kr.co.dain_review.be.model.campaign.*;
+import kr.co.dain_review.be.model.user.EnterpriserUpdateUser;
+import kr.co.dain_review.be.model.user.InfluencerUpdateUser;
 import kr.co.dain_review.be.service.AlarmService;
 import kr.co.dain_review.be.service.PostService;
 import kr.co.dain_review.be.service.CampaignService;
+import kr.co.dain_review.be.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +34,19 @@ public class EnterpriserController {
     private final TokenProvider tokenProvider;
     private final PostService postService;
     private final AlarmService alarmService;
+    private final UserService userService;
+
+    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
+    @PutMapping("/profile")
+    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody EnterpriserUpdateUser update){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        userService.enterpriserProfileUpdate(update, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
 
     @ApiOperation(value = "내 체험단 검색", tags = "사업자 - 체험단")
     @GetMapping("/my-campaign")

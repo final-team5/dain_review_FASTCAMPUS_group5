@@ -2,14 +2,20 @@ package kr.co.dain_review.be.model.campaign;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.api.client.util.DateTime;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Campaign {
     private Integer seq;
-    private Integer userSeq;
+    private String userSeq;
+    private String category;
+    private String platform;
+    private String type;
     private String title;
     private String contents;
     private String service;
@@ -20,29 +26,41 @@ public class Campaign {
     private String mission;
     private Integer recruiter;
     private String image;
-    private Integer categorySeq;
-    private Integer platformSeq;
-    private Integer typeSeq;
-    private Integer status;
-
-    private String applicationStartDate;
-    private String applicationEndDate;
-    private String selection;
-    private String experienceStartDate;
-    private String experienceEndDate;
-    private String deadline;
-    private String experienceStartTime;
-    private String experienceDndTime;
-
-    private Boolean monday;
-    private Boolean tuesday;
-    private Boolean wednesday;
-    private Boolean thursday;
-    private Boolean friday;
-    private Boolean saturday;
-    private Boolean sunday;
-    private Integer applicant;
     private String city;
     private String district;
+    private Integer point;
     private String tag;
+    private Integer status;
+    private Date applicationStartDate;
+    private Date applicationEndDate;
+    private Date experienceStartDate;
+    private Date experienceEndDate;
+    private DateTime experienceStartTime;
+    private DateTime experienceDndTime;
+
+    private Boolean mondayAvailable;
+    private Boolean tuesdayAvailable;
+    private Boolean wednesdayAvailable;
+    private Boolean thursdayAvailable;
+    private Boolean fridayAvailable;
+    private Boolean saturdayAvailable;
+    private Boolean sundayAvailable;
+
+    private Boolean mondayUnavailable;
+    private Boolean tuesdayUnavailable;
+    private Boolean wednesdayUnavailable;
+    private Boolean thursdayUnavailable;
+    private Boolean fridayUnavailable;
+    private Boolean saturdayUnavailable;
+    private Boolean sundayUnavailable;
+
+    private Boolean hashTag;
+    private Boolean map;
+    private Boolean link;
+    private Integer characters;
+    private Integer videoLength;
+    private Integer pictureCount;
+    private Boolean accountTag;
+    private Boolean sound;
+    private Boolean advertisingDisplay;
 }

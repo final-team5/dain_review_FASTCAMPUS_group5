@@ -14,9 +14,9 @@ public class EnterpriserProfile {
     private String id;
     private String profile;
     private String company;
-    private Integer experienceCampaign;
+    private Integer activeCampaignsCount;
     private Integer penalty;
-
+    private Boolean editable;
     private ArrayList<Campaign> campaigns;
 
 }

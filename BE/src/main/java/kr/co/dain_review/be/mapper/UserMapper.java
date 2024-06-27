@@ -1,5 +1,6 @@
 package kr.co.dain_review.be.mapper;
 
+import kr.co.dain_review.be.model.campaign.Campaign;
 import kr.co.dain_review.be.model.user.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -83,4 +84,11 @@ public interface UserMapper {
     void insertEnterpriser(HashMap<String, Object> map);
 
     Integer getUserSeq(HashMap<String, Object> map);
+
+    UserProfile getUserProfile(HashMap<String, Object> map);
+
+    InfluencerProfile getInfluencerProfile(HashMap<String, Object> map);
+
+    EnterpriserProfile getEnterpriserProfile(HashMap<String, Object> map);
+
 }

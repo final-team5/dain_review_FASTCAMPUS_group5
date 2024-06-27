@@ -1,7 +1,9 @@
 package kr.co.dain_review.be.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.co.dain_review.be.mapper.CampaignMapper;
 import kr.co.dain_review.be.mapper.UserMapper;
+import kr.co.dain_review.be.model.campaign.Campaign;
 import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.*;
@@ -18,12 +20,16 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class UserService {
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private CampaignMapper campaignMapper;
 
     public User getUser(String email, Integer type) {
         HashMap<String, Object> map = new HashMap<>();
@@ -258,20 +264,59 @@ public class UserService {
 
     public Object getProfile(Integer userSeq, String id) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("userSeq", userSeq);
         map.put("id", id);
-        UserProfile user = userMapper.selectProfile(map);
-        if(user.getRole()){
-
+        try {
+            UserProfile user = userMapper.getUserProfile(map);
+            map.put("userSeq", user.getSeq());
+            if (user.getType() == 2) {
+                InfluencerProfile profile = userMapper.getInfluencerProfile(map);
+                profile.setCampaigns(campaignMapper.participatingCampaigns(map));
+                profile.setEditable(Objects.equals(user.getSeq(), userSeq));
+                BeanUtils.copyProperties(profile, user);
+                return profile;
+            } else {
+                EnterpriserProfile profile = userMapper.getEnterpriserProfile(map);
+                profile.setCampaigns(campaignMapper.hostedCampaigns(map));
+                profile.setEditable(Objects.equals(user.getSeq(), userSeq));
+                BeanUtils.copyProperties(profile, user);
+                return profile;
+            }
+        } catch (Exception e){
+            System.out.println(e);
         }
+        return null;
 
     }
 
-    public void setProfile(UserUpdate update, Integer userSeq) {
+    public void influencerProfileUpdate(InfluencerUpdateUser update, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
         map.put("seq", userSeq);
+        if(update.getProfile()!=null){
+            String fileName = FileUtils.setNewName(update.getProfile());
+            FileUtils.saveFile(update.getProfile(), fileName);
+            map.put("profile", fileName);
+        }
         userMapper.updateUser(map);
+        userMapper.updateInfluencer(map);
+    }
+
+    public void enterpriserProfileUpdate(EnterpriserUpdateUser update, Integer userSeq) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
+        map.put("seq", userSeq);
+        if(update.getProfile()!=null){
+            String fileName = FileUtils.setNewName(update.getProfile());
+            FileUtils.saveFile(update.getProfile(), fileName);
+            map.put("profile", fileName);
+        }
+        if(update.getAttachment()!=null){
+            String fileName = FileUtils.setNewName(update.getAttachment());
+            FileUtils.saveFile(update.getAttachment(), fileName);
+            map.put("attachment", fileName);
+        }
+        userMapper.updateUser(map);
+        userMapper.updateEnterpriser(map);
     }
 
     public ArrayList<Influencer> getInfluencer(Search search) {
@@ -431,4 +476,14 @@ public class UserService {
         map.put("userSeq", userMapper.getUserSeq(map));
         userMapper.insertEnterpriser(map);
     }
+
+    public void updateFollower() {
+    }
+
+    public void updateVisitors() {
+    }
+
+    public void updateSubscriber() {
+    }
+
 }

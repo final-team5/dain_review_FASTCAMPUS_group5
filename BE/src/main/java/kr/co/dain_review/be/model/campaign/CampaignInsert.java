@@ -30,13 +30,21 @@ public class CampaignInsert {
     private String experienceStartTime;
     private String experienceEndTime;
 
-    private Boolean monday;
-    private Boolean tuesday;
-    private Boolean wednesday;
-    private Boolean thursday;
-    private Boolean friday;
-    private Boolean saturday;
-    private Boolean sunday;
+    private Boolean mondayAvailable;
+    private Boolean tuesdayAvailable;
+    private Boolean wednesdayAvailable;
+    private Boolean thursdayAvailable;
+    private Boolean fridayAvailable;
+    private Boolean saturdayAvailable;
+    private Boolean sundayAvailable;
+
+    private Boolean mondayUnavailable;
+    private Boolean tuesdayUnavailable;
+    private Boolean wednesdayUnavailable;
+    private Boolean thursdayUnavailable;
+    private Boolean fridayUnavailable;
+    private Boolean saturdayUnavailable;
+    private Boolean sundayUnavailable;
 
     private String city;
     private String district;

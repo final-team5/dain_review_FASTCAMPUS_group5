@@ -10,6 +10,8 @@ import kr.co.dain_review.be.model.post.PostUpdate;
 import kr.co.dain_review.be.model.campaign.InfluencerApplication;
 import kr.co.dain_review.be.model.campaign.CampaignSearch;
 import kr.co.dain_review.be.model.campaign.ReportInsert;
+import kr.co.dain_review.be.model.user.InfluencerUpdate;
+import kr.co.dain_review.be.model.user.InfluencerUpdateUser;
 import kr.co.dain_review.be.service.AlarmService;
 import kr.co.dain_review.be.service.PostService;
 import kr.co.dain_review.be.service.CampaignService;
@@ -34,16 +36,16 @@ public class InfluencerController {
     private final PostService postService;
 
 
-//    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
-//    @PutMapping("/profile")
-//    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody UserUpdate update){
-//        String token = header.getFirst("Authorization");
-//        Integer userSeq = tokenProvider.getSeq(token);
-//        userService.setProfile(update, userSeq);
-//        JSONObject json = new JSONObject();
-//        json.put("message", "SUCCESS");
-//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-//    }
+    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
+    @PutMapping("/profile")
+    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody InfluencerUpdateUser update){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        userService.influencerProfileUpdate(update, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
 
     @ApiOperation(value = "내 체험단 검색", tags = "인플루언서 - 체험단")
     @GetMapping("/application")

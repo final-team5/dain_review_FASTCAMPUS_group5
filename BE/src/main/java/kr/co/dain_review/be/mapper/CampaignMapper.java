@@ -64,4 +64,7 @@ public interface CampaignMapper {
 
     boolean getKeywordView(HashMap<String, Object> map);
 
+    ArrayList<Campaign> hostedCampaigns(HashMap<String, Object> map);
+
+    ArrayList<Campaign> participatingCampaigns(HashMap<String, Object> map);
 }

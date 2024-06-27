@@ -13,12 +13,13 @@ import java.util.ArrayList;
 public class InfluencerProfile {
     private String id;
     private String profile;
-    private String nickname;
-    private Integer applicationCampaign;
-    private Integer experienceCampaign;
     private Integer cancel;
     private Integer penalty;
 
+    private String nickname;
+    private Integer appliedCampaignsCount;
+    private Integer selectedCampaignsCount;
+    private Integer activeCampaignsCount;
     private String blogLink;
     private String blogRank;
     private String instagramLink;
@@ -29,6 +30,8 @@ public class InfluencerProfile {
     private String tiktokRank;
     private String otherLink;
     private String otherRank;
+
+    private Boolean editable;
 
     private ArrayList<Campaign> campaigns;
 
