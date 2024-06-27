@@ -132,6 +132,20 @@ public class kakao {
         }
     }
 
+    //선정 알림
+    public static String Selected(String title){
+        return title+" 체험단에 선정되었습니다.";
+    }
+
+    //체험단 시작 알림
+    public static String StartedCampaign(String title){
+        return title+" 체험단이 시작되었습니다.";
+    }
+
+    //체험단 결과 알림
+    public static String EndedCampaign(String title){
+        return title+" 체험단이 종료되었습니다.";
+    }
 
 
 }

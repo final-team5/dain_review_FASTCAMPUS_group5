@@ -92,26 +92,26 @@ public class PostService {
 
     }
 
-    public void insertProduct(PostInsertProduct insert, Integer userSeq) {
+    public void insertCampaign(PostInsertCampaign insert, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
         map.put("userSeq", userSeq);
-        postMapper.insertProduct(map);
+        postMapper.insertCampaign(map);
     }
 
-    public void updateProduct(PostUpdateProduct update, Integer userSeq) {
+    public void updateCampaign(PostUpdateCampaign update, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
         map.put("userSeq", userSeq);
-        postMapper.updateProduct(map);
+        postMapper.updateCampaign(map);
     }
 
-    public void deleteProduct(Delete delete, Integer userSeq) {
+    public void deleteCampaign(Delete delete, Integer userSeq) {
         for(Integer seq : delete.getSeqs()){
             HashMap<String, Object> map = new HashMap<>();
             map.put("seq", seq);
             map.put("userSeq", userSeq);
-            postMapper.deleteProduct(map);
+            postMapper.deleteCampaign(map);
         }
     }
 }

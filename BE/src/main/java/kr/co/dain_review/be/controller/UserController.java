@@ -7,11 +7,10 @@ import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.ChangePassword;
 import kr.co.dain_review.be.model.post.PostInsert;
-import kr.co.dain_review.be.model.post.PostInsertProduct;
+import kr.co.dain_review.be.model.post.PostInsertCampaign;
 import kr.co.dain_review.be.model.post.PostUpdate;
-import kr.co.dain_review.be.model.post.PostUpdateProduct;
+import kr.co.dain_review.be.model.post.PostUpdateCampaign;
 import kr.co.dain_review.be.model.user.User;
-import kr.co.dain_review.be.model.user.UserUpdate;
 import kr.co.dain_review.be.service.PostService;
 import kr.co.dain_review.be.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -36,26 +35,26 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final PostService postService;
 
-    @ApiOperation(value = "프로필 보기", tags = "사용자 - 프로필")
-    @GetMapping("/profile")
-    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
-        JSONObject json = new JSONObject();
-        json.put("profile", userService.getProfile(userSeq));
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
+//    @ApiOperation(value = "프로필 보기", tags = "사용자 - 프로필")
+//    @GetMapping("/profile")
+//    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header){
+//        String token = header.getFirst("Authorization");
+//        Integer userSeq = tokenProvider.getSeq(token);
+//        JSONObject json = new JSONObject();
+//        json.put("profile", userService.getProfile(userSeq));
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
 
-    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
-    @PutMapping("/profile")
-    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody UserUpdate update){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
-        userService.setProfile(update, userSeq);
-        JSONObject json = new JSONObject();
-        json.put("message", "SUCCESS");
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
+//    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
+//    @PutMapping("/profile")
+//    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody UserUpdate update){
+//        String token = header.getFirst("Authorization");
+//        Integer userSeq = tokenProvider.getSeq(token);
+//        userService.setProfile(update, userSeq);
+//        JSONObject json = new JSONObject();
+//        json.put("message", "SUCCESS");
+//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+//    }
 
     @ApiOperation(value = "회원 탈퇴", tags = "사용자 - 회원")
     @DeleteMapping("/withdrawal")
@@ -172,7 +171,6 @@ public class UserController {
         JSONObject jo = new JSONObject();
         jo.put("token", new_token);
         jo.put("name", user.getName());
-        jo.put("type", user.getType());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String strNowDate = simpleDateFormat.format(tokenProvider.getExpireDate(new_token));
         jo.put("expireDate", strNowDate);
@@ -180,33 +178,33 @@ public class UserController {
     }
 
     @ApiOperation(value = "체험단 글 추가", tags = "사용자 - 체험단")
-    @PostMapping("/product")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody PostInsertProduct insert){
+    @PostMapping("/campaign")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody PostInsertCampaign insert){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        postService.insertProduct(insert, userSeq);
+        postService.insertCampaign(insert, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험단 글 수정", tags = "사용자 - 체험단")
-    @PutMapping("/product")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody PostUpdateProduct update){
+    @PutMapping("/campaign")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody PostUpdateCampaign update){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        postService.updateProduct(update, userSeq);
+        postService.updateCampaign(update, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험단 글 삭제", tags = "사용자 - 체험단")
-    @DeleteMapping("/product")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
+    @DeleteMapping("/campaign")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        postService.deleteProduct(delete, userSeq);
+        postService.deleteCampaign(delete, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);

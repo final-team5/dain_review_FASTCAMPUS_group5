@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dain_review.be.mapper.CampaignMapper">
+    <insert id="insert">
+        INSERT INTO campaigns (id,
+                               user_seq,
+                               category,
+                               platform,
+                               type,
+                               title,
+                               contents,
+                               service,
+                               keyword_1,
+                               keyword_2,
+                               keyword_3,
+                               campaign_link,
+                               mission,
+                               recruiter,
+                               image,
+                               city,
+                               district,
+                               point,
+                               tag,
+                               status,
+                               application_start_date,
+                               application_end_date,
+                               experience_start_date,
+                               experience_end_date,
+                               experience_start_time,
+                               experience_end_time,
+                               is_monday_available,
+                               is_tuesday_available,
+                               is_wednesday_available,
+                               is_thursday_available,
+                               is_friday_available,
+                               is_saturday_available,
+                               is_sunday_available,
+                               is_monday_unavailable,
+                               is_tuesday_unavailable,
+                               is_wednesday_unavailable,
+                               is_thursday_unavailable,
+                               is_friday_unavailable,
+                               is_saturday_unavailable,
+                               is_sunday_unavailable,
+                               hash_tag,
+                               map,
+                               link,
+                               characters,
+                               video_length,
+                               picture_count,
+                               account_tag,
+                               sound,
+                               advertising_display)
+        VALUES (#{id},
+                #{userSeq},
+                #{category},
+                #{platform},
+                #{type},
+                #{title},
+                #{contents},
+                #{service},
+                #{keywordq},
+                #{keyword2},
+                #{keyword3},
+                #{campaignLink},
+                #{mission},
+                #{recruiter},
+                #{image},
+                #{city},
+                #{district},
+                #{point},
+                #{tag},
+                #{status},
+                #{applicationStartDate},
+                #{applicationEndDate},
+                #{experienceStartDate},
+                #{experienceEndDate},
+                #{experienceStartTime},
+                #{experienceEndTime},
+                #{isMondayAvailable},
+                #{isTuesdayAvailable},
+                #{isWednesdayAvailable},
+                #{isThursdayAvailable},
+                #{isFridayAvailable},
+                #{isSaturdayAvailable},
+                #{isSundayAvailable},
+                #{isMondayUnavailable},
+                #{isTuesdayUnavailable},
+                #{isWednesdayUnavailable},
+                #{isThursdayUnavailable},
+                #{isFridayUnavailable},
+                #{isSaturdayUnavailable},
+                #{isSundayUnavailable},
+                #{hashTag},
+                #{map},
+                #{link},
+                #{characters},
+                #{videoLength},
+                #{pictureCount},
+                #{accountTag},
+                #{sound},
+                #{advertisingDisplay})
+    </insert>
+
+    <insert id="application">
+        INSERT INTO campaign_applicants (campaign_seq, user_seq, message) VALUES (#{campaignSeq}, #{userSeq}, #{message})
+    </insert>
+    <insert id="report">
+        INSERT INTO campaign_review (campaign_seq, user_seq, link, attachments)
+        VALUES (#{campaignSeq}, #{userSeq}, #{link}, #{attachments})
+    </insert>
+    <insert id="insertMission">
+        INSERT INTO missions (title, hash_tag, map, link, characters, video_length, picture_count, account_tag, sound, advertising_display)
+        VALUES (#{title}, #{hashTag}, #{map}, #{link}, #{characters}, #{videoLength}, #{pictureCount}, #{accountTag}, #{sound},
+                #{advertisingDisplay})
+    </insert>
+    <update id="progress">
+
+    </update>
+
+    <update id="InfluencerSelect">
+        UPDATE campaign_applicants SET application = 1 - application WHERE user_seq = #{userSeq} AND campaign_seq = #{campaignSeq}
+    </update>
+
+    <update id="update">
+        UPDATE campaigns
+        <set>
+            <if test="userSeq!=null">user_seq = #{userSeq}, </if>
+            <if test="title!=null">title = #{title}, </if>
+            <if test="contents!=null">contents = #{contents}, </if>
+            <if test="service!=null">service = #{service}, </if>
+            <if test="keyword1!=null">keyword1 = #{keyword1}, </if>
+            <if test="keyword2!=null">keyword2 = #{keyword2}, </if>
+            <if test="keyword3!=null">keyword3 = #{keyword3}, </if>
+            <if test="campaignLink!=null">campaign_link = #{campaignLink}, </if>
+            <if test="mission!=null">mission = #{mission}, </if>
+            <if test="recruiter!=null">recruiter = #{recruiter}, </if>
+            <if test="image!=null">image = #{image}, </if>
+            <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
+            <if test="platformSeq!=null">platform_seq = #{platformSeq}, </if>
+            <if test="typeSeq!=null">type_seq = #{typeSeq}, </if>
+            <if test="status!=null">`status` = #{status}, </if>
+            <if test="applicationStartDate!=null">application_start_date = #{applicationStartDate}, </if>
+            <if test="applicationEndDate!=null">application_end_date = #{applicationEndDate}, </if>
+            <if test="experienceStartDate!=null">experience_start_date = #{experienceStartDate}, </if>
+            <if test="experienceEndDate!=null">experience_end_date = #{experienceEndDate}, </if>
+            <if test="experienceStartTime!=null">experience_start_time = #{experienceStartTime}, </if>
+            <if test="experienceEndTime!=null">experience_end_time = #{experienceEndTime}, </if>
+            <if test="monday!=null">monday = #{monday}, </if>
+            <if test="tuesday!=null">tuesday = #{tuesday}, </if>
+            <if test="wednesday!=null">wednesday = #{wednesday}, </if>
+            <if test="thursday!=null">thursday = #{thursday}, </if>
+            <if test="friday!=null">friday = #{friday}, </if>
+            <if test="saturday!=null">saturday = #{saturday}, </if>
+            <if test="sunday!=null">sunday = #{sunday}, </if>
+            <if test="city!=null">city = #{city}, </if>
+            <if test="district!=null">district = #{district}, </if>
+            <if test="point!=null">`point` = #{point}, </if>
+            <if test="location!=null">location = #{location}, </if>
+        </set>
+        WHERE seq = #{campaignSeq}
+    </update>
+    <update id="updateMission">
+        UPDATE missions
+        <set>
+            <if test="title!=null">title = #{title}, </if>
+            <if test="hashTag!=null">hash_tag = #{hashTag}, </if>
+            <if test="map!=null">map = #{map}, </if>
+            <if test="link!=null">link = #{link}, </if>
+            <if test="characters!=null">characters = #{characters}, </if>
+            <if test="videoLength!=null">video_length = #{videoLength}, </if>
+            <if test="pictureCount!=null">picture_count = #{pictureCount}, </if>
+            <if test="accountTag!=null">account_tag = #{accountTag}, </if>
+            <if test="sound!=null">sound = #{sound}, </if>
+            <if test="advertisingDisplay!=null">advertising_display = #{advertisingDisplay}, </if>
+        </set>
+        WHERE seq = #{seq}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM campaigns WHERE seq = #{seq}
+    </delete>
+
+    <delete id="cancellation">
+        DELETE FROM campaign_applicants WHERE user_seq = #{userSeq} AND campaign_seq = #{campaignSeq}
+    </delete>
+    <delete id="deleteMission">
+        DELETE FROM missions WHERE seq = #{seq}
+    </delete>
+
+    <select id="selectList" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT
+            p.seq,
+            p.title,
+            p.recruiter,
+            p.image,
+            p.category
+            p.type,
+            p.status,
+            p.city,
+            p.district,
+            MAX(pa.seq) as applicant,
+            p.tag
+        FROM campaigns p
+        LEFT JOIN campaign_applicants pa on p.seq = pa.campaign_seq
+        <where>
+            <if test="city!=null and district!=null">
+                AND (p.city, p.district) IN
+                <foreach item="location" index="index" collection="locations"
+                         open="(" separator="), (" close=")">
+                    #{location.city}, #{location.district}
+                </foreach>
+            </if>
+            <if test="searchWord!=null"> AND p.title LIKE #{searchWord} </if>
+            <if test="userSeq!=null"> AND p.user_seq = #{userSeq} </if>
+            <if test="applicantSeq!=null"> AND pa.user_seq = #{applicantSeq}</if>
+            <choose>
+                <when test="isPremium">
+                    AND p.tag IS NOT null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+                <when test="orderParam!=null and (orderParam.equals('point') or orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
+                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+            </choose>
+        </where>
+        ORDER BY CASE
+        WHEN tag = '다인리뷰' THEN 1
+        WHEN tag = '프리미엄' THEN 2
+        WHEN tag IS NULL THEN 3
+        ELSE 4
+        END
+        <if test="orderParam != null">
+            <choose>
+                <when test="orderParam.equals('point')">
+                    , p.point DESC
+                </when>
+                <when test="orderParam.equals('latest')">
+                    , p.application_start_date DESC
+                </when>
+                <when test="orderParam.equals('deadline')">
+                    , application_end_date ASC
+                </when>
+                <when test="orderParam.equals('popularity')">
+                    , applicant DESC
+                </when>
+            </choose>
+        </if>
+        GROUP BY p.seq
+        LIMIT #{page}, 10
+
+    </select>
+    <select id="selectListCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(p.seq)
+        FROM campaigns p
+        <where>
+            <if test="city!=null and district!=null">
+                AND (p.city, p.district) IN
+                <foreach item="location" index="index" collection="locations"
+                         open="(" separator="), (" close=")">
+                    #{location.city}, #{location.district}
+                </foreach>
+            </if>
+            <if test="searchWord!=null">AND p.title LIKE #{searchWord}</if>
+            <if test="userSeq!=null">AND p.user_seq = #{userSeq}</if>
+            <choose>
+                <when test="isPremium">
+                    AND p.tag != null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+                <when test="orderParam!=null and (orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
+                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="selectDetail" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT
+        <include refid="campaignColumns" />,
+        MAX(pa.seq) as applicant
+        FROM campaigns c
+        LEFT JOIN campaign_applicants pa on c.seq = pa.campaign_seq
+        <where>
+            p.seq = #{seq}
+        </where>
+    </select>
+
+    <select id="selectFavoriteList" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT
+            p.seq,
+            p.title,
+            p.recruiter,
+            p.image,
+            p.category as categorySeq,
+            p.platform as platformSeq,
+            p.type as typeSeq,
+            p.status,
+            p.city,
+            p.district,
+            MAX(pa.seq) as applicant,
+            p.tag
+        FROM campaigns p
+        LEFT JOIN campaign_preference pp on pp.campaign_seq = p.seq
+        LEFT JOIN campaign_applicants pa on pa.campaign_seq = p.seq
+        WHERE pp.user_seq = #{userSeq}
+        GROUP BY (p.seq)
+    </select>
+
+    <select id="selectFavoriteListCount" resultType="java.lang.Integer">
+        SELECT COUNT(p.seq)
+        FROM campaigns p
+                 LEFT JOIN campaign_preference pp on pp.campaign_seq = p.seq
+                 LEFT JOIN campaign_applicants pa on pa.campaign_seq = p.seq
+        WHERE pp.user_seq = #{userSeq}
+    </select>
+
+    <select id="myCampaignCheck" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM campaigns WHERE user_seq = #{userSeq} AND seq = #{campaignSeq})
+    </select>
+
+    <select id="applicationInfluencer" resultType="kr.co.dain_review.be.model.campaign.CampaignInfluencer">
+        SELECT u.seq,
+               u.name,
+               ui.blog_link as blogLink,
+               ui.blog_rank as blogRank,
+               ui.blog_visitors as blogVisitors,
+               ui.instagram_link as instagramLink,
+               ui.instagram_rank as instagramRank,
+               ui.instagram_follower as instagramFollower,
+               ui.youtube_link as youtubeLink,
+               ui.youtube_rank as youtubeRank,
+               ui.youtube_subscriber as youtubeSubscriber,
+               ui.tiktok_link as tiktokLink,
+               ui.tiktok_rank as tiktokRank,
+               ui.tiktok_follower as tiktokFollower,
+               ui.other_link as otherLink,
+               ui.other_rank as otherRank,
+               pa.application,
+               pa.message
+        FROM campaign_applicants pa
+        LEFT JOIN users u ON pa.user_seq = u.seq
+        LEFT JOIN user_influencer ui ON pa.user_seq = ui.user_seq
+        WHERE pa.campaign_seq = #{campaignSeq}
+    </select>
+
+    <select id="selectionInfluencer" resultType="kr.co.dain_review.be.model.campaign.CampaignInfluencer">
+        SELECT u.seq,
+               u.name,
+               ui.blog_link as blogLink,
+               ui.blog_rank as blogRank,
+               ui.blog_visitors as blogVisitors,
+               ui.instagram_link as instagramLink,
+               ui.instagram_rank as instagramRank,
+               ui.instagram_follower as instagramFollower,
+               ui.youtube_link as youtubeLink,
+               ui.youtube_rank as youtubeRank,
+               ui.youtube_subscriber as youtubeSubscriber,
+               ui.tiktok_link as tiktokLink,
+               ui.tiktok_rank as tiktokRank,
+               ui.tiktok_follower as tiktokFollower,
+               ui.other_link as otherLink,
+               ui.other_rank as otherRank,
+               u.phone,
+               u.address,
+               pa.application,
+               pa.message,
+               pr.link as reviewLink,
+               pr.date as reviewDate,
+               pr.ranking_check as rankingCheck,
+               CONCAT('attachments/', pr.attachments) as attachmentsURL
+        FROM campaign_applicants pa
+        LEFT JOIN users u ON pa.user_seq = u.seq
+        LEFT JOIN user_influencer ui ON pa.user_seq = ui.user_seq
+        LEFT JOIN campaign_review pr ON pr.campaign_seq = pa.campaign_seq
+        WHERE pa.campaign_seq = #{campaignSeq} AND pa.application = 1
+    </select>
+
+    <select id="selectedInfluencer" resultType="kr.co.dain_review.be.model.user.User">
+        SELECT seq FROm campaign_applicants WHERE seq = #{campaignSeq} AND application = 1
+    </select>
+    <select id="applicationInfluencerSeq" resultType="kr.co.dain_review.be.model.campaign.CampaignApplicants">
+        SELECT user_seq as userSeq, application FROM campaign_applicants WHERE seq = #{campaignSeq}
+    </select>
+    <select id="getCampaignTitle" resultType="java.lang.String">
+        SELECT title FROM campaigns WHERe seq = #{campaignSeq}
+    </select>
+    <select id="getCampaignUserSeq" resultType="java.lang.Integer">
+        SELECT user_seq FROM campaigns WHERE seq = #{campaignSeq}
+    </select>
+    <select id="missions" resultType="kr.co.dain_review.be.model.campaign.Mission">
+        SELECT seq,
+            title,
+            hash_tag as hashTag,
+            map,
+            link,
+            characters,
+            video_length as videoLength,
+            picture_count as pictureCount,
+            account_tag as accountTag,
+            sound,
+            advertising_display as  advertisingDisplay
+        FROM missions
+
+    </select>
+    <select id="getSummary" resultType="kr.co.dain_review.be.model.campaign.Summary">
+        SELECT COUNT(seq) as totalViews,
+               SUM(mobile_views) as mobileViews,
+               SUM(pc_views) as pcViews
+        FROM campaign_review
+        WHERE campaign_seq = #{campaignSeq}
+
+    </select>
+    <select id="getCampaignSeq" resultType="java.lang.Integer">
+        SELECT seq FROM campaigns WHERE id = #{id}
+    </select>
+    <select id="getKeywordView" resultType="java.lang.Boolean">
+        SELECT * FROM campaigns
+    </select>
+
+    <sql id="campaignColumns">
+        c.seq,
+        c.user_seq as userSeq,
+        c.category,
+        c.platform,
+        c.type,
+        c.title,
+        c.contents,
+        c.service,
+        c.keyword_1 as keyword1,
+        c.keyword_2 as keyword2,
+        c.keyword_3 as keyword3,
+        c.campaign_link as campaignLink,
+        c.mission,
+        c.recruiter,
+        c.image,
+        c.city,
+        c.district,
+        c.point,
+        c.tag,
+        c.`status`,
+        c.application_start_date as applicationStartDate,
+        c.application_end_date as applicationEndDate,
+        c.experience_start_date as experienceStartDate,
+        c.experience_end_date as experienceEndDate,
+        c.experience_start_time as experienceStartTime,
+        c.experience_end_time as experienceDndTime,
+        c.is_monday_available as isMondayAvailable,
+        c.is_tuesday_available as isTuesdayAvailable,
+        c.is_wednesday_available as isWednesdayAvailable,
+        c.is_thursday_available as isThursdayAvailable,
+        c.is_friday_available as isFridayAvailable,
+        c.is_saturday_available as isSaturdayAvailable,
+        c.is_sunday_available as isSundayAvailable,
+        c.is_monday_unavailable as isMondayUnavailable,
+        c.is_tuesday_unavailable as isTuesdayUnavailable,
+        c.is_wednesday_unavailable as isWednesdayUnavailable,
+        c.is_thursday_unavailable as isThursdayUnavailable,
+        c.is_friday_unavailable as isFridayUnavailable,
+        c.is_saturday_unavailable as isSaturdayUnavailable,
+        c.is_sunday_unavailable as isSundayUnavailable,
+        c.hash_tag as hashTag,
+        c.map,
+        c.link,
+        c.characters,
+        c.video_length as videoLength,
+        c.picture_count as pictureCount,
+        c.account_tag as accountTag,
+        c.sound,
+        c.advertising_display as advertisingDisplay
+    </sql>
+
+    <select id="hostedCampaigns" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT <include refid="campaignColumns" />
+        FROM campaigns c
+        WHERE c.user_seq = #{userSeq}
+    </select>
+
+    <select id="participatingCampaigns" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT <include refid="campaignColumns" />
+        FROM campaigns c
+        LEFT JOIN campaign_applicants ca on c.seq = ca.campaign_seq
+        WHERE ca.user_seq = #{userSeq} AND NOW() BETWEEN c.application_start_date AND c.experience_end_date
+    </select>
+
+
+</mapper>

@@ -7,12 +7,14 @@ import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.post.PostInsert;
 import kr.co.dain_review.be.model.post.PostUpdate;
-import kr.co.dain_review.be.model.product.InfluencerApplication;
-import kr.co.dain_review.be.model.product.ProductSearch;
-import kr.co.dain_review.be.model.product.ReportInsert;
+import kr.co.dain_review.be.model.campaign.InfluencerApplication;
+import kr.co.dain_review.be.model.campaign.CampaignSearch;
+import kr.co.dain_review.be.model.campaign.ReportInsert;
+import kr.co.dain_review.be.model.user.InfluencerUpdate;
+import kr.co.dain_review.be.model.user.InfluencerUpdateUser;
 import kr.co.dain_review.be.service.AlarmService;
 import kr.co.dain_review.be.service.PostService;
-import kr.co.dain_review.be.service.ProductService;
+import kr.co.dain_review.be.service.CampaignService;
 import kr.co.dain_review.be.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -28,27 +30,39 @@ import org.springframework.web.bind.annotation.*;
 public class InfluencerController {
 
     private final TokenProvider tokenProvider;
-    private final ProductService productService;
+    private final CampaignService campaignService;
     private final UserService userService;
     private final AlarmService alarmService;
     private final PostService postService;
 
+
+    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
+    @PutMapping("/profile")
+    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody InfluencerUpdateUser update){
+        String token = header.getFirst("Authorization");
+        Integer userSeq = tokenProvider.getSeq(token);
+        userService.influencerProfileUpdate(update, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
     @ApiOperation(value = "내 체험단 검색", tags = "인플루언서 - 체험단")
     @GetMapping("/application")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, ProductSearch search){
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, CampaignSearch search){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        json.put("list", productService.applicationsList(search, userSeq));
+        json.put("list", campaignService.applicationsList(search, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험 신청", tags = "인플루언서 - 체험단")
     @PostMapping("/application")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody InfluencerApplication application){
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody InfluencerApplication application){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        productService.application(application, userSeq);
+        campaignService.application(application, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -56,10 +70,10 @@ public class InfluencerController {
 
     @ApiOperation(value = "체험 신청 취소", tags = "인플루언서 - 체험단")
     @PostMapping("/cancellation")
-    public ResponseEntity<?> product(@RequestHeader HttpHeaders header, @RequestBody Integer seq){
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody Integer seq){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        productService.cancellation(seq, userSeq);
+        campaignService.cancellation(seq, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -71,8 +85,8 @@ public class InfluencerController {
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
         JSONObject json = new JSONObject();
-        json.put("list", productService.getFavoriteList(userSeq));
-        json.put("totalCount", productService.getFavoriteListCount(userSeq));
+        json.put("list", campaignService.getFavoriteList(userSeq));
+        json.put("totalCount", campaignService.getFavoriteListCount(userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -87,12 +101,14 @@ public class InfluencerController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "체험 보고", tags = "인플루언서 - 체험단")
+    @ApiOperation(value = "체험 리뷰", tags = "인플루언서 - 체험단")
     @PostMapping("/review")
     public ResponseEntity<?> report(@RequestHeader HttpHeaders header, @RequestBody ReportInsert insert){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        productService.review(insert, userSeq);
+        String name = tokenProvider.getName(token);
+        campaignService.review(insert, userSeq);
+        alarmService.reviewAlarm(insert, name);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -158,7 +174,7 @@ public class InfluencerController {
 //        String token = header.getFirst("Authorization");
 //        Integer userSeq = tokenProvider.getSeq(token);
 //        JSONObject json = new JSONObject();
-//        json.put("schedule", productService.getSchedule(userSeq));
+//        json.put("schedule", campaignService.getSchedule(userSeq));
 //        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
 //    }
 

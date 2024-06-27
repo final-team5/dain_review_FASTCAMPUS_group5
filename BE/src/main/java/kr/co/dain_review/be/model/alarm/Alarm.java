@@ -10,6 +10,7 @@ import lombok.Data;
 public class Alarm {
     private Integer seq;
     private Integer userSeq;
-    private Integer productSeq;
+    private Integer targetSeq;
+    private Integer targetType;
     private String message;
 }

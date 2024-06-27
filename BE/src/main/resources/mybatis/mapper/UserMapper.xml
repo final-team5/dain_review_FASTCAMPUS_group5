@@ -4,60 +4,89 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.co.dain_review.be.mapper.UserMapper">
-    <insert id="insert">
-        INSERT INTO users (id,
+    <insert id="insertUser">
+        INSERT INTO users (
+                id,
+                email,
                 pw,
-                type,
                 profile,
                 email,
                 name,
                 phone,
                 sign_up_source,
-                blog,
-                instagram,
-                youtube,
-                tiktok,
-                other,
                 postal_code,
                 address,
                 address_detail,
-                nickname,
-                birthdate,
-                gender,
-                company,
-                role)
+                role,
+                type)
         VALUES (#{id},
+                #{email},
                 #{pw},
-                #{type},
                 #{profile},
                 #{email},
                 #{name},
                 #{phone},
                 #{signUpSource},
-                #{blog},
-                #{instagram},
-                #{youtube},
-                #{tiktok},
-                #{other},
                 #{postalCode},
                 #{address},
                 #{addressDetail},
-                #{nickname},
-                #{birthdate},
-                #{gender},
-                #{company},
-                #{role})
+                #{role},
+                #{type})
     </insert>
 
     <insert id="insertVerification">
         INSERT INTO verify (email, auth_num, expire_date) VALUES (#{eamil}, #{authNum}, #{expireDate})
     </insert>
-    <insert id="insertPlatform">
-        INSERT INTO user_platform (user_seq, link, type) VALUES (#{userSeq}, #{link}, #{type})
+
+    <insert id="insertInfluencer">
+        INSERT INTO user_influencer (
+                                     user_seq,
+                                     nickname,
+                                     birthdate,
+                                     gender,
+                                     blog_link,
+                                     blog_rank,
+                                     instagram_link,
+                                     instagram_rank,
+                                     youtube_link,
+                                     youtube_rank,
+                                     tiktok_link,
+                                     tiktok_rank,
+                                     other_link,
+                                     other_rank)
+        VALUES (#{userSeq},
+                #{nickname},
+                #{birthdate},
+                #{gender},
+                #{blogLink},
+                #{blogRank},
+                #{instagramLink},
+                #{instagramRank},
+                #{youtubeLink},
+                #{youtubeRank},
+                #{tiktokLink},
+                #{tiktokRank},
+                #{otherLink},
+                #{otherRank})
     </insert>
+
+    <insert id="insertEnterpriser">
+        INSERT INTO user_enterpriser (user_seq,
+                                      company,
+                                      business_number,
+                                      representative,
+                                      attachment)
+        VALUES (#{userSeq},
+                #{company},
+                #{businessNumber},
+                #{representative},
+                #{attachment})
+    </insert>
+
     <update id="userCertification">
         UPDATE verify SET user_certification = 1 WHERE email = #{email} AND auth_num = #{authNum}
     </update>
+
     <update id="emailCertification">
         UPDATE verify SET email_certification = 1 WHERE email = #{email} AND auth_num = #{authNum}
     </update>
@@ -74,43 +103,74 @@
         UPDATE users SET status = 1 WHERE seq = #{seq};
     </update>
 
-    <update id="updateProfile">
+    <update id="updateUser">
         UPDATE users
         <set>
+            <if test="email!=null">email = #{email}, </if>
+            <if test="pw!=null">pw = #{pw}, </if>
+            <if test="name!=null">`name` = #{name}, </if>
             <if test="phone!=null">phone = #{phone}, </if>
-            <if test="profile!=null">`profile` = #{profile}, </if>
-            <if test="birthdate!=null">birthdate = #{birthdate}, </if>
-            <if test="gender!=null">gender = #{gender}, </if>
-            <if test="address!=null">address = #{address}, </if>
-            <if test="addressDetail!=null">addressDetail = #{addressDetail}, </if>
-            <if test="blog!=null">blog = #{blog}, </if>
-            <if test="instagram!=null">instagram = #{instagram}, </if>
-            <if test="youtube!=null">youtube = #{youtube}, </if>
-            <if test="tiktok!=null">tiktok = #{tiktok}, </if>
-            <if test="other!=null">other = #{other}, </if>
+            <if test="signUpSource!=null">sign_up_source = #{signUpSource}, </if>
             <if test="postalCode!=null">postal_code = #{postalCode}, </if>
+            <if test="address!=null">address = #{address}, </if>
+            <if test="addressDetail!=null">address_detail = #{addressDetail}, </if>
+            <if test="profile!=null">`profile` = #{profile}, </if>
+            <if test="type!=null">type = #{type}, </if>
         </set>
         WHERE seq = #{seq}
     </update>
 
-    <update id="update">
-
+    <update id="updateInfluencer">
+        UPDATE user_influencer
+        <set>
+            <if test="nickname!=null">nickname = #{nickname}, </if>
+            <if test="birthdate!=null">birthdate = #{birthdate}, </if>
+            <if test="gender!=null">gender = #{gender}, </if>
+            <if test="blogLink!=null">blog_link = #{blogLink}, </if>
+            <if test="blogRank!=null">blog_rank = #{blogRank}, </if>
+            <if test="instagramLink!=null">instagram_link = #{instagramLink}, </if>
+            <if test="instagramRank!=null">instagram_rank = #{instagramRank}, </if>
+            <if test="youtubeLink!=null">youtube_link = #{youtubeLink}, </if>
+            <if test="youtubeRank!=null">youtube_rank = #{youtubeRank}, </if>
+            <if test="tiktokLink!=null">tiktok_link = #{tiktokLink}, </if>
+            <if test="tiktokRank!=null">tiktok_rank = #{tiktokRank}, </if>
+            <if test="otherLink!=null">other_link = #{otherLink}, </if>
+            <if test="otherRank!=null">other_rank = #{otherRank}, </if>
+        </set>
+        WHERE user_seq = #{seq}
     </update>
+
+    <update id="updateEnterpriser">
+        UPDATE user_enterpriser
+        <set>
+            <if test="company!=null">company = #{company}, </if>
+            <if test="businessNumber!=null">business_number = #{businessNumber}, </if>
+            <if test="representative!=null">representative = #{representative}, </if>
+            <if test="attachment!=null">attachment = #{attachment}, </if>
+        </set>
+        WHERE user_seq = #{seq}
+    </update>
+
+
     <delete id="deleteVerification">
         DELETE FROM verify WHERE email = #{email}
     </delete>
 
-    <delete id="delete">
+    <delete id="deleteUser">
         DELETE FROM users WHERE seq = #{seq}
     </delete>
 
 
     <select id="getUser" resultType="kr.co.dain_review.be.model.user.User">
-        SELECT * FROM users WHERE email = #{email} AND `type` = #{type} AND status = 1
+        SELECT seq, id, name, phone, create_date as createDate
+        FROM users
+        <where>
+            email = #{email} AND `type` = #{type} AND status = 1
+        </where>
     </select>
 
     <select id="checkNickname" resultType="java.lang.Boolean">
-        SELECT EXISTS(SELECT 1 FROM users WHERE nickname = #{nickname})
+        SELECT EXISTS(SELECT 1 FROM user_influencer WHERE nickname = #{nickname})
     </select>
 
     <select id="checkAuthentication" resultType="java.lang.Boolean">
@@ -154,7 +214,7 @@
     </select>
 
     <select id="checkSocialUser" resultType="java.lang.Boolean">
-        SELECT EXISTS(SELECT 1 FROM users WHERE email = #{email} AND type = 2)
+        SELECT EXISTS(SELECT 1 FROM users WHERE email = #{email} AND login_type = 2)
     </select>
 
     <select id="getSeq" resultType="java.lang.Integer">
@@ -162,16 +222,23 @@
     </select>
 
     <select id="getList" resultType="kr.co.dain_review.be.model.user.User">
-        SELECT * FROM users
+        SELECT seq,
+        id,
+        name,
+        phone,
+        create_date as createDate
+        FROM users
         <where>
             <choose>
                 <when test="searchType!=null and searchType.equals('nickname')"> AND nickname LIKE #{searchWord} </when>
                 <when test="searchType!=null and searchType.equals('name')"> AND `name` LIKE #{searchWord} </when>
                 <when test="searchType!=null and searchType.equals('email')"> AND email LIKE #{searchWord} </when>
             </choose>
+            AND `role` = #{role}
         </where>
         LIMIT #{page}, 10
     </select>
+
     <select id="getListCount" resultType="java.lang.Integer">
         SELECT COUNT(seq) FROM users
         <where>
@@ -180,6 +247,7 @@
                 <when test="searchType!=null and searchType.equals('name')"> AND `name` LIKE #{searchWord} </when>
                 <when test="searchType!=null and searchType.equals('email')"> AND email LIKE #{searchWord} </when>
             </choose>
+            AND `role` = #{role}
         </where>
     </select>
 
@@ -188,30 +256,106 @@
     </select>
     <select id="selectProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
         SELECT u.seq,
-            CONCAT(u.id, '/', u.profile) as profileImage,
-            u.nickname,
-            u.cancel,
-            blog.visitors as blogVisitors,
-            instagram.follower as instagramFollower,
-            tiktok.follower as tiktokFollower,
-            youtube.subscriber_count as youtubeSubscriberCount,
-            youtube.video_count as youtubeVideoCount
+               CONCAT(u.id, '/', u.profile) as profileImage,
+               u.cancel,
+               ui.blog_visitors as blogVisitors,
+               ui.instagram_follower as instagramFollower,
+               ui.tiktok_follower as tiktokFollower,
+               ui.youtube_subscriber as youtubeSubscriber
         FROM users u
-        LEFT JOIN user_platform blog on u.seq = blog.user_seq AND blog.type = 1
-        LEFT JOIN user_platform instagram on u.seq = instagram.user_seq AND instagram.type = 2
-        LEFT JOIN user_platform youtube on u.seq = youtube.user_seq AND youtube.type = 3
-        LEFT JOIN user_platform tiktok on u.seq = tiktok.user_seq AND tiktok.type = 4
+        LEFT JOIN user_influencer ui on u.seq = ui.user_seq
         WHERE u.seq = #{userSeq}
     </select>
 
-    <select id="selectPlatformInfo" resultType="kr.co.dain_review.be.model.user.UserPlatform">
+
+
+    <select id="getEnterpriserDetail" resultType="kr.co.dain_review.be.model.user.EnterpriserDetail">
+        SELECT company,
+               business_number as businessNumber,
+               representative,
+               attachment
+        FROM user_enterpriser
+        WHERE user_seq = #{userSeq}
+    </select>
+
+    <select id="getInfluencerDetail" resultType="kr.co.dain_review.be.model.user.InfluencerDetail">
+        SELECT nickname,
+               birthdate,
+               gender,
+               blog_link as blogLink,
+               blog_rank as blogRank,
+               blog_visitors as blogVisitors,
+               instagram_link as instagramLink,
+               instagram_rank as instagramRank,
+               instagram_follower as instagramFollower,
+               youtube_link as youtubeLink,
+               youtube_rank as youtubeRank,
+               youtube_subscriber as youtubeSubscriber,
+               tiktok_link as tiktokLink,
+               tiktok_rank as tiktokRank,
+               tiktok_follower as tiktokFollower,
+               other_link as otherLink,
+               other_rank as otherRank
+        FROM user_influencer
+        WHERE user_seq = #{userSeq}
+    </select>
+
+    <select id="getUserDetail" resultType="kr.co.dain_review.be.model.user.User">
         SELECT seq,
-               link,
-               rank,
-               visitors,
-               follower,
-               subscriber_count as subscriberCount,
-               video_count as videoCount
-        FROM user_platform WHERE user_seq = #{userSeq} AND type = #{type}
+               id,
+               name,
+               phone,
+               create_date as createDate,
+               sign_up_source as signUpSource,
+               postal_code as postalCode,
+               address,
+               address_detail as addressDetail,
+               point,
+               status,
+               cancel,
+               penalty,
+               type
+        FROM users WHERE seq = #{userSeq}
+    </select>
+
+    <select id="getUserSeq" resultType="java.lang.Integer">
+        SELECT seq FROM users WHERE id = #{id}
+    </select>
+    <select id="getUserProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
+        SELECT seq,
+               profile as profile,
+               cancel,
+               penalty,
+               type
+        FROM users WHERE id = #{id}
+    </select>
+    <select id="getInfluencerProfile" resultType="kr.co.dain_review.be.model.user.InfluencerProfile">
+        SELECT ui.nickname,
+               (SELECT COUNT(seq) FROM campaign_applicants c WHERE c.user_seq = #{userSeq}) AS appliedCampaignsCount,
+               (SELECT COUNT(seq) FROM campaign_applicants c WHERE c.user_seq = #{userSeq} AND c.application = 1) AS selectedCampaignsCount,
+               (SELECT COUNT(c.seq)
+                FROM campaigns c
+                LEFT JOIN campaign_applicants ca ON c.seq = ca.campaign_seq
+                WHERE ca.user_seq = #{userSeq}
+                AND ca.application = 1
+                AND NOW() BETWEEN c.experience_start_date AND c.experience_end_date) AS activeCampaignsCount,
+               ui.blog_link as  blogLink,
+               ui.blog_rank as blogRank,
+               ui.instagram_link as instagramLink,
+               ui.instagram_rank as instagramRank,
+               ui.youtube_link as youtubeLink,
+               ui.tiktok_rank as youtubeRank,
+               ui.tiktok_rank as  otherLink,
+               ui.tiktok_rank as tiktokRank,
+               ui.other_rank as  otherRank
+        FROM user_influencer ui
+        WHERE ui.user_seq = #{userSeq}
+    </select>
+
+    <select id="getEnterpriserProfile" resultType="kr.co.dain_review.be.model.user.EnterpriserProfile">
+        SELECT ue.company,
+        (SELECT COUNT(c.seq) FROM campaigns c WHERE c.user_seq = #{userSeq}) as activeCampaignsCount
+        FROM user_enterpriser ue
+        WHERE ue.user_seq = #{userSeq}
     </select>
 </mapper>

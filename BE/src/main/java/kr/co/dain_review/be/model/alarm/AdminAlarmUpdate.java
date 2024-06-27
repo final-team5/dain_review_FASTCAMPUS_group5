@@ -10,6 +10,6 @@ import lombok.Data;
 public class AdminAlarmUpdate {
     private Integer seq;
     private Integer userSeq;
-    private Integer productSeq;
+    private Integer campaignSeq;
     private String contents;
 }
