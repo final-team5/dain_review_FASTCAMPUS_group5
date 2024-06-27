@@ -60,8 +60,11 @@ public class UserController {
     @DeleteMapping("/withdrawal")
     public ResponseEntity<?> Withdrawal(@RequestHeader HttpHeaders header){
 
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         userService.Withdrawal(userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -90,9 +93,13 @@ public class UserController {
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestHeader HttpHeaders header, @RequestBody ChangePassword changePassword){
 
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
-        String email = tokenProvider.getEmail(token);
+        Integer userSeq = null;
+        String email = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+            email = tokenProvider.getEmail(token);
+        }
         JSONObject json = new JSONObject();
 
         if(userService.checkSocialUser(email)){
@@ -116,8 +123,11 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 서이추/맞팔")
     @GetMapping("/post")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         JSONObject json = new JSONObject();
         json.put("list", postService.select(search, 4, userSeq));
         json.put("totalCount", postService.selectCount(search, 4, userSeq));
@@ -135,8 +145,11 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 서이추/맞팔")
     @PostMapping("/post")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody PostInsert insert){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         postService.insert(insert, 3, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -146,8 +159,11 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 서이추/맞팔")
     @PutMapping("/post")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody PostUpdate update){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         postService.update(update, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -157,8 +173,11 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 삭제", tags = "사용자 - 서이추/맞팔")
     @DeleteMapping("/post")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         postService.delete(delete, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -180,8 +199,11 @@ public class UserController {
     @ApiOperation(value = "체험단 글 추가", tags = "사용자 - 체험단")
     @PostMapping("/campaign")
     public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody PostInsertCampaign insert){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         postService.insertCampaign(insert, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -191,8 +213,11 @@ public class UserController {
     @ApiOperation(value = "체험단 글 수정", tags = "사용자 - 체험단")
     @PutMapping("/campaign")
     public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody PostUpdateCampaign update){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         postService.updateCampaign(update, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -202,8 +227,11 @@ public class UserController {
     @ApiOperation(value = "체험단 글 삭제", tags = "사용자 - 체험단")
     @DeleteMapping("/campaign")
     public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
-        String token = header.getFirst("Authorization");
-        Integer userSeq = tokenProvider.getSeq(token);
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
         postService.deleteCampaign(delete, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
