@@ -57,10 +57,10 @@
 
     <select id="select" resultType="kr.co.dain_review.be.model.post.Post">
         SELECT category.category,
-               p.title,
-               u_i.nickname,
-               p.create_date as createDate,
-               p.view_count as viewCount
+        p.title,
+        u_i.nickname,
+        p.create_date as createDate,
+        p.view_count as viewCount
         FROM posts p
         LEFT JOIN users u ON p.user_seq = u.seq
         LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
@@ -68,10 +68,10 @@
         LEFT JOIN post_comments comment on p.seq = comment.post_seq
 
         <where>
-            AND p.type_seq = #{typeSeq}
+            AND p.type_seq = #{type}
             AND p.title LIKE #{searchWord}
             <choose>
-                <when test="searchType!=null and searchType.eqauls('myPost')"> AND p.user_seq = #{userSeq} </when>
+                <when test="searchType!=null and searchType.equals('myPost')"> AND p.user_seq = #{userSeq} </when>
                 <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
             </choose>
         </where>
@@ -79,15 +79,16 @@
         LIMIT #{page}, 10
     </select>
 
+
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT COUNT(p.seq)
         FROM posts p
         LEFT JOIN post_comments comment on p.seq = comment.post_seq
         <where>
-            AND p.type_seq = #{typeSeq}
+            AND p.type_seq = #{type} /* {typeSeq 를 type}  */
             AND p.title LIKE #{searchWord}
             <choose>
-                <when test="searchType!=null and searchType.eqauls('myPost')"> AND p.user_seq = #{userSeq} </when>
+                <when test="searchType!=null and searchType.equals('myPost')"> AND p.user_seq = #{userSeq} </when>
                 <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
             </choose>
         </where>
@@ -106,7 +107,7 @@
         LEFT JOIN users u ON p.user_seq = u.seq
         LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
         LEFT JOIN post_categories pc on p.category_seq = pc.seq
-        WHERE p.seq = #{seq} AND p.type_seq = #{typeSeq}
+        WHERE p.seq = #{seq} AND p.category_seq = #{type}
     </select>
 
 
