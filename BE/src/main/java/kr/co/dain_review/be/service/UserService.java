@@ -8,7 +8,7 @@ import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.*;
 import kr.co.dain_review.be.model.user.*;
 import kr.co.dain_review.be.util.FileUtils;
-import kr.co.dain_review.be.util.Smtp;
+import kr.co.dain_review.be.util.smtp;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -118,7 +118,7 @@ public class UserService {
         LocalDateTime thirtyMinutesLater = now.plusMinutes(30); // 현재 시간에 30분을 더함
         map.put("expireDate", thirtyMinutesLater);
         userMapper.insertVerification(map);
-        Smtp.emailSend(email.getEmail(), authNUm);
+        smtp.emailSend(email.getEmail(), authNUm);
     }
 
     public boolean getFindUser(UserVerification userVerification) {
