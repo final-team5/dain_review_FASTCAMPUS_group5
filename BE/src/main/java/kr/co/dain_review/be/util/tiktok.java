@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class tiktok {
-    public static Integer followerCount(String url) {
+    public static Integer getFollowerCount(String url) {
         // 시스템 출력 스트림을 임시로 변경하여 모든 메시지를 억제
         PrintStream originalOut = System.out;
         PrintStream originalErr = System.err;
