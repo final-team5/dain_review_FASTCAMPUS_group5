@@ -19,18 +19,23 @@ public class naver {
     public Integer getVisitorCount(String blogId) throws IOException {
         String url =  "https://blog.naver.com/NVisitorgp4Ajax.nhn?blogId="+blogId;
         Document doc = Jsoup.connect(url).get();
-        LocalDate today = LocalDate.now();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String formattedDate = today.format(formatter);
-        Elements visitorCounts = doc.select("visitorcnt:not([id="+formattedDate+"])");
-        Integer visitor = 0;
-        for (Element visitorCount : visitorCounts) {
-            String cnt = visitorCount.attr("cnt");
-            visitor = visitor + Integer.parseInt(cnt);
+        String yesterdayStr = yesterday.format(formatter);
+
+        // visitorcnt 요소들을 선택
+        Elements visitorcnts = doc.select("visitorcnt");
+
+        // 어제 날짜의 cnt 값 찾기
+        for (Element visitorcnt : visitorcnts) {
+            String id = visitorcnt.attr("id");
+            if (id.equals(yesterdayStr)) {
+                String cnt = visitorcnt.attr("cnt");
+                System.out.println("Yesterday's visitor count: " + cnt);
+                return Integer.parseInt(cnt);
+            }
         }
-        float result = visitor / 4.0f;
-        int roundedResult = Math.round(result);
-        return roundedResult;
+        return 0;
     }
 
     //좋아요 수 가져오기

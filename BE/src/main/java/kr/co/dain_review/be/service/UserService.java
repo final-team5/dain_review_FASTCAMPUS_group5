@@ -3,20 +3,17 @@ package kr.co.dain_review.be.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.dain_review.be.mapper.CampaignMapper;
 import kr.co.dain_review.be.mapper.UserMapper;
-import kr.co.dain_review.be.model.campaign.Campaign;
 import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.*;
 import kr.co.dain_review.be.model.user.*;
 import kr.co.dain_review.be.util.FileUtils;
-import kr.co.dain_review.be.util.smtp;
-import org.apache.ibatis.ognl.ObjectElementsAccessor;
+import kr.co.dain_review.be.util.Smtp;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,7 +118,7 @@ public class UserService {
         LocalDateTime thirtyMinutesLater = now.plusMinutes(30); // 현재 시간에 30분을 더함
         map.put("expireDate", thirtyMinutesLater);
         userMapper.insertVerification(map);
-        smtp.emailSend(email.getEmail(), authNUm);
+        Smtp.emailSend(email.getEmail(), authNUm);
     }
 
     public boolean getFindUser(UserVerification userVerification) {
