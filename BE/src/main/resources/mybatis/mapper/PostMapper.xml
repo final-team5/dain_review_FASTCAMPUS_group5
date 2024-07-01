@@ -66,6 +66,7 @@
         LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
         LEFT JOIN post_categories category on p.category_seq = category.seq
         LEFT JOIN post_comments comment on p.seq = comment.post_seq
+
         <where>
             AND p.type_seq = #{type}
             AND p.title LIKE #{searchWord}
