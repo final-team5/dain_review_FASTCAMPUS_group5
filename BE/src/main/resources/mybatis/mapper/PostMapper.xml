@@ -72,10 +72,10 @@
             AND p.title LIKE #{searchWord}
             <choose>
                 <when test="searchType!=null and searchType.equals('myPost')"> AND p.user_seq = #{userSeq} </when>
-                <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
+                <when test="searchType!=null and searchType.equals('comments')"> AND comment.user_seq = #{userSeq} </when>
             </choose>
         </where>
-        GROUP BY (p.seq)
+        GROUP BY p.seq
         LIMIT #{page}, 10
     </select>
 
@@ -98,6 +98,7 @@
     <select id="selectDetail" resultType="kr.co.dain_review.be.model.post.Post">
         SELECT pc.category,
                p.title,
+               p.contents,
                u_i.nickname,
                p.create_date as createDate,
                p.view_count as viewCount,
