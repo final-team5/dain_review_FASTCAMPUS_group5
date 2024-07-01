@@ -66,16 +66,15 @@
         LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
         LEFT JOIN post_categories category on p.category_seq = category.seq
         LEFT JOIN post_comments comment on p.seq = comment.post_seq
-
         <where>
             AND p.type_seq = #{type}
             AND p.title LIKE #{searchWord}
             <choose>
                 <when test="searchType!=null and searchType.equals('myPost')"> AND p.user_seq = #{userSeq} </when>
-                <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
+                <when test="searchType!=null and searchType.equals('comments')"> AND comment.user_seq = #{userSeq} </when>
             </choose>
         </where>
-        GROUP BY (p.seq)
+        GROUP BY p.seq
         LIMIT #{page}, 10
     </select>
 
@@ -98,11 +97,12 @@
     <select id="selectDetail" resultType="kr.co.dain_review.be.model.post.Post">
         SELECT pc.category,
                p.title,
+               p.contents,
                u_i.nickname,
                p.create_date as createDate,
                p.view_count as viewCount,
                CONCAT(u.id, '/', u.profile) as profile,
-               p.type_seq as userType
+               p.type_seq as userType,
         FROM posts p
         LEFT JOIN users u ON p.user_seq = u.seq
         LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
