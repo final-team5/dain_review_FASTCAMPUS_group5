@@ -47,8 +47,8 @@ public class naver {
     }
 
     //댓글 수 가져오기
-    public Integer getCommentCount(String blogId, String logNo) throws IOException {
-        String url = "https://m.blog.naver.com/CommentList.naver?blogId="+blogId+"&logNo="+logNo;
+    public static void main(String[] aa) throws IOException {
+        String url = "https://m.blog.naver.com/CommentList.naver?blogId=qufslagkdl&logNo=223497202442";
         Document doc = Jsoup.connect(url).get();
         Elements scriptTags = doc.getElementsByTag("script");
         Pattern pattern = Pattern.compile("window\\.__INITIAL_STATE__\\s*=\\s*(\\{.*?\\});", Pattern.DOTALL);
@@ -66,20 +66,28 @@ public class naver {
             // JSON 파싱
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode initialStateNode = objectMapper.readTree(initialStateJson);
-
+            System.out.println(initialStateNode);
             // "totalCount" 값 추출 (JSON 구조에 맞게 경로 변경)
-            JsonNode totalCountNode = initialStateNode.path("commentList").path("cboxPostCommentsInfo").path(blogId).path("data").path("comments").path("totalCount");
+            JsonNode totalCountNode = initialStateNode.path("commentList").path("cboxPostCommentsInfo").path("qufslagkdl").path("data").path("comments").path("totalCount");
+            JsonNode title = initialStateNode.path("commentList").path("cboxPostCommentsInfo").path("qufslagkdl").path("data").path("comments").path("postTitle");
+            JsonNode nickname = initialStateNode.path("commentList").path("cboxPostInfo").path("qufslagkdl").path("data").path("postTitle");
+
+            if(!title.isMissingNode()){
+                System.out.println(title.asText());
+            }
+
+            if(!nickname.isMissingNode()){
+                System.out.println(nickname.asText());
+            }
 
             if (!totalCountNode.isMissingNode()) {
                 int totalCount = totalCountNode.asInt();
-                return totalCount;
+                System.out.println(totalCount);
             } else {
                 System.out.println("지정한 경로에서 totalCount 값을 찾을 수 없습니다.");
-                return null;
             }
         } else {
             System.out.println("window.__INITIAL_STATE__ 값을 찾을 수 없습니다.");
-            return null;
         }
     }
 
