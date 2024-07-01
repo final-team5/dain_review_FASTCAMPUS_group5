@@ -24,6 +24,7 @@ public class PostService {
         HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
         map.put("type", type);
         map.put("userSeq", userSeq);
+        System.out.println(map);
         return postMapper.select(map);
     }
 
