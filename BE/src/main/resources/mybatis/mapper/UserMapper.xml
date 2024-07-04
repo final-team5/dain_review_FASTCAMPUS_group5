@@ -10,27 +10,27 @@
                 email,
                 pw,
                 profile,
-                email,
                 name,
                 phone,
-                sign_up_source,
+                signup_source,
                 postal_code,
                 address,
                 address_detail,
                 role,
+                login_type,
                 type)
         VALUES (#{id},
                 #{email},
                 #{pw},
                 #{profile},
-                #{email},
                 #{name},
                 #{phone},
-                #{signUpSource},
+                #{sighupSource},
                 #{postalCode},
                 #{address},
                 #{addressDetail},
                 #{role},
+                #{loginType},
                 #{type})
     </insert>
 
@@ -70,8 +70,8 @@
                 #{otherRank})
     </insert>
 
-    <insert id="insertEnterpriser">
-        INSERT INTO user_enterpriser (user_seq,
+    <insert id="insertBusinesses">
+        INSERT INTO user_businesses (user_seq,
                                       company,
                                       business_number,
                                       representative,
@@ -81,6 +81,9 @@
                 #{businessNumber},
                 #{representative},
                 #{attachment})
+    </insert>
+    <insert id="agencyApplication">
+        INSERT INTO user_agency (user_seq) VALUES (#{userSeq})
     </insert>
 
     <update id="userCertification">
@@ -100,7 +103,7 @@
     </update>
 
     <update id="Withdrawal">
-        UPDATE users SET status = 1 WHERE seq = #{seq};
+        UPDATE users SET status = 1 WHERE seq = #{userSeq};
     </update>
 
     <update id="updateUser">
@@ -110,14 +113,14 @@
             <if test="pw!=null">pw = #{pw}, </if>
             <if test="name!=null">`name` = #{name}, </if>
             <if test="phone!=null">phone = #{phone}, </if>
-            <if test="signUpSource!=null">sign_up_source = #{signUpSource}, </if>
+            <if test="signupSource!=null">signup_source = #{signupSource}, </if>
             <if test="postalCode!=null">postal_code = #{postalCode}, </if>
             <if test="address!=null">address = #{address}, </if>
             <if test="addressDetail!=null">address_detail = #{addressDetail}, </if>
             <if test="profile!=null">`profile` = #{profile}, </if>
             <if test="type!=null">type = #{type}, </if>
         </set>
-        WHERE seq = #{seq}
+        WHERE seq = #{userSeq}
     </update>
 
     <update id="updateInfluencer">
@@ -137,18 +140,18 @@
             <if test="otherLink!=null">other_link = #{otherLink}, </if>
             <if test="otherRank!=null">other_rank = #{otherRank}, </if>
         </set>
-        WHERE user_seq = #{seq}
+        WHERE user_seq = #{userSeq}
     </update>
 
-    <update id="updateEnterpriser">
-        UPDATE user_enterpriser
+    <update id="updateBusinesses">
+        UPDATE user_businesses
         <set>
             <if test="company!=null">company = #{company}, </if>
             <if test="businessNumber!=null">business_number = #{businessNumber}, </if>
             <if test="representative!=null">representative = #{representative}, </if>
             <if test="attachment!=null">attachment = #{attachment}, </if>
         </set>
-        WHERE user_seq = #{seq}
+        WHERE user_seq = #{userSeq}
     </update>
 
 
@@ -157,20 +160,24 @@
     </delete>
 
     <delete id="deleteUser">
-        DELETE FROM users WHERE seq = #{seq}
+        DELETE FROM users WHERE seq = #{userSeq}
     </delete>
 
 
     <select id="getUser" resultType="kr.co.dain_review.be.model.user.User">
-        SELECT seq, id, name, phone, create_date as createDate
+        SELECT seq, id, name, pw, email, phone, role, create_date as createDate
         FROM users
         <where>
-            email = #{email} AND `type` = #{type} AND status = 1
+            email = #{email} AND login_type = #{loginType} AND `status` = 1
         </where>
     </select>
 
     <select id="checkNickname" resultType="java.lang.Boolean">
         SELECT EXISTS(SELECT 1 FROM user_influencer WHERE nickname = #{nickname})
+    </select>
+
+    <select id="checkCompany" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM user_businesses WHERE company = #{company})
     </select>
 
     <select id="checkAuthentication" resultType="java.lang.Boolean">
@@ -252,7 +259,7 @@
     </select>
 
     <select id="getDetail" resultType="kr.co.dain_review.be.model.user.User">
-        SELECT * FROM users WHERE seq = #{seq}
+        SELECT * FROM users WHERE seq = #{userSeq}
     </select>
     <select id="selectProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
         SELECT u.seq,
@@ -269,12 +276,12 @@
 
 
 
-    <select id="getEnterpriserDetail" resultType="kr.co.dain_review.be.model.user.EnterpriserDetail">
+    <select id="getBusinessesDetail" resultType="kr.co.dain_review.be.model.user.BusinessesDetail">
         SELECT company,
                business_number as businessNumber,
                representative,
                attachment
-        FROM user_enterpriser
+        FROM user_businesses
         WHERE user_seq = #{userSeq}
     </select>
 
@@ -306,7 +313,7 @@
                name,
                phone,
                create_date as createDate,
-               sign_up_source as signUpSource,
+               signup_source as signupSource,
                postal_code as postalCode,
                address,
                address_detail as addressDetail,
@@ -352,10 +359,17 @@
         WHERE ui.user_seq = #{userSeq}
     </select>
 
-    <select id="getEnterpriserProfile" resultType="kr.co.dain_review.be.model.user.EnterpriserProfile">
+    <select id="getBusinessesProfile" resultType="kr.co.dain_review.be.model.user.BusinessesProfile">
         SELECT ue.company,
-        (SELECT COUNT(c.seq) FROM campaigns c WHERE c.user_seq = #{userSeq}) as activeCampaignsCount
-        FROM user_enterpriser ue
+        (SELECT COUNT(c.seq) FROM campaigns c WHERE c.user_seq = #{userSeq}) as activeCampaignsCount,
+        CASE
+            WHEN ua.status is NULL THEN NULL
+            WHEN ua.status = 1 THEN '대행사 검수중'
+            WHEN ua.status = 2 THEN NULL
+            WHEN ua.status = 3 THEN '대행사 승인 거절'
+        END as agencyStatus
+        FROM user_businesses ue
+        LEFT JOIN user_agency ua ON ue.user_seq = ua.user_seq
         WHERE ue.user_seq = #{userSeq}
     </select>
 </mapper>

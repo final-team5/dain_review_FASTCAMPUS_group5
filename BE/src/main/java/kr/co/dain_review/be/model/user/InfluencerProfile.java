@@ -15,8 +15,10 @@ public class InfluencerProfile {
     private String profile;
     private Integer cancel;
     private Integer penalty;
-
     private String nickname;
+
+    private Integer type;
+
     private Integer appliedCampaignsCount;
     private Integer selectedCampaignsCount;
     private Integer activeCampaignsCount;

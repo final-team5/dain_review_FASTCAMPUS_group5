@@ -34,7 +34,6 @@ public class InstagramService {
     private static final String LONG_LIVED_TOKEN_URI = "https://graph.facebook.com/v11.0/oauth/access_token";
     private static final String INSTAGRAM_API_URL = "https://graph.facebook.com/v11.0/";
 
-
     public String getAccessToken(String code) {
         RestTemplate restTemplate = new RestTemplate();
 

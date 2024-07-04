@@ -99,7 +99,8 @@ public class AlarmService {
 
     public void reviewAlarm(ReportInsert insert, String name) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("campaign", insert.getCampaignSeq());
+        map.put("id", insert.getCampaignId());
+        map.put("campaign", campaignMapper.getCampaignSeq(map));
         String campaignTitle = campaignMapper.getCampaignTitle(map);
         map.put("userSeq", campaignMapper.getCampaignUserSeq(map));
         map.put("message", name+" 님이 "+campaignTitle+" 체험단 리뷰 URL을 등록하였습니다.");

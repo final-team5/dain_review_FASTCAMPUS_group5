@@ -2,7 +2,6 @@ package kr.co.dain_review.be.model.jwt;
 
 
 import io.jsonwebtoken.ExpiredJwtException;
-import kr.co.dain_review.be.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
@@ -22,7 +21,6 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 public class JwtFilter extends GenericFilterBean {
-    private final JwtService jwtService;
     private final TokenProvider tokenProvider;
     private final JwtDecoder jwtDecoder;
     public static final String AUTHORIZATION_HEADER = "Authorization";

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dain_review.be.mapper.TransactionMapper">
+    <insert id="insert">
+        INSERT INTO transactions (id, user_seq, name, amount, method, status, currency, bank_name, card_type, receipt_url, resident_number, account_number)
+        VALUES (#{id}, #{userSeq}, #{name}, #{amount}, #{method}, #{status}, #{currency}, #{bankName}, #{cardType}, #{receiptUrl}, #{residentNumber}, #{accountNumber})
+    </insert>
+
+    <update id="update">
+        UPDATE transactions SET status = #{status} WHERE seq = #{seq}
+    </update>
+
+
+    <select id="list" resultType="kr.co.dain_review.be.model.transaction.Transaction">
+        SELECT seq,
+               id,
+               user_seq as userSeq,
+               name,
+               amount,
+               method,
+               status,
+               currency,
+               card_type as cardType,
+               receipt_url as receiptUrl,
+               resident_number as residentNumber,
+               account_number as accountNumber,
+               transaction_date as transactionDate
+        FROM transactions
+        LIMIT #{page}, 10
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(seq)
+        FROM transactions
+    </select>
+</mapper>

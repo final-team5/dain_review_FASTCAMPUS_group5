@@ -15,7 +15,7 @@ public class SocialRegister {
     private String accessToken;
     private String name;
     private String phone;
-    private String signUpSource;
+    private String signupSource;
     private String company;
 
     private String blogLink;

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.UUID;
 
 import static kr.co.dain_review.be.config.WebMVCConfig.filePath;
@@ -42,6 +43,20 @@ public class FileUtils {
         }
     }
 
+    public static void saveFile(byte[] mfile, String fileName) {
+        String file = filePath + fileName;
+
+        createDirectoryIfNotExists(file);
+
+        try (OutputStream outputStream = new FileOutputStream(file)){
+            outputStream.write(mfile);
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
+
     public static String getExtension(MultipartFile file) {
         String fileName = file.getOriginalFilename();
         if (fileName == null || !fileName.contains(".")) {
@@ -53,6 +68,14 @@ public class FileUtils {
     public static String setNewName(MultipartFile file){
         String name = String.valueOf(UUID.randomUUID());
         String fileName = file.getOriginalFilename();
+        if (fileName == null || !fileName.contains(".")) {
+            return name; // 확장자가 없는 경우 빈 문자열 반환
+        }
+        return name +"."+ fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
+
+    public static String setNewName(String  fileName){
+        String name = String.valueOf(UUID.randomUUID());
         if (fileName == null || !fileName.contains(".")) {
             return name; // 확장자가 없는 경우 빈 문자열 반환
         }

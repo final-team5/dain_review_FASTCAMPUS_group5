@@ -2,16 +2,22 @@ package kr.co.dain_review.be.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import kr.co.dain_review.be.model.campaign.CampaignCommentsInsert;
+import kr.co.dain_review.be.model.campaign.CampaignCommentsUpdate;
+import kr.co.dain_review.be.model.campaign.CampaignId;
+import kr.co.dain_review.be.model.campaign.CampaignSeq;
+import kr.co.dain_review.be.model.community.CommunityCommentsInsert;
+import kr.co.dain_review.be.model.community.CommunityCommentsUpdate;
 import kr.co.dain_review.be.model.jwt.TokenProvider;
 import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.ChangePassword;
 import kr.co.dain_review.be.model.post.PostInsert;
-import kr.co.dain_review.be.model.post.PostInsertCampaign;
 import kr.co.dain_review.be.model.post.PostUpdate;
-import kr.co.dain_review.be.model.post.PostUpdateCampaign;
 import kr.co.dain_review.be.model.user.User;
-import kr.co.dain_review.be.service.PostService;
+import kr.co.dain_review.be.service.AlarmService;
+import kr.co.dain_review.be.service.CampaignService;
+import kr.co.dain_review.be.service.CommunityService;
 import kr.co.dain_review.be.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -33,28 +39,10 @@ public class UserController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final PostService postService;
+    private final CommunityService communityService;
+    private final CampaignService campaignService;
+    private final AlarmService alarmService;
 
-//    @ApiOperation(value = "프로필 보기", tags = "사용자 - 프로필")
-//    @GetMapping("/profile")
-//    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header){
-//        String token = header.getFirst("Authorization");
-//        Integer userSeq = tokenProvider.getSeq(token);
-//        JSONObject json = new JSONObject();
-//        json.put("profile", userService.getProfile(userSeq));
-//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-//    }
-
-//    @ApiOperation(value = "프로필 수정", tags = "사용자 - 프로필")
-//    @PutMapping("/profile")
-//    public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @RequestBody UserUpdate update){
-//        String token = header.getFirst("Authorization");
-//        Integer userSeq = tokenProvider.getSeq(token);
-//        userService.setProfile(update, userSeq);
-//        JSONObject json = new JSONObject();
-//        json.put("message", "SUCCESS");
-//        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-//    }
 
     @ApiOperation(value = "회원 탈퇴", tags = "사용자 - 회원")
     @DeleteMapping("/withdrawal")
@@ -120,8 +108,8 @@ public class UserController {
 
     }
 
-    @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 서이추/맞팔")
-    @GetMapping("/post")
+    @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 커뮤니티")
+    @GetMapping("/communities")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
@@ -129,56 +117,99 @@ public class UserController {
             userSeq = tokenProvider.getSeq(token);
         }
         JSONObject json = new JSONObject();
-        json.put("list", postService.select(search, 4, userSeq));
-        json.put("totalCount", postService.selectCount(search, 4, userSeq));
+        json.put("list", communityService.list(search, 4, userSeq));
+        json.put("count", communityService.count(search, 4, userSeq));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 서이추/맞팔")
-    @GetMapping("/post/{seq}")
+    @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 커뮤니티")
+    @GetMapping("/community/{seq}")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
         JSONObject json = new JSONObject();
-        json.put("list", postService.selectDetail(seq, 4));
+        json.put("list", communityService.detail(seq, 4));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 서이추/맞팔")
-    @PostMapping("/post")
+    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
+    @PostMapping("/community")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody PostInsert insert){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        postService.insert(insert, 3, userSeq);
+        communityService.insert(insert, 3, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 서이추/맞팔")
-    @PutMapping("/post")
+    @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 커뮤니티")
+    @PutMapping("/community")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody PostUpdate update){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        postService.update(update, userSeq);
+        communityService.update(update, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "서이추/맞팔 글 삭제", tags = "사용자 - 서이추/맞팔")
-    @DeleteMapping("/post")
+    @ApiOperation(value = "서이추/맞팔 글 삭제", tags = "사용자 - 커뮤니티")
+    @DeleteMapping("/communities")
     public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        postService.delete(delete, userSeq);
+        communityService.delete(delete, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+
+    @ApiOperation(value = "커뮤니티 댓글 추가", tags = "사용자 - 커뮤니티")
+    @PostMapping("/community/comments")
+    public ResponseEntity<?> insertCommunityComments(@RequestHeader HttpHeaders header, @RequestBody CommunityCommentsInsert insert){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        communityService.insertCommunityComments(insert, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "커뮤니티 댓글 수정", tags = "사용자 - 커뮤니티")
+    @PutMapping("/community/comments")
+    public ResponseEntity<?> updateCommunityComments(@RequestHeader HttpHeaders header, @RequestBody CommunityCommentsUpdate update){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        communityService.updateCommunityComments(update, userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "커뮤니티 댓글 삭제", tags = "사용자 - 커뮤니티")
+    @DeleteMapping("/community/comments")
+    public ResponseEntity<?> deleteCommunityComments(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        communityService.deleteCommunityComments(delete, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -196,47 +227,102 @@ public class UserController {
         return jo;
     }
 
-    @ApiOperation(value = "체험단 글 추가", tags = "사용자 - 체험단")
-    @PostMapping("/campaign")
-    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody PostInsertCampaign insert){
+    @ApiOperation(value = "체험단 댓글 추가", tags = "사용자 - 체험단")
+    @PostMapping("/campaign/comments")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody CampaignCommentsInsert insert){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        postService.insertCampaign(insert, userSeq);
+        campaignService.insertCampaignComments(insert, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "체험단 글 수정", tags = "사용자 - 체험단")
-    @PutMapping("/campaign")
-    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody PostUpdateCampaign update){
+    @ApiOperation(value = "체험단 댓글 수정", tags = "사용자 - 체험단")
+    @PutMapping("/campaign/comments")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody CampaignCommentsUpdate update){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        postService.updateCampaign(update, userSeq);
+        campaignService.updateCampaignComments(update, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "체험단 글 삭제", tags = "사용자 - 체험단")
-    @DeleteMapping("/campaign")
-    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
+    @ApiOperation(value = "체험단 댓글 삭제", tags = "사용자 - 체험단")
+    @DeleteMapping("/campaign/comments")
+    public ResponseEntity<?> comments(@RequestHeader HttpHeaders header, @RequestBody Delete delete){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        postService.deleteCampaign(delete, userSeq);
+        campaignService.deleteCampaignComments(delete, userSeq);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
 
+    @ApiOperation(value = "찜 목록", tags = "사용자 - 체험단")
+    @GetMapping("/favorites")
+    public ResponseEntity<?> positive(@RequestHeader HttpHeaders header){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        JSONObject json = new JSONObject();
+        json.put("list", campaignService.getFavoriteList(userSeq));
+        json.put("count", campaignService.getFavoriteListCount(userSeq));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "찜 하기", tags = "사용자 - 체험단")
+    @PostMapping("/favorites")
+    public ResponseEntity<?> positives_insert(@RequestHeader HttpHeaders header, @RequestBody CampaignId target){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        campaignService.insertFavorites(target.getId(), userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "찜 제거", tags = "사용자 - 체험단")
+    @DeleteMapping("/favorites")
+    public ResponseEntity<?> positives_delete(@RequestHeader HttpHeaders header, @RequestBody CampaignId target){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        campaignService.deleteFavorites(target.getId(), userSeq);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "알람", tags = "사용자 - 알람")
+    @GetMapping("/alarm")
+    public ResponseEntity<?> alarm(@RequestHeader HttpHeaders header){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        JSONObject json = new JSONObject();
+        json.put("list", alarmService.getAlarmList(userSeq));
+        json.put("count", alarmService.getAlarmListCount(userSeq));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
 }

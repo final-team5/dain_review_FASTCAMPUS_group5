@@ -28,10 +28,10 @@ public class UserService {
     @Autowired
     private CampaignMapper campaignMapper;
 
-    public User getUser(String email, Integer type) {
+    public User getUser(String email, Integer loginType) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("email", email);
-        map.put("type", type);
+        map.put("loginType", loginType);
         return userMapper.getUser(map);
     }
 
@@ -48,35 +48,48 @@ public class UserService {
         return userMapper.checkAuthentication(map);
     }
 
-    public void register(Register register) {
+    public void signup(Register register) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(register, HashMap.class);
         String id = String.valueOf(UUID.randomUUID());
-        String fileName = FileUtils.setNewName(register.getProfile());
-        FileUtils.saveFile(register.getProfile(), id+"/"+fileName);
+        if(register.getProfile()!=null) {
+            String fileName = FileUtils.setNewName(register.getFileName());
+            FileUtils.saveFile(register.getProfile(), id+"/"+fileName);
+            map.put("profile", fileName);
+        }
         map.put("id", id);
-        map.put("profile", fileName);
-        map.put("email", register.getEmail());
         map.put("pw", register.getPw());
+        map.put("email", register.getEmail());
         map.put("name", register.getName());
         map.put("phone", register.getPhone());
-        map.put("signUpSource", register.getSignUpSource());
-        map.put("blog", register.isBlogLink());
-        map.put("instagram", register.isInstagramLink());
-        map.put("youtube", register.isYoutubeLink());
-        map.put("tiktok", register.isTiktokLink());
-        map.put("other", register.isOtherLink());
+        map.put("sighupSource", register.getSignupSource());
+        map.put("type", register.getType());
         map.put("postalCode", register.getPostalCode());
         map.put("address", register.getAddress());
         map.put("addressDetail", register.getAddressDetail());
-        map.put("nickname", register.getNickname());
-        map.put("birthdate", register.getBirthdate());
-        map.put("gender", register.getGender());
-        map.put("company", register.getCompany());
+        map.put("loginType", register.getLoginType());
         map.put("role", register.getRole());
+
         userMapper.insertUser(map);
+
         Integer userSeq = userMapper.getSeq(map);
         map.put("userSeq", userSeq);
+        if(register.getRole().equals("ROLE_INFLUENCER")){
+            map.put("nickname", register.getNickname());
+
+            map.put("gender", register.getGender());
+            map.put("birthdate", register.getBirthdate());
+
+            map.put("blogLink", register.getBlog());
+            map.put("instagramLink", register.getInstagram());
+            map.put("youtubeLink", register.getYoutube());
+            map.put("tiktokLink", register.getTiktok());
+            map.put("otherLink", register.getOther());
+            userMapper.insertInfluencer(map);
+        } else if(register.getRole().equals("ROLE_BUSINESSES")){
+            map.put("company", register.getCompany());
+            userMapper.insertBusinesses(map);
+        }
     }
 
 
@@ -84,7 +97,7 @@ public class UserService {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(findEmail, HashMap.class);
         String email = userMapper.findEmail(map);
-        return maskEmail(email);
+        return email;
     }
 
     public String findPassword(FindPassword findPassword) {
@@ -211,7 +224,7 @@ public class UserService {
 
     public void Withdrawal(Integer userSeq) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("seq", userSeq);
+        map.put("userSeq", userSeq);
         userMapper.Withdrawal(map);
     }
 
@@ -239,9 +252,9 @@ public class UserService {
     }
 
 
-    public User getDetail(Integer seq) {
+    public User getDetail(Integer userSeq) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("seq", seq);
+        map.put("userSeq", userSeq);
         return userMapper.getDetail(map);
     }
 
@@ -254,7 +267,7 @@ public class UserService {
     public void setDelete(Delete delete) {
         for(Integer seq : delete.getSeqs()){
             HashMap<String, Object> map = new HashMap<>();
-            map.put("seq", seq);
+            map.put("userSeq", seq);
             userMapper.deleteUser(map);
         }
     }
@@ -267,12 +280,14 @@ public class UserService {
             map.put("userSeq", user.getSeq());
             if (user.getType() == 2) {
                 InfluencerProfile profile = userMapper.getInfluencerProfile(map);
+                profile.setType(user.getType());
                 profile.setCampaigns(campaignMapper.participatingCampaigns(map));
                 profile.setEditable(Objects.equals(user.getSeq(), userSeq));
                 BeanUtils.copyProperties(profile, user);
                 return profile;
             } else {
-                EnterpriserProfile profile = userMapper.getEnterpriserProfile(map);
+                BusinessesProfile profile = userMapper.getBusinessesProfile(map);
+                profile.setType(user.getType());
                 profile.setCampaigns(campaignMapper.hostedCampaigns(map));
                 profile.setEditable(Objects.equals(user.getSeq(), userSeq));
                 BeanUtils.copyProperties(profile, user);
@@ -282,13 +297,12 @@ public class UserService {
             System.out.println(e);
         }
         return null;
-
     }
 
-    public void influencerProfileUpdate(InfluencerUpdateUser update, Integer userSeq) {
+    public void influencerProfileUpdate(UserInfluencerUpdate update, Integer userSeq) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
-        map.put("seq", userSeq);
+        map.put("userSeq", userSeq);
         if(update.getProfile()!=null){
             String fileName = FileUtils.setNewName(update.getProfile());
             FileUtils.saveFile(update.getProfile(), fileName);
@@ -298,22 +312,21 @@ public class UserService {
         userMapper.updateInfluencer(map);
     }
 
-    public void enterpriserProfileUpdate(EnterpriserUpdateUser update, Integer userSeq) {
+    public void businessesProfileUpdate(BusinessesUpdate update) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
-        map.put("seq", userSeq);
         if(update.getProfile()!=null){
-            String fileName = FileUtils.setNewName(update.getProfile());
+            String fileName = FileUtils.setNewName(update.getProfileName());
             FileUtils.saveFile(update.getProfile(), fileName);
             map.put("profile", fileName);
         }
         if(update.getAttachment()!=null){
-            String fileName = FileUtils.setNewName(update.getAttachment());
+            String fileName = FileUtils.setNewName(update.getAttachmentName());
             FileUtils.saveFile(update.getAttachment(), fileName);
             map.put("attachment", fileName);
         }
         userMapper.updateUser(map);
-        userMapper.updateEnterpriser(map);
+        userMapper.updateBusinesses(map);
     }
 
     public ArrayList<Influencer> getInfluencer(Search search) {
@@ -342,33 +355,33 @@ public class UserService {
         return userMapper.getListCount(map);
     }
 
-    public ArrayList<Enterpriser> getEnterpriser(Search search) {
+    public ArrayList<Businesses> getBusinesses(Search search) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
-        map.put("role", "ROLE_ENTERPRISER");
+        map.put("role", "ROLE_BUSINESSES");
         ArrayList<User> users = userMapper.getList(map);
-        ArrayList<Enterpriser> enterprisers = new ArrayList<>();
+        ArrayList<Businesses> businessesArrayList = new ArrayList<>();
         try {
             for (User user : users) {
                 map.put("userSeq", user.getSeq());
-                Enterpriser enterpriser = objectMapper.convertValue(user, Enterpriser.class);
-                EnterpriserDetail detail = userMapper.getEnterpriserDetail(map);
+                Businesses businesses = objectMapper.convertValue(user, Businesses.class);
+                BusinessesDetail detail = userMapper.getBusinessesDetail(map);
                 if (detail != null) {
-                    enterpriser.setCompany(detail.getCompany());
-                    enterpriser.setType(detail.getType());
+                    businesses.setCompany(detail.getCompany());
+                    businesses.setType(detail.getType());
                 }
-                enterprisers.add(enterpriser);
+                businessesArrayList.add(businesses);
             }
         } catch (Exception e){
             System.out.println(e);
         }
-        return enterprisers;
+        return businessesArrayList;
     }
 
-    public Integer getEnterpriserCount(Search search) {
+    public Integer getBusinessesCount(Search search) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(search, HashMap.class);
-        map.put("role", "ROLE_ENTERPRISER");
+        map.put("role", "ROLE_BUSINESSES");
         return userMapper.getListCount(map);
     }
 
@@ -391,21 +404,21 @@ public class UserService {
         return influencerDetail;
     }
 
-    public EnterpriserDetail getEnterpriserDetail(Integer seq) {
+    public BusinessesDetail getBusinessesDetail(Integer seq) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("userSeq", seq);
         ObjectMapper objectMapper = new ObjectMapper();
-        EnterpriserDetail enterpriserDetail = null;
+        BusinessesDetail businessesDetail = null;
         try {
-            enterpriserDetail = objectMapper.convertValue(userMapper.getUserDetail(map), EnterpriserDetail.class);
-            EnterpriserDetail detail = userMapper.getEnterpriserDetail(map);
+            businessesDetail = objectMapper.convertValue(userMapper.getUserDetail(map), BusinessesDetail.class);
+            BusinessesDetail detail = userMapper.getBusinessesDetail(map);
             if (detail != null) {
-                BeanUtils.copyProperties(enterpriserDetail, detail);
+                BeanUtils.copyProperties(businessesDetail, detail);
             }
         } catch (Exception e){
             System.out.println(e);
         }
-        return enterpriserDetail;
+        return businessesDetail;
 
     }
 
@@ -413,7 +426,7 @@ public class UserService {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
         if(update.getProfile()!=null){
-            String fileName = FileUtils.setNewName(update.getProfile());
+            String fileName = FileUtils.setNewName(update.getProfileName());
             FileUtils.saveFile(update.getProfile(), fileName);
             map.put("profile", fileName);
         }
@@ -421,21 +434,22 @@ public class UserService {
         userMapper.updateInfluencer(map);
     }
 
-    public void enterpriserUpdate(EnterpriserUpdate update) {
+    public void businessesUpdate(BusinessesUpdate update) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
+        map.put("userSeq", update.getSeq());
         if(update.getProfile()!=null){
-            String fileName = FileUtils.setNewName(update.getProfile());
+            String fileName = FileUtils.setNewName(update.getProfileName());
             FileUtils.saveFile(update.getProfile(), fileName);
             map.put("profile", fileName);
         }
         if(update.getAttachment()!=null){
-            String fileName = FileUtils.setNewName(update.getProfile());
-            FileUtils.saveFile(update.getProfile(), fileName);
+            String fileName = FileUtils.setNewName(update.getAttachmentName());
+            FileUtils.saveFile(update.getAttachment(), fileName);
             map.put("attachment", fileName);
         }
         userMapper.updateUser(map);
-        userMapper.updateEnterpriser(map);
+        userMapper.updateBusinesses(map);
 
     }
 
@@ -445,7 +459,7 @@ public class UserService {
         String id = String.valueOf(UUID.randomUUID());
         map.put("id", id);
         if(insert.getProfile()!=null){
-            String fileName = FileUtils.setNewName(insert.getProfile());
+            String fileName = FileUtils.setNewName(insert.getFileName());
             FileUtils.saveFile(insert.getProfile(), fileName);
             map.put("profile", fileName);
         }
@@ -454,24 +468,24 @@ public class UserService {
         userMapper.insertInfluencer(map);
     }
 
-    public void insertEnterpriser(EnterpriserInsert insert) {
+    public void insertBusinesses(BusinessesInsert insert) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
         String id = String.valueOf(UUID.randomUUID());
         map.put("id", id);
         if(insert.getProfile()!=null){
-            String fileName = FileUtils.setNewName(insert.getProfile());
+            String fileName = FileUtils.setNewName(insert.getProfileName());
             FileUtils.saveFile(insert.getProfile(), fileName);
             map.put("profile", fileName);
         }
         if(insert.getAttachment()!=null){
-            String fileName = FileUtils.setNewName(insert.getProfile());
-            FileUtils.saveFile(insert.getProfile(), fileName);
+            String fileName = FileUtils.setNewName(insert.getAttachmentName());
+            FileUtils.saveFile(insert.getAttachment(), fileName);
             map.put("attachment", fileName);
         }
         userMapper.insertUser(map);
         map.put("userSeq", userMapper.getUserSeq(map));
-        userMapper.insertEnterpriser(map);
+        userMapper.insertBusinesses(map);
     }
 
     public void updateFollower() {
@@ -483,4 +497,19 @@ public class UserService {
     public void updateSubscriber() {
     }
 
+    public boolean checkCompany(String company){
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("company", company);
+        return userMapper.checkCompany(map);
+    }
+
+
+    public void agencyApplication(AgencyInsert insert, Integer userSeq) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(insert, HashMap.class);
+        map.put("userSeq", userSeq);
+        userMapper.agencyApplication(map);
+        userMapper.updateBusinesses(map);
+
+    }
 }

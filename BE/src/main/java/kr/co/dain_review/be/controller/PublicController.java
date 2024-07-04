@@ -7,21 +7,16 @@ import kr.co.dain_review.be.model.list.Search;
 import kr.co.dain_review.be.model.main.*;
 import kr.co.dain_review.be.model.jwt.TokenProvider;
 import kr.co.dain_review.be.model.campaign.CampaignSearch;
-import kr.co.dain_review.be.model.user.User;
-import kr.co.dain_review.be.service.InstagramService;
-import kr.co.dain_review.be.service.PostService;
-import kr.co.dain_review.be.service.CampaignService;
-import kr.co.dain_review.be.service.UserService;
+import kr.co.dain_review.be.model.user.*;
+import kr.co.dain_review.be.service.*;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 
@@ -36,9 +31,7 @@ public class PublicController {
     private final PasswordEncoder passwordEncoder;
     private final PostService postService;
 
-    private final InstagramService instagramService;
-
-    @ApiOperation(value = "프로필 보기", tags = "사용자 - 프로필")
+    @ApiOperation(value = "마이페이지", tags = "사용자 - 프로필")
     @GetMapping("/profile/{id}")
     public ResponseEntity<?> profile(@RequestHeader HttpHeaders header, @PathVariable String id){
         Integer userSeq = null;
@@ -70,12 +63,39 @@ public class PublicController {
 
     }
 
+
+    //소셜 로그인
+    @ApiOperation(value = "소셜 로그인", tags = "공개 - 회원")
+    @PostMapping("/social-login")
+    public ResponseEntity<?> SocialRegister(@RequestBody SocialLogin login) throws ParseException {
+
+        SocialInfo info = getSocialInfo(login.getAccessToken(), login.getLoginType());
+        String email = info.getEmail();
+        String pw = info.getId();
+        JSONObject jo = new JSONObject();
+        User user = userService.getUser(email, login.getLoginType());
+        if(user==null){
+            jo.put("message", "사용자를 찾을 수 없습니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+        }
+        if (!passwordEncoder.matches(pw, user.getPw())) {
+            jo.put("message", "잘못된 토큰 입니다.");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+        }
+
+        jo = setReturnValue(user);
+        jo.put("message", "로그인 되었습니다.");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+    }
+
+
     @ApiOperation(value = "닉네임 중복 체크", tags = "공개 - 회원")
-    @PostMapping("/nickname-check")
-    public ResponseEntity<?> nicknameCheck(@RequestBody Nickname nickname){
+    @GetMapping("/nickname-check")
+    public ResponseEntity<?> nicknameCheck(String nickname){
         JSONObject jo = new JSONObject();
 
-            if (userService.checkNickname(nickname.getNickname())) {
+            if (userService.checkNickname(nickname)) {
                 jo.put("message", "이미 사용중인 닉네임 입니다");
                 return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
             }
@@ -84,19 +104,29 @@ public class PublicController {
 
     }
 
+    @ApiOperation(value = "회사명 중복 체크", tags = "공개 - 회원")
+    @GetMapping("/company-check")
+    public ResponseEntity<?> compnayCheck(String company){
+        JSONObject jo = new JSONObject();
+
+        if (userService.checkCompany(company)) {
+            jo.put("message", "이미 사용중인 회사명 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        jo.put("message", "사용 가능한 회사명 입니다");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+    }
+
     //회원 가입
-    @ApiOperation(value = "회원 가입", tags = "공개 - 회원")
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody LocalRegister localRegister){
-        ObjectMapper objectMapper = new ObjectMapper();
-        Register register = objectMapper.convertValue(localRegister, Register.class);
-        register.setType(1);
-        if (localRegister.getEntrepreneur()){
-            register.setRole("ROLE_ENTERPRISER");
-        }
-        if (localRegister.getInfluencer()){
-            register.setRole("ROLE_INFLUENCER");
-        }
+    @ApiOperation(value = "회원 가입(인플루언서)", tags = "공개 - 회원")
+    @PostMapping("/influencers/signup")
+    public ResponseEntity<?> influencers_signup(@ModelAttribute InfluencerSignup signup){
+        Register register = new Register(signup);
+        register.setLoginType(1);
+        register.setRole("ROLE_INFLUENCER");
+        register.setType(2);
+
 
         JSONObject jo = new JSONObject();
         User user = userService.getUser(register.getEmail(), 1);
@@ -118,65 +148,23 @@ public class PublicController {
         }
         String pw = passwordEncoder.encode(register.getPw());
         register.setPw(pw);
-        userService.register(register);
+        userService.signup(register);
 //            kakao.sendMessageRegister(register.getPhone());
         jo.put("message", "회원가입 되었습니다");
         return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
 
     }
 
-    //소셜 로그인
-    @ApiOperation(value = "소셜 로그인", tags = "공개 - 회원")
-    @PostMapping("/social-login")
-    public ResponseEntity<?> SocialRegister(@RequestBody SocialLogin socialLogin) throws ParseException {
-
-        JSONObject json = getUser(socialLogin.getAccessToken());
-        JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
-        String email = kakaoAccount.get("email").toString();
-        String pw = json.get("id").toString();
-        JSONObject jo = new JSONObject();
-        User user = userService.getUser(email, 2);
-
-        if(user==null){
-            jo.put("message", "사용자를 찾을 수 없습니다");
-            return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
-        }
-        if (!passwordEncoder.matches(pw, user.getPw())) {
-            jo.put("message", "잘못된 토큰 입니다.");
-            return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
-        }
-
-        jo = setReturnValue(user);
-        jo.put("message", "로그인 되었습니다.");
-        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
-
-
-    }
-
-    //소셜 회원가입
-    @ApiOperation(value = "소셜 회원 가입", tags = "공개 - 회원")
-    @PostMapping("/social-register")
-    public ResponseEntity<?> SocialRegister(@RequestBody SocialRegister socialRegister){
-
-        JSONObject json = getUser(socialRegister.getAccessToken());
-        JSONObject kakaoAccount = (JSONObject) json.get("kakao_account");
-        String email = kakaoAccount.get("email").toString();
-        String pw = json.get("id").toString();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Register register = objectMapper.convertValue(socialRegister, Register.class);
-        register.setEmail(email);
-        register.setPw(passwordEncoder.encode(pw));
-        register.setType(2);
-        if (socialRegister.getEntrepreneur()){
-            register.setRole("ROLE_ENTERPRISER");
-        }
-        if (socialRegister.getInfluencer()){
-            register.setRole("ROLE_INFLUENCER");
-        }
+    @ApiOperation(value = "회원 가입(사업자)", tags = "공개 - 회원")
+    @PostMapping("/businesses/signup")
+    public ResponseEntity<?> businesses_signup(@ModelAttribute BusinessesSignup signup){
+        Register register = new Register(signup);
+        register.setType(1);
+        register.setLoginType(1);
+        register.setRole("ROLE_BUSINESSES");
 
         JSONObject jo = new JSONObject();
-        User user = userService.getUser(register.getEmail(), 2);
+        User user = userService.getUser(register.getEmail(), 1);
         if (user!=null) {
             jo.put("message", "이미 가입된 아이디가 있습니다");
             return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
@@ -193,10 +181,83 @@ public class PublicController {
             jo.put("message", "이미 사용중인 전화번호 입니다");
             return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
         }
-        userService.register(register);
+        String pw = passwordEncoder.encode(register.getPw());
+        register.setPw(pw);
+        userService.signup(register);
+//            kakao.sendMessageRegister(register.getPhone());
+        jo.put("message", "회원가입 되었습니다");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+
+    }
+
+    @ApiOperation(value = "회원 가입(인플루언서 - 소셜)", tags = "공개 - 회원", notes = "loginTyoe = 2(구글), 3(카카오), 4(네이버)")
+    @PostMapping("/influencers/social-signup")
+    public ResponseEntity<?> SocialRegister(@ModelAttribute InfluencerSocialSignup signup){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Register register = objectMapper.convertValue(signup, Register.class);
+        register.setRole("ROLE_INFLUENCER");
+        register.setType(2);
+
+        SocialInfo info = getSocialInfo(signup.getAccessToken(), signup.getLoginType());
+        String email = info.getEmail();
+        String pw = info.getId();
+
+        register.setEmail(email);
+        register.setPw(passwordEncoder.encode(pw));
+
+
+        JSONObject jo = new JSONObject();
+        if(userService.checkEmail(register.getEmail())){
+            jo.put("message", "이미 사용중인 이메일 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkNickname(register.getNickname())){
+            jo.put("message", "이미 사용중인 닉네임 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkPhone(register.getPhone())){
+            jo.put("message", "이미 사용중인 전화번호 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        userService.signup(register);
         jo.put("message", "회원가입 되었습니다");
         return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
     }
+
+
+    @ApiOperation(value = "회원 가입(사업자 - 소셜)", tags = "공개 - 회원", notes = "loginType = 2(구글), 3(카카오), 4(네이버)")
+    @PostMapping("/businesses/social-signup")
+    public ResponseEntity<?> SocialRegister(@ModelAttribute BusinessesSocialSignup signup){
+        Register register = new Register(signup);
+        register.setRole("ROLE_BUSINESSES");
+        register.setType(1);
+
+        SocialInfo info = getSocialInfo(signup.getAccessToken(), signup.getLoginType());
+        String email = info.getEmail();
+        String pw = info.getId();
+
+        register.setEmail(email);
+        register.setPw(passwordEncoder.encode(pw));
+
+
+        JSONObject jo = new JSONObject();
+        if(userService.checkEmail(register.getEmail())){
+            jo.put("message", "이미 사용중인 이메일 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkNickname(register.getNickname())){
+            jo.put("message", "이미 사용중인 닉네임 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        if(userService.checkPhone(register.getPhone())){
+            jo.put("message", "이미 사용중인 전화번호 입니다");
+            return new ResponseEntity<>(jo.toString(), HttpStatus.CONFLICT);
+        }
+        userService.signup(register);
+        jo.put("message", "회원가입 되었습니다");
+        return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+    }
+
 
     //아이디 찾기
     @ApiOperation(value = "아이디 찾기", tags = "공개 - 회원")
@@ -296,24 +357,57 @@ public class PublicController {
 
     }
 
-    private JSONObject getUser (String accessToken){
+    private SocialInfo getSocialInfo(String accessToken, Integer loginType){
         try {
+
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + accessToken);
             headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+            // HTTP 요청 보내기 - Post 방식
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
             RestTemplate rt = new RestTemplate();
             ResponseEntity<String> response = null;
-            response = rt.exchange(
-                    "https://kapi.kakao.com/v2/user/me",
-                    HttpMethod.POST,
-                    request,
-                    String.class
-            );
+
+            switch (loginType){
+                case 2:
+                    response = rt.exchange(
+                            "https://www.googleapis.com/oauth2/v1/userinfo",
+                            HttpMethod.GET,
+                            request,
+                            String.class
+                    );
+                    break;
+                case  3:
+                    response = rt.exchange(
+                            "https://kapi.kakao.com/v2/user/me",
+                            HttpMethod.POST,
+                            request,
+                            String.class
+                    );
+                    break;
+                case 4:
+                    response = rt.exchange(
+                            "https://openapi.naver.com/v1/nid/me",
+                            HttpMethod.POST,
+                            request,
+                            String.class
+                    );
+                    break;
+            }
+            // responseBody 정보 꺼내기
             String responseBody = response.getBody();
+            System.out.println(responseBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JSONObject jsonObject = objectMapper.convertValue(responseBody, JSONObject.class);
-            return jsonObject;
+
+
+            String email = jsonObject.get("email").toString();
+            String pw = jsonObject.get("id").toString();
+            SocialInfo info = new SocialInfo();
+            info.setEmail(email);
+            info.setId(pw);
+            return info;
         } catch (Exception e) {
             System.out.println(e);
             return null;
@@ -339,47 +433,45 @@ public class PublicController {
     public ResponseEntity<?> campaign(CampaignSearch search){
         JSONObject json = new JSONObject();
         json.put("list", campaignService.getList(search));
-        json.put("totalCount", campaignService.getListCount(search));
+        json.put("count", campaignService.getListCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     //체험단 상세
     @ApiOperation(value = "체험단 상세", tags = "공개 - 체험단")
-    @GetMapping("/campaign/{seq}")
-    public ResponseEntity<?> campaign(@PathVariable Integer seq){
-        return new ResponseEntity<>(campaignService.getDetail(seq), HttpStatus.OK);
+    @GetMapping("/campaign/{id}")
+    public ResponseEntity<?> campaign(@PathVariable String id){
+        return new ResponseEntity<>(campaignService.getDetail(id), HttpStatus.OK);
     }
 
 
-    @ApiOperation(value = "공지 리스트", tags = "공개 - 공지")
+    @ApiOperation(value = "공지 리스트", tags = "관리자 - 공지")
     @GetMapping("/post")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, Search search){
+    public ResponseEntity<?> post(Search search){
         JSONObject json = new JSONObject();
-        json.put("list", postService.select(search, 1));
-        json.put("totalCount", postService.selectCount(search, 1));
+        json.put("list", postService.list(search));
+        json.put("count", postService.count(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "공지 상세", tags = "공개 - 공지")
+    @ApiOperation(value = "공지 상세", tags = "관리자 - 공지")
     @GetMapping("/post/{seq}")
-    public ResponseEntity<?> community(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
-        JSONObject json = new JSONObject();
-        json.put("list", postService.selectDetail(seq, 1));
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    public ResponseEntity<?> post(@PathVariable Integer seq){
+        return new ResponseEntity<>(postService.detail(seq), HttpStatus.OK);
     }
 
 
-    @GetMapping("/getAccessToken")
-    public String getAccessToken(@RequestParam String code) {
-        String shortLivedToken = instagramService.getAccessToken(code);
-        String longLivedAccessToken = instagramService.getLongLivedAccessToken(shortLivedToken);
-        return longLivedAccessToken;
-    }
+//    @GetMapping("/getAccessToken")
+//    public String getAccessToken(@RequestParam String code) {
+//        String shortLivedToken = instagramService.getAccessToken(code);
+//        String longLivedAccessToken = instagramService.getLongLivedAccessToken(shortLivedToken);
+//        return longLivedAccessToken;
+//    }
 
-    @GetMapping("/reels/comments/count")
-    public Mono<ResponseEntity<Integer>> getReelsCommentsCount(@RequestParam String reelsId, @RequestParam String accessToken) {
-        return instagramService.getReelsCommentsCount(reelsId, accessToken)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(0)));
-    }
+//    @GetMapping("/reels/comments/count")
+//    public Mono<ResponseEntity<Integer>> getReelsCommentsCount(@RequestParam String reelsId, @RequestParam String accessToken) {
+//        return instagramService.getReelsCommentsCount(reelsId, accessToken)
+//                .map(ResponseEntity::ok)
+//                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(0)));
+//    }
 }

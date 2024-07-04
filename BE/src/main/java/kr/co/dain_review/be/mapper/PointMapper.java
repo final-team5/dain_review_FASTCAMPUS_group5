@@ -14,11 +14,5 @@ public interface PointMapper {
 
     Integer selectListCount(HashMap<String, Object> map);
 
-    Point selectDetail(HashMap<String, Object> map);
-
-    void update(HashMap<String, Object> map);
-
     void insert(HashMap<String, Object> map);
-
-    void delete(HashMap<String, Object> map);
 }

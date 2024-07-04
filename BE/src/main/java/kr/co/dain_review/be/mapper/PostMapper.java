@@ -10,30 +10,16 @@ import java.util.HashMap;
 @Repository
 @Mapper
 public interface PostMapper {
-    ArrayList<Post> select(HashMap<String, Object> map);
 
-    Integer selectCount(HashMap<String, Object> map);
+    ArrayList<Post> list(HashMap<String, Object> map);
 
-    Post selectDetail(HashMap<String, Object> map);
+    Integer count(HashMap<String, Object> map);
 
-    void update(HashMap<String, Object> map);
+    Post detail(HashMap<String, Object> map);
 
     void insert(HashMap<String, Object> map);
 
+    void update(HashMap<String, Object> map);
+
     void delete(HashMap<String, Object> map);
-
-
-    void deleteAdmin(HashMap<String, Object> map);
-
-    void updateAdmin(HashMap<String, Object> map);
-
-    void insertAdmin(HashMap<String, Object> map);
-
-    void countVisitor(HashMap<String, Object> map);
-
-    void insertCampaign(HashMap<String, Object> map);
-
-    void updateCampaign(HashMap<String, Object> map);
-
-    void deleteCampaign(HashMap<String, Object> map);
 }

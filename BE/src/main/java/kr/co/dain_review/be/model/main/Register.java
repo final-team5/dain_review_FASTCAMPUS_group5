@@ -2,80 +2,138 @@ package kr.co.dain_review.be.model.main;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
+import kr.co.dain_review.be.model.user.BusinessesSignup;
+import kr.co.dain_review.be.model.user.BusinessesSocialSignup;
+import kr.co.dain_review.be.model.user.InfluencerSignup;
+import kr.co.dain_review.be.model.user.InfluencerSocialSignup;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Register {
-    private String accessToken;
-    private Integer authNum;
-    private String pw;
-
+    //공용
     private String email;
     private String name;
     private String phone;
-    private String signUpSource;
-    private String company;
-    private Integer type;
+    private String signupSource;
+    private Integer loginType;
     private String role;
-
-    private String blogLink;
-    private String instagramLink;
-    private String youtubeLink;
-    private String tiktokLink;
-    private String otherLink;
-
+    private Integer type;
     private String postalCode;
     private String address;
     private String addressDetail;
 
-    private String nickname;
+    private byte[] profile;
+    private String fileName;
 
-    private MultipartFile profile;
+    //소셜 가입
+    private String accessToken;
+    
+    //로컬 가입
+    private Integer authNum;
+    private String id;
+    private String pw;
+
+    //인플루언서 항목
+    private String nickname;
     private String birthdate;
     private Integer gender;
 
+    private String blog;
+    private String instagram;
+    private String youtube;
+    private String tiktok;
+    private String other;
 
-    public Boolean isBlogLink() {
-        if(blogLink!=null){
-            return true;
-        } else {
-            return false;
+    //사업자 항목
+    private String company;
+
+    public Register(InfluencerSignup signup) {
+        this.email = signup.getEmail();
+        this.pw = signup.getPw();
+        this.name = signup.getName();
+        this.phone = signup.getPhone();
+        this.nickname = signup.getNickname();
+        this.signupSource = signup.getSignupSource();
+        this.blog = signup.getBlog();
+        this.instagram = signup.getInstagram();
+        this.youtube = signup.getYoutube();
+        this.tiktok = signup.getTiktok();
+        this.other = signup.getOther();
+        this.postalCode = signup.getPostalCode();
+        this.address = signup.getAddress();
+        this.addressDetail = signup.getAddressDetail();
+        this.birthdate = signup.getBirthdate();
+        this.gender = signup.getGender();
+        try {
+            this.profile = signup.getProfile().getBytes();
+            this.fileName = signup.getProfile().getOriginalFilename();
+        } catch (IOException e){
+            System.out.println(e);
         }
     }
 
-    public Boolean isInstagramLink() {
-        if(instagramLink!=null){
-            return true;
-        } else {
-            return false;
+    public Register(BusinessesSignup signup){
+        this.email = signup.getEmail();
+        this.pw = signup.getPw();
+        this.name = signup.getName();
+        this.phone = signup.getPhone();
+        this.company = signup.getCompany();
+        this.signupSource = signup.getSignupSource();
+        this.postalCode = signup.getPostalCode();
+        this.address = signup.getAddress();
+        this.addressDetail = signup.getAddressDetail();
+        try {
+            this.profile = signup.getProfile().getBytes();
+            this.fileName = signup.getProfile().getOriginalFilename();
+        } catch (IOException e){
+            System.out.println(e);
         }
     }
 
-    public Boolean isYoutubeLink() {
-        if(youtubeLink!=null){
-            return true;
-        } else {
-            return false;
+    public Register(InfluencerSocialSignup signup){
+        this.loginType = signup.getLoginType();
+        this.name = signup.getName();
+        this.phone = signup.getPhone();
+        this.nickname = signup.getNickname();
+        this.signupSource = signup.getSignupSource();
+        this.blog = signup.getBlog();
+        this.instagram = signup.getInstagram();
+        this.youtube = signup.getYoutube();
+        this.tiktok = signup.getTiktok();
+        this.other = signup.getOther();
+        this.postalCode = signup.getPostalCode();
+        this.address = signup.getAddress();
+        this.addressDetail = signup.getAddressDetail();
+        this.birthdate = signup.getBirthdate();
+        this.gender = signup.getGender();
+
+        try {
+            this.profile = signup.getProfile().getBytes();
+            this.fileName = signup.getProfile().getOriginalFilename();
+        } catch (IOException e){
+            System.out.println(e);
         }
     }
 
-    public Boolean isTiktokLink() {
-        if(tiktokLink!=null){
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public Boolean isOtherLink() {
-        if(otherLink!=null){
-            return true;
-        } else {
-            return false;
+    public Register(BusinessesSocialSignup signup){
+        this.loginType = signup.getLoginType();
+        this.name = signup.getName();
+        this.phone = signup.getPhone();
+        this.company = signup.getCompany();
+        this.signupSource = signup.getSignupSource();
+        this.postalCode = signup.getPostalCode();
+        this.address = signup.getAddress();
+        this.addressDetail = signup.getAddressDetail();
+        try {
+            this.profile = signup.getProfile().getBytes();
+            this.fileName = signup.getProfile().getOriginalFilename();
+        } catch (IOException e){
+            System.out.println(e);
         }
     }
 }

@@ -2,10 +2,17 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="3083ed8a-8cf6-4d01-9a31-b9be36a5e1c3" name="다인리뷰" url="http://116.124.133.159">
+      <webServer id="f15afeef-843e-4050-aede-7a30edb34186" name="다인리뷰" url="http://116.124.133.159">
         <fileTransfer host="116.124.133.159" port="4021">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="8992d4ba-bc67-4eec-abc4-ac70e864bb8a" name="샌티넬">
+        <fileTransfer accessType="SFTP" host="116.124.133.159" port="2202" sshConfigId="46a1f99b-6280-4899-bf14-9695e205d875" sshConfig="root@116.124.133.159:2202 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>

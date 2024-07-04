@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReportInsert {
-    private Integer campaignSeq;
+    private String campaignId;
     private String link;
     private MultipartFile attachments;
 }

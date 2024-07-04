@@ -17,7 +17,7 @@ public class LocalRegister {
 
     private String name;
     private String phone;
-    private String signUpSource;
+    private String signupSource;
     private String company;
 
     private String blogLink;

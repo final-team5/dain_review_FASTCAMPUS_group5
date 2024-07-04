@@ -12,21 +12,22 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class InfluencerUpdate {
-    private Integer seq;
+    private Integer userSeq;
     private String email;
     private String id;
     private String pw;
     private String name;
     private String phone;
     private String nickname;
-    private String signUpSource;
+    private String signupSource;
 
     private Integer postalCode;
     private String address;
     private String addressDetail;
 
-    private MultipartFile profile;
-    private Date birthdate;
+    private byte[] profile;
+    private String profileName;
+    private String birthdate;
     private Integer gender;
 
     private String blogLink;
@@ -41,4 +42,63 @@ public class InfluencerUpdate {
     private String otherRank;
 
     private Integer status;
+
+    public InfluencerUpdate(AdminInfluencerUpdate update){
+        this.userSeq = update.getSeq();
+        this.email = update.getEmail();
+        this.id = update.getId();
+        this.pw = update.getPw();
+        this.name = update.getName();
+        this.phone = update.getPhone();
+        this.nickname = update.getNickname();
+        this.signupSource = update.getSignupSource();
+        this.postalCode = update.getPostalCode();
+        this.address = update.getAddress();
+        this.addressDetail = update.getAddressDetail();
+        this.birthdate = update.getBirthdate();
+        this.gender = update.getGender();
+        this.blogLink = update.getBlogLink();
+        this.blogRank = update.getBlogRank();
+        this.instagramLink = update.getInstagramLink();
+        this.instagramRank = update.getInstagramRank();
+        this.youtubeLink = update.getYoutubeLink();
+        this.youtubeRank = update.getYoutubeRank();
+        this.tiktokLink = update.getTiktokLink();
+        this.tiktokRank = update.getTiktokRank();
+        this.otherLink = update.getOtherLink();
+        this.otherRank = update.getOtherRank();
+        this.status = update.getStatus();
+
+        try{
+            this.profileName = update.getProfile().getOriginalFilename();
+            this.profile = update.getProfile().getBytes();
+        } catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
+    public InfluencerUpdate(UserInfluencerUpdate update, Integer userSeq){
+        this.userSeq = userSeq;
+        this.email = update.getEmail();
+        this.pw = update.getPw();
+        this.name = update.getName();
+        this.phone = update.getPhone();
+        this.nickname = update.getNickname();
+        this.postalCode = update.getPostalCode();
+        this.address = update.getAddress();
+        this.addressDetail = update.getAddressDetail();
+        this.birthdate = update.getBirthdate();
+        this.gender = update.getGender();
+        this.blogLink = update.getBlogLink();
+        this.instagramLink = update.getInstagramLink();
+        this.youtubeLink = update.getYoutubeLink();
+        this.tiktokLink = update.getTiktokLink();
+        this.otherLink = update.getOtherLink();
+        try {
+            this.profile = update.getProfile().getBytes();
+            this.profileName = update.getProfile().getOriginalFilename();
+        } catch (Exception e){
+            System.out.println(e);
+        }
+    }
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostUpdate {
     private Integer seq;
-    private Integer categorySeq;
+    private String category;
     private String title;
     private String contents;
 }

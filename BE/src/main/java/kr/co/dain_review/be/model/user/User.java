@@ -12,12 +12,14 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class User {
     private Integer seq;
+    private String email;
     private String id;
     private String pw;
+    private String role;
     private String name;
     private String phone;
     private Date createDate;
-    private String signUpSource;
+    private String signupSource;
     private Integer postalCode;
     private String address;
     private String addressDetail;

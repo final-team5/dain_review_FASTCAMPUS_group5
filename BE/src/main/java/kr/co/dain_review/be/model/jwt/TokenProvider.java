@@ -47,10 +47,11 @@ public class TokenProvider implements InitializingBean {
         Date validity = new Date(timeInSecs + tokenValidityInMilliseconds);
         HashMap<String, Object> map = new HashMap<>();
         map.put("seq", user.getSeq());
+        map.put("id", user.getId());
+        map.put("pw", user.getPw());
         map.put("name", user.getName());
-        map.put("phone", user.getPhone());
-//        map.put("role", user.getRole());
-
+        map.put("type", user.getType());
+        map.put("role", user.getRole());
         return Jwts.builder()
                 .setSubject("subject")
                 .setClaims(map) // 정보 저장s
@@ -72,7 +73,7 @@ public class TokenProvider implements InitializingBean {
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(claims.get("email").toString(), claims.get("name").toString(), authorities);
+        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(claims.get("id").toString(), claims.get("pw").toString(), authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }

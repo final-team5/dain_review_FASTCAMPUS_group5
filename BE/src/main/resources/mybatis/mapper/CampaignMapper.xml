@@ -117,6 +117,15 @@
         VALUES (#{title}, #{hashTag}, #{map}, #{link}, #{characters}, #{videoLength}, #{pictureCount}, #{accountTag}, #{sound},
                 #{advertisingDisplay})
     </insert>
+    <insert id="insertFavorites">
+        INSERT INTO campaign_favorites (user_seq, campaign_seq) VALUES (#{userSeq}, #{campaignSeq})
+    </insert>
+    <insert id="insertComments">
+        INSERT INTO campaign_comments (user_seq, campaign_seq, comment_seq, comment)
+        VALUES (#{userSeq}, #{campaignSeq}, #{commentSeq}, #{comment})
+    </insert>
+
+
     <update id="progress">
 
     </update>
@@ -179,6 +188,13 @@
         </set>
         WHERE seq = #{seq}
     </update>
+    <update id="updateComments">
+        UPDATE campaign_comments
+        <set>
+            <if test="comment!=null">comment = #{comment}, </if>
+        </set>
+        WHERE seq = #{seq} AND user_seq = #{userSeq}
+    </update>
 
     <delete id="delete">
         DELETE FROM campaigns WHERE seq = #{seq}
@@ -190,14 +206,50 @@
     <delete id="deleteMission">
         DELETE FROM missions WHERE seq = #{seq}
     </delete>
+    <delete id="deleteFavorites">
+        DELETE FROM campaign_favorites WHERE user_seq = #{userSeq} AND campaign_seq = #{campaignSeq}
+    </delete>
+    <delete id="deleteComments">
+        DELETE FROM campaign_comments WHERE seq = #{seq} AND user_seq = #{userSeq}
+    </delete>
+    <delete id="cancel">
+        INSERT INTO cancel (user_seq, campaign_seq, reason, evidentiary_1, evidentiary_2, evidentiary_3, type)
+        VALUES (#{userSeq}, #{campaignSeq}, #{reason}, #{evidentiary1}, #{evidentiary2}, #{evidentiary3}, #{type})
+    </delete>
+    <select id="cancelRequestCheck" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM cancel WHERE campaign_seq = #{campaignSeq} AND user_seq = #{userSeq})
+    </select>
+
+    <select id="cancelList" resultType="kr.co.dain_review.be.model.campaign.Cancel">
+        SELECT type,
+               user_seq as userSeq,
+               campaign_seq as campaignSeq,
+               reason,
+               evidentiary_1 as evidentiary1,
+               evidentiary_2 as evidentiary2,
+               evidentiary_3 as evidentiary3
+        FROM cancel
+        ORDER BY
+                 CASE
+                     WHEN status = 1 THEN 1
+                     ELSE 2
+                 END
+        LIMIT #{page}, 10
+    </select>
+
+    <select id="cancelCount" resultType="integer">
+        SELECT COUNT(*) FROM cancel
+    </select>
+
+
 
     <select id="selectList" resultType="kr.co.dain_review.be.model.campaign.Campaign">
         SELECT
-            p.seq,
+            p.id,
             p.title,
             p.recruiter,
             p.image,
-            p.category
+            p.category,
             p.type,
             p.status,
             p.city,
@@ -209,8 +261,7 @@
         <where>
             <if test="city!=null and district!=null">
                 AND (p.city, p.district) IN
-                <foreach item="location" index="index" collection="locations"
-                         open="(" separator="), (" close=")">
+                <foreach item="location" index="index" collection="locations" open="(" separator="), (" close=")">
                     #{location.city}, #{location.district}
                 </foreach>
             </if>
@@ -226,10 +277,11 @@
                 </when>
             </choose>
         </where>
+        GROUP BY p.seq
         ORDER BY CASE
-        WHEN tag = '다인리뷰' THEN 1
-        WHEN tag = '프리미엄' THEN 2
-        WHEN tag IS NULL THEN 3
+        WHEN p.tag = '다인리뷰' THEN 1
+        WHEN p.tag = '프리미엄' THEN 2
+        WHEN p.tag IS NULL THEN 3
         ELSE 4
         END
         <if test="orderParam != null">
@@ -241,14 +293,13 @@
                     , p.application_start_date DESC
                 </when>
                 <when test="orderParam.equals('deadline')">
-                    , application_end_date ASC
+                    , p.application_end_date ASC
                 </when>
                 <when test="orderParam.equals('popularity')">
-                    , applicant DESC
+                    , pa.applicant DESC
                 </when>
             </choose>
         </if>
-        GROUP BY p.seq
         LIMIT #{page}, 10
 
     </select>
@@ -280,11 +331,11 @@
     <select id="selectDetail" resultType="kr.co.dain_review.be.model.campaign.Campaign">
         SELECT
         <include refid="campaignColumns" />,
-        MAX(pa.seq) as applicant
+        MAX(ca.seq) as applicant
         FROM campaigns c
-        LEFT JOIN campaign_applicants pa on c.seq = pa.campaign_seq
+        LEFT JOIN campaign_applicants ca on c.seq = ca.campaign_seq
         <where>
-            p.seq = #{seq}
+            c.id = #{id}
         </where>
     </select>
 
@@ -294,16 +345,16 @@
             p.title,
             p.recruiter,
             p.image,
-            p.category as categorySeq,
-            p.platform as platformSeq,
-            p.type as typeSeq,
+            p.category,
+            p.platform,
+            p.type,
             p.status,
             p.city,
             p.district,
             MAX(pa.seq) as applicant,
             p.tag
         FROM campaigns p
-        LEFT JOIN campaign_preference pp on pp.campaign_seq = p.seq
+        LEFT JOIN campaign_favorites pp on pp.campaign_seq = p.seq
         LEFT JOIN campaign_applicants pa on pa.campaign_seq = p.seq
         WHERE pp.user_seq = #{userSeq}
         GROUP BY (p.seq)
@@ -312,7 +363,7 @@
     <select id="selectFavoriteListCount" resultType="java.lang.Integer">
         SELECT COUNT(p.seq)
         FROM campaigns p
-                 LEFT JOIN campaign_preference pp on pp.campaign_seq = p.seq
+                 LEFT JOIN campaign_favorites pp on pp.campaign_seq = p.seq
                  LEFT JOIN campaign_applicants pa on pa.campaign_seq = p.seq
         WHERE pp.user_seq = #{userSeq}
     </select>
@@ -322,7 +373,7 @@
     </select>
 
     <select id="applicationInfluencer" resultType="kr.co.dain_review.be.model.campaign.CampaignInfluencer">
-        SELECT u.seq,
+        SELECT u.id,
                u.name,
                ui.blog_link as blogLink,
                ui.blog_rank as blogRank,
@@ -347,7 +398,7 @@
     </select>
 
     <select id="selectionInfluencer" resultType="kr.co.dain_review.be.model.campaign.CampaignInfluencer">
-        SELECT u.seq,
+        SELECT u.id,
                u.name,
                ui.blog_link as blogLink,
                ui.blog_rank as blogRank,
@@ -421,7 +472,7 @@
     </select>
 
     <sql id="campaignColumns">
-        c.seq,
+        c.id,
         c.user_seq as userSeq,
         c.category,
         c.platform,
@@ -476,13 +527,32 @@
         SELECT <include refid="campaignColumns" />
         FROM campaigns c
         WHERE c.user_seq = #{userSeq}
+        ORDER BY c.seq DESC
     </select>
 
     <select id="participatingCampaigns" resultType="kr.co.dain_review.be.model.campaign.Campaign">
         SELECT <include refid="campaignColumns" />
         FROM campaigns c
         LEFT JOIN campaign_applicants ca on c.seq = ca.campaign_seq
-        WHERE ca.user_seq = #{userSeq} AND NOW() BETWEEN c.application_start_date AND c.experience_end_date
+        WHERE ca.user_seq = #{userSeq}
+        ORDER BY c.seq DESC
+    </select>
+    <select id="checkApplication" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM campaign_applicants WHERE campaign_seq = #{campaignSeq} AND user_seq = #{userSeq})
+    </select>
+    <select id="CampaignComments" resultType="kr.co.dain_review.be.model.campaign.CampaignComment">
+        SELECT seq,
+               user_seq as  userSeq,
+               campaign_seq as campaignSeq,
+               comment,
+               create_date as createDate
+        FROM campaign_comments WHERE campaign_seq = #{campaign_seq}
+    </select>
+    <select id="influencerCampaign" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT c.title, c.application_start_date as applicationStartDate, c.status
+        FROM campaigns c
+        JOIN campaign_applicants ca on c.seq = ca.campaign_seq
+        WHERE ca.user_seq = #{userSeq} AND c.status = 4 AND ca.application = 1
     </select>
 
 

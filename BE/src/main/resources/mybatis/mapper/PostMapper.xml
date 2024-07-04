@@ -4,112 +4,43 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.co.dain_review.be.mapper.PostMapper">
-    <insert id="insertAdmin">
-        INSERT INTO posts (category_seq, type_seq, title, contents)
-        VALUES (#{categorySeq}, #{typeSeq}, #{title}, #{contents});
-    </insert>
-
     <insert id="insert">
-        INSERT INTO posts (user_seq, category_seq, type_seq, title, contents)
-        VALUES (#{userSeq}, #{categorySeq}, #{typeSeq}, #{title}, #{contents});
+        INSERT INTO posts (title, contents) VALUES (#{title}, #{contents})
     </insert>
-    <insert id="insertCampaign">
-        INSERT INTO campaign_comments (user_seq, campaign_seq, comment_seq, comment)
-        VALUES (#{userSeq}, #{campaignSeq}, #{commentSeq}, #{comment})
-    </insert>
-
-    <update id="updateAdmin">
+    <update id="update">
         UPDATE posts
         <set>
-            <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
             <if test="title!=null">title = #{title}, </if>
             <if test="contents!=null">contents = #{contents}, </if>
         </set>
         WHERE seq = #{seq}
     </update>
-
-    <update id="update">
-        UPDATE posts
-            <set>
-                <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
-                <if test="title!=null">title = #{title}, </if>
-                <if test="contents!=null">contents = #{contents}, </if>
-            </set>
-        WHERE seq = #{seq} AND user_seq = #{userSeq}
-    </update>
-    <update id="countVisitor">
-        UPDATE posts SET view_count = view_count + 1 WHERE seq = #{seq}
-    </update>
-    <update id="updateCampaign">
-        UPDATE campaign_comments SET comment = #{comment} WHERE seq = #{seq} AND user_seq = #{userSeq}
-    </update>
-
     <delete id="delete">
-        DELETE FROM posts WHERE seq = #{seq} AND user_seq = #{userSeq}
-    </delete>
-
-    <delete id="deleteAdmin">
         DELETE FROM posts WHERE seq = #{seq}
     </delete>
-    <delete id="deleteCampaign">
-        DELETE FROM campaign_comments WHERE seq = #{seq} AND user_seq = #{userSeq}
-    </delete>
 
-    <select id="select" resultType="kr.co.dain_review.be.model.post.Post">
-        SELECT category.category,
-        p.title,
-        u_i.nickname,
-        p.create_date as createDate,
-        p.view_count as viewCount
-        FROM posts p
-        LEFT JOIN users u ON p.user_seq = u.seq
-        LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
-        LEFT JOIN post_categories category on p.category_seq = category.seq
-        LEFT JOIN post_comments comment on p.seq = comment.post_seq
 
-        <where>
-            AND p.type_seq = #{type}
-            AND p.title LIKE #{searchWord}
-            <choose>
-                <when test="searchType!=null and searchType.equals('myPost')"> AND p.user_seq = #{userSeq} </when>
-                <when test="searchType!=null and searchType.equals('comments')"> AND comment.user_seq = #{userSeq} </when>
-            </choose>
-        </where>
-        GROUP BY p.seq
+    <select id="list" resultType="kr.co.dain_review.be.model.post.Post">
+        SELECT seq,
+               title,
+               create_date as createDate,
+               view_count
+        FROM posts
         LIMIT #{page}, 10
     </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM posts
 
-
-    <select id="selectCount" resultType="java.lang.Integer">
-        SELECT COUNT(p.seq)
-        FROM posts p
-        LEFT JOIN post_comments comment on p.seq = comment.post_seq
-        <where>
-            AND p.type_seq = #{type} /* {typeSeq 를 type}  */
-            AND p.title LIKE #{searchWord}
-            <choose>
-                <when test="searchType!=null and searchType.equals('myPost')"> AND p.user_seq = #{userSeq} </when>
-                <when test="searchType!=null and searchType.equals('comments')"> AND `comment`.user_seq = #{userSeq} </when>
-            </choose>
-        </where>
-        GROUP BY (p.seq)
     </select>
-
-    <select id="selectDetail" resultType="kr.co.dain_review.be.model.post.Post">
-        SELECT pc.category,
-               p.title,
-               p.contents,
-               u_i.nickname,
-               p.create_date as createDate,
-               p.view_count as viewCount,
-               CONCAT(u.id, '/', u.profile) as profile,
-               p.type_seq as userType
-        FROM posts p
-        LEFT JOIN users u ON p.user_seq = u.seq
-        LEFT JOIN user_influencer u_i ON u.seq = u_i.user_seq
-        LEFT JOIN post_categories pc on p.category_seq = pc.seq
-        WHERE p.seq = #{seq} AND p.category_seq = #{type}
+    <select id="detail" resultType="kr.co.dain_review.be.model.post.Post">
+        SELECT p1.seq,
+        p1.title,
+        p1.contents,
+        p1.create_date AS createDate,
+        p1.view_count AS viewCount,
+        (SELECT seq FROM posts WHERE p1.seq > seq ORDER BY seq DESC LIMIT 1) AS prevSeq,
+        (SELECT seq FROM posts WHERE seq > p1.seq ORDER BY seq ASC LIMIT 1) AS nextSeq
+        FROM posts p1
+        WHERE p1.seq = #{seq}
     </select>
-
-
 </mapper>

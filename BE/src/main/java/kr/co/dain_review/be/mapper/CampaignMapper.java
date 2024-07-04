@@ -67,4 +67,28 @@ public interface CampaignMapper {
     ArrayList<Campaign> hostedCampaigns(HashMap<String, Object> map);
 
     ArrayList<Campaign> participatingCampaigns(HashMap<String, Object> map);
+
+    boolean checkApplication(HashMap<String, Object> map);
+
+    void insertFavorites(HashMap<String, Object> map);
+
+    void deleteFavorites(HashMap<String, Object> map);
+
+    ArrayList<CampaignComment> CampaignComments(HashMap<String, Object> map);
+
+    void insertComments(HashMap<String, Object> map);
+
+    void updateComments(HashMap<String, Object> map);
+
+    void deleteComments(HashMap<String, Object> map);
+
+    void cancel(HashMap<String, Object> map);
+
+    ArrayList<Campaign> influencerCampaign(HashMap<String, Object> map);
+
+    ArrayList<Cancel> cancelList(HashMap<String, Object> map);
+
+    Integer cancelCount(HashMap<String, Object> map);
+
+    boolean cancelRequestCheck(HashMap<String, Object> map);
 }

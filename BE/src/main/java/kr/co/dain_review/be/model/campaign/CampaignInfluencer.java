@@ -29,7 +29,7 @@ public class CampaignInfluencer {
 //    +순위체크
 //    +링크주소
 //    +첨부자료
-    private Integer seq;
+    private String id;
     private Integer cancel;
     private Boolean application; //선정 여부
     private String link;

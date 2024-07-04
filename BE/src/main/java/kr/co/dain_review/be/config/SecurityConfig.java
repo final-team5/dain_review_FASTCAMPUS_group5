@@ -5,7 +5,6 @@ import kr.co.dain_review.be.model.jwt.JwtAccessDeniedHandler;
 import kr.co.dain_review.be.model.jwt.JwtAuthenticationEntryPoint;
 import kr.co.dain_review.be.model.jwt.JwtFilter;
 import kr.co.dain_review.be.model.jwt.TokenProvider;
-import kr.co.dain_review.be.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
     private final CorsConfig corsConfig;
-    private final JwtService jwtService;
 //    private final JwtDecoder jwtDecoder;
 
     private final TokenProvider tokenProvider;
@@ -38,10 +36,10 @@ public class SecurityConfig {
     }
 
     private static final String[] LIMIT_URL_ADMIN = {
-            "/admin/**", "/ent/**", "/inf/**", "/user/**"
+            "/adm/**", "/ent/**", "/inf/**", "/user/**"
     };
-    private static final String[] LIMIT_URL_ENTERPRISER = {
-            "/ent/**", "/user/**"
+    private static final String[] LIMIT_URL_BUSINESSES = {
+            "/bus/**", "/user/**"
     };
 
     private static final String[] LIMIT_URL_INFLUENCER = {
@@ -69,13 +67,13 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
 //                .antMatchers(LIMIT_URL_ADMIN).hasAuthority("ROLE_ADMIN")
-//                .antMatchers(LIMIT_URL_ENTERPRISER).hasAuthority("ROLE_ENTERPRISER")
+//                .antMatchers(LIMIT_URL_BUSINESSES).hasAuthority("ROLE_BUSINESSES")
 //                .antMatchers(LIMIT_URL_INFLUENCER).hasAuthority("ROLE_INFLUENCER")
 //                .antMatchers(LIMIT_URL_AGENCY).hasAuthority("ROLE_AGENCY")
                 .anyRequest().permitAll()
                 .and()
                 .addFilter(corsConfig.corsFilter())
-                .addFilterBefore(new JwtFilter(jwtService, tokenProvider, jwtDecoder()), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(tokenProvider, jwtDecoder()), UsernamePasswordAuthenticationFilter.class);
     return http.build();
     }
 

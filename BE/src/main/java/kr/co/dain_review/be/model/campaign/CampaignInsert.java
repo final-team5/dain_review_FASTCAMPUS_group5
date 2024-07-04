@@ -8,7 +8,6 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CampaignInsert {
-    private Integer userSeq;
     private String title;
     private String contents;
     private String service;

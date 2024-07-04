@@ -15,7 +15,7 @@ public class InfluencerDetail {
     private String pw;
     private String name;
     private String phone;
-    private String signUpSource;
+    private String signupSource;
     private Integer postalCode;
     private String address;
     private String addressDetail;

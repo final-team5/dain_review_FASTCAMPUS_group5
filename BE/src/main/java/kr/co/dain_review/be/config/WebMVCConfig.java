@@ -38,12 +38,12 @@ public class WebMVCConfig implements WebMvcConfigurer {
     // 특정 경로와 로컬을 이어주고 해당 경로가 사용될때 캐시관련 헤더와 함께 내려줌
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         if(System.getProperty("os.name").toLowerCase().contains("win")) {
-            filePath = "C:/Users/start/IdeaProjects/mailer_rctown/BE/src/main/resources/static/";
-            filePath2 = "C:/Users/start/IdeaProjects/mailer_rctown/BE/src/main/resources/static/";
+            filePath = "C:/Users/start/IdeaProjects/dain_review/BE/src/main/resources/static/";
+            filePath2 = "C:/Users/start/IdeaProjects/dain_review/BE/src/main/resources/static/";
         }
         else {
             filePath = "";
-            filePath2 = "/mnt/extra02/home/mailer/BE/";
+            filePath2 = "/mnt/extra02/home/dain_review/BE/";
         }
     }
 }

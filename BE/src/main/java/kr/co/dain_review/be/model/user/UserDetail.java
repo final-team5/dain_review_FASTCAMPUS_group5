@@ -15,7 +15,7 @@ public class UserDetail {
     private String name;
     private String phone;
     private Date createDate;
-    private String signUpSource;
+    private String signupSource;
     private Integer postalCode;
     private String address;
     private String addressDetail;

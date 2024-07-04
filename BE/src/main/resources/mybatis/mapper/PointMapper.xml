@@ -5,49 +5,24 @@
 
 <mapper namespace="kr.co.dain_review.be.mapper.PointMapper">
     <insert id="insert">
-        INSERT INTO payment (user_seq,
-                             order_id,
-                             amount,
-                             payment_method,
-                             payment_status,
-                             currency,
-                             bank_name,
-                             card_type,
-                             payment_gateway,
-                             receipt_url,
-                             refund_status)
-        VALUES (#{userSeq},
-                #{orderId},
-                #{amount},
-                #{paymentMethod},
-                #{paymentStatus},
-                #{currency},
-                #{bankName},
-                #{cardType},
-                #{paymentGateway},
-                #{receiptUrl},
-                #{refundStatus})
+        INSERT INTO points (id, user_seq, campaign_seq, point, type, description)
+        VALUES (#{id}, #{userSeq}, #{campaignSeq}, #{point}, #{type}, #{description})
     </insert>
 
-    <update id="update">
-
-    </update>
-
-    <delete id="delete">
-        DELETE FROM payment WHERE seq = #{seq}
-    </delete>
-
-
     <select id="selectList" resultType="kr.co.dain_review.be.model.point.Point">
-        SELECT * FROM payment
+        SELECT seq,
+            id,
+            user_seq as userSeq,
+            type,
+            point,
+            description,
+            create_date as createDate
+        FROM points
         LIMIT #{page}, 10
     </select>
 
     <select id="selectListCount" resultType="java.lang.Integer">
-        SELECT COUNT(seq) FROM payment
+        SELECT COUNT(seq) FROM points
     </select>
 
-    <select id="selectDetail" resultType="kr.co.dain_review.be.model.point.Point">
-        SELECT * FROM payment WHERE seq = #{seq}
-    </select>
 </mapper>

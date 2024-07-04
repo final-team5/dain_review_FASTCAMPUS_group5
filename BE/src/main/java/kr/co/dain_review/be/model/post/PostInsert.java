@@ -8,7 +8,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostInsert {
-    private Integer categorySeq;
+    private String category;
     private String title;
     private String contents;
 }

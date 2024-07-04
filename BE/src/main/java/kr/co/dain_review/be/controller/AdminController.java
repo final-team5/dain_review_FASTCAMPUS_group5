@@ -4,10 +4,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import kr.co.dain_review.be.model.list.Delete;
 import kr.co.dain_review.be.model.list.Search;
-import kr.co.dain_review.be.model.point.AdminPointUpdate;
-import kr.co.dain_review.be.model.post.AdminPostInsert;
-import kr.co.dain_review.be.model.post.AdminPostUpdate;
 import kr.co.dain_review.be.model.campaign.*;
+import kr.co.dain_review.be.model.transaction.TransactionUpdate;
+import kr.co.dain_review.be.model.point.PointInsert;
+import kr.co.dain_review.be.model.post.PostInsert;
+import kr.co.dain_review.be.model.post.PostUpdate;
 import kr.co.dain_review.be.model.user.*;
 import kr.co.dain_review.be.service.*;
 import lombok.RequiredArgsConstructor;
@@ -19,16 +20,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @Api(tags = "관리자")
-@RequestMapping("/admin")
+@RequestMapping("/adm")
 @RequiredArgsConstructor
 @RestController
 public class AdminController {
 
     private final UserService userService;
     private final PointService pointService;
-    private final PostService postService;
+    private final CommunityService communityService;
     private final CampaignService campaignService;
     private final AlarmService alarmService;
+    private final PostService postService;
+    private final TransactionService transactionService;
 
     //
     @ApiOperation(value = "인플루언서 리스트", tags = "관리자 - 인플루언서",
@@ -37,7 +40,7 @@ public class AdminController {
     public ResponseEntity<?> influencer(Search search){
         JSONObject json = new JSONObject();
         json.put("list", userService.getInfluencer(search));
-        json.put("totalCount", userService.getInfluencerCount(search));
+        json.put("count", userService.getInfluencerCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -49,7 +52,8 @@ public class AdminController {
 
     @ApiOperation(value ="인플루언서 추가", tags = "관리자 - 인플루언서")
     @PostMapping("/influencer")
-    public ResponseEntity<?> influencer(@RequestBody InfluencerInsert insert){
+    public ResponseEntity<?> influencer(@ModelAttribute AdminInfluencerInsert adminInsert){
+        InfluencerInsert insert = new InfluencerInsert(adminInsert);
         userService.influencerInsert(insert);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -58,7 +62,8 @@ public class AdminController {
 
     @ApiOperation(value ="인플루언서 수정", tags = "관리자 - 인플루언서")
     @PutMapping("/influencer")
-    public ResponseEntity<?> influencer(@RequestBody InfluencerUpdate update){
+    public ResponseEntity<?> influencer(@ModelAttribute AdminInfluencerUpdate adminUpdate){
+        InfluencerUpdate update = new InfluencerUpdate(adminUpdate);
         userService.influencerUpdate(update);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -77,41 +82,43 @@ public class AdminController {
 
     @ApiOperation(value = "사업자 리스트", tags = "관리자 - 사업자",
             notes = "searchType : nickname, name, email")
-    @GetMapping("/enterpriser")
-    public ResponseEntity<?> enterpriser(Search search){
+    @GetMapping("/businesses")
+    public ResponseEntity<?> businesses(Search search){
         JSONObject json = new JSONObject();
-        json.put("list", userService.getEnterpriser(search));
-        json.put("totalCount", userService.getEnterpriserCount(search));
+        json.put("list", userService.getBusinesses(search));
+        json.put("count", userService.getBusinessesCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value ="사업자 상세", tags = "관리자 - 사업자")
-    @GetMapping("/enterpriser/{seq}")
-    public ResponseEntity<?> enterpriser(@PathVariable Integer seq){
-        return new ResponseEntity<>(userService.getEnterpriserDetail(seq), HttpStatus.OK);
+    @GetMapping("/businesses/{seq}")
+    public ResponseEntity<?> businesses(@PathVariable Integer seq){
+        return new ResponseEntity<>(userService.getBusinessesDetail(seq), HttpStatus.OK);
     }
 
     @ApiOperation(value ="사업자 추가", tags = "관리자 - 사업자")
-    @PostMapping("/enterpriser")
-    public ResponseEntity<?> enterpriser(@RequestBody EnterpriserInsert insert){
-        userService.insertEnterpriser(insert);
+    @PostMapping("/businesses")
+    public ResponseEntity<?> businesses(@ModelAttribute AdminBusinessesInsert adminInsert){
+        BusinessesInsert insert = new BusinessesInsert(adminInsert);
+        userService.insertBusinesses(insert);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value ="사업자 수정", tags = "관리자 - 사업자")
-    @PutMapping("/enterpriser")
-    public ResponseEntity<?> enterpriser(@RequestBody EnterpriserUpdate update){
-        userService.enterpriserUpdate(update);
+    @PutMapping("/businesses")
+    public ResponseEntity<?> businesses(@ModelAttribute AdminBusinessesUpdate adminUpdate){
+        BusinessesUpdate update = new BusinessesUpdate(adminUpdate);
+        userService.businessesUpdate(update);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value ="사업자 삭제", tags = "관리자 - 사업자")
-    @DeleteMapping("/enterpriser")
-    public ResponseEntity<?> enterpriser(@RequestBody Delete delete){
+    @DeleteMapping("/businesses")
+    public ResponseEntity<?> businesses(@RequestBody Delete delete){
         userService.setDelete(delete);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
@@ -125,7 +132,7 @@ public class AdminController {
     public ResponseEntity<?> agency(@PathVariable String type, Search search){
         JSONObject json = new JSONObject();
         json.put("list", userService.getList(search));
-        json.put("totalCount", userService.getListCount(search));
+        json.put("count", userService.getListCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -157,12 +164,21 @@ public class AdminController {
 
 
 //   포인트 관리
-    @ApiOperation(value = "결제 내역", tags = "관리자 - 결제")
+    @ApiOperation(value = "포인트 내역", tags = "관리자 - 포인트")
     @GetMapping("/point")
     public ResponseEntity<?> point(Search search){
         JSONObject json = new JSONObject();
         json.put("list", pointService.list(search));
-        json.put("totalCount", pointService.listCount(search));
+        json.put("count", pointService.count(search));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+    
+    @ApiOperation(value = "포인트 할당", tags = "관리자 - 포인트")
+    @PutMapping("/point")
+    public ResponseEntity<?> point(@RequestBody PointInsert insert){
+        pointService.insert(insert);
+        JSONObject json = new JSONObject();
+        json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -174,10 +190,21 @@ public class AdminController {
 //        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
 //    }
 
-    @ApiOperation(value = "이체 확인", tags = "관리자 - 이체 확인")
-    @PutMapping("/point")
-    public ResponseEntity<?> point(@RequestBody AdminPointUpdate update){
-        pointService.update(update);
+
+    @ApiOperation(value = "결제 내역", tags = "관리자 - 결제")
+    @GetMapping("/payment")
+    public ResponseEntity<?> payment(Search search){
+        JSONObject json = new JSONObject();
+        json.put("list", transactionService.list(search));
+        json.put("count", transactionService.count(search));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+
+    @ApiOperation(value = "이체 확인", tags = "관리자 - 결제")
+    @PutMapping("/payment")
+    public ResponseEntity<?> payment(@RequestBody TransactionUpdate update){
+        transactionService.update(update);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -185,30 +212,44 @@ public class AdminController {
 
 
 
+    @ApiOperation(value = "공지 리스트", tags = "관리자 - 공지")
+    @GetMapping("/post")
+    public ResponseEntity<?> post(Search search){
+        JSONObject json = new JSONObject();
+        json.put("list", postService.list(search));
+        json.put("count", postService.count(search));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "공지 상세", tags = "관리자 - 공지")
+    @GetMapping("/post/{seq}")
+    public ResponseEntity<?> post(@PathVariable Integer seq){
+        return new ResponseEntity<>(postService.detail(seq), HttpStatus.OK);
+    }
 
 
-    @ApiOperation(value = "게시판 추가", tags = "관리자 - 게시판")
+    @ApiOperation(value = "공지 추가", tags = "관리자 - 공지")
     @PostMapping("/post")
-    public ResponseEntity<?> post(@RequestBody AdminPostInsert insert){
-        postService.insertAdmin(insert);
+    public ResponseEntity<?> post(@RequestBody PostInsert insert){
+        postService.insert(insert);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "게시판 수정", tags = "관리자 - 게시판")
+    @ApiOperation(value = "공지 수정", tags = "관리자 - 게시판")
     @PutMapping("/post")
-    public ResponseEntity<?> post(@RequestBody AdminPostUpdate update){
-        postService.updateAdmin(update);
+    public ResponseEntity<?> post(@RequestBody PostUpdate update){
+        postService.update(update);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "게시판 삭제", tags = "관리자 - 게시판")
+    @ApiOperation(value = "공지 삭제", tags = "관리자 - 공지")
     @DeleteMapping("/post")
     public ResponseEntity<?> post(@RequestBody Delete delete){
-        postService.deleteAdmin(delete);
+        postService.delete(delete);
         JSONObject json = new JSONObject();
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
@@ -223,15 +264,15 @@ public class AdminController {
     public ResponseEntity<?> campaign(CampaignSearch search){
         JSONObject json = new JSONObject();
         json.put("list", campaignService.getList(search));
-        json.put("totalCount", campaignService.getListCount(search));
+        json.put("count", campaignService.getListCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "체험 상세", tags = "관리자 - 체험단")
-    @GetMapping("/campaign/{seq}")
-    public ResponseEntity<?> campaign(@PathVariable Integer seq){
+    @GetMapping("/campaign/{id}")
+    public ResponseEntity<?> campaign(@PathVariable String id){
         JSONObject json = new JSONObject();
-        json.put("detail", campaignService.getDetail(seq));
+        json.put("detail", campaignService.getDetail(id));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -253,7 +294,7 @@ public class AdminController {
         if(update.getStatus() == 2){
             message = update.getTitle()+" 체험단이 반려되었습니다. \n반려 사유 : "+update.getMessage();
         }
-        else if (update.getStatus() == 2){
+        else if (update.getStatus() == 3){
             message = update.getTitle()+" 체험단이 승인되었습니다.";
         }
         alarmService.insert(update.getCampaignSeq(), update.getUserSeq(), message);
@@ -405,4 +446,12 @@ public class AdminController {
 //        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
 //    }
 
+    @ApiOperation(value = "체험단 취소 요청 내역", tags = "관리자 - 체험단")
+    @GetMapping("/cancel")
+    public ResponseEntity<?> cancel(Search search){
+        JSONObject json = new JSONObject();
+        json.put("list", campaignService.cancelList(search));
+        json.put("count", campaignService.cancelCount(search));
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
 }

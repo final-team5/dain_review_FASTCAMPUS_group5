@@ -1,6 +1,5 @@
 package kr.co.dain_review.be.mapper;
 
-import kr.co.dain_review.be.model.campaign.Campaign;
 import kr.co.dain_review.be.model.user.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -15,6 +14,8 @@ public interface UserMapper {
     User getUser(HashMap<String, Object> map);
 
     boolean checkNickname(HashMap<String, Object> map);
+
+    boolean checkCompany(HashMap<String, Object> map);
 
     boolean checkAuthentication(HashMap<String, Object> map);
 
@@ -69,7 +70,7 @@ public interface UserMapper {
 
     void updateUser(HashMap<String, Object> map);
 
-    EnterpriserDetail getEnterpriserDetail(HashMap<String, Object> map);
+    BusinessesDetail getBusinessesDetail(HashMap<String, Object> map);
 
     InfluencerDetail getInfluencerDetail(HashMap<String, Object> map);
 
@@ -77,11 +78,11 @@ public interface UserMapper {
 
     void updateInfluencer(HashMap<String, Object> map);
 
-    void updateEnterpriser(HashMap<String, Object> map);
+    void updateBusinesses(HashMap<String, Object> map);
 
     void insertInfluencer(HashMap<String, Object> map);
 
-    void insertEnterpriser(HashMap<String, Object> map);
+    void insertBusinesses(HashMap<String, Object> map);
 
     Integer getUserSeq(HashMap<String, Object> map);
 
@@ -89,6 +90,7 @@ public interface UserMapper {
 
     InfluencerProfile getInfluencerProfile(HashMap<String, Object> map);
 
-    EnterpriserProfile getEnterpriserProfile(HashMap<String, Object> map);
+    BusinessesProfile getBusinessesProfile(HashMap<String, Object> map);
 
+    void agencyApplication(HashMap<String, Object> map);
 }

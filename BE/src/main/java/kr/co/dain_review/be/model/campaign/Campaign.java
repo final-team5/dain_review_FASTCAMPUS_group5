@@ -11,7 +11,7 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Campaign {
-    private Integer seq;
+    private Integer id;
     private String userSeq;
     private String category;
     private String platform;
