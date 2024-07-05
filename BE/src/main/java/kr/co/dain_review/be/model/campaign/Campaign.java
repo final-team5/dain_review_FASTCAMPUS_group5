@@ -62,5 +62,6 @@ public class Campaign {
     private Integer pictureCount;
     private Boolean accountTag;
     private Boolean sound;
-    private Boolean advertisingDisplay;
+    private Boolean isAdvertising;
+    private Boolean isKftc;
 }

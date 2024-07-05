@@ -49,14 +49,14 @@ public class PublicController {
 
             User user = userService.getUser(login.getEmail(), 1);
             JSONObject jo = new JSONObject();
-//            if (user == null) {
-//                jo.put("message", "사용자를 찾을 수 없습니다");
-//                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
-//            }
-//            if (!passwordEncoder.matches(login.getPw(), user.getPw())) {
-//                jo.put("message", "비밀번호가 일치하지 않습니다");
-//                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
-//            }
+            if (user == null) {
+                jo.put("message", "사용자를 찾을 수 없습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+            }
+            if (!passwordEncoder.matches(login.getPw(), user.getPw())) {
+                jo.put("message", "비밀번호가 일치하지 않습니다");
+                return new ResponseEntity<>(jo.toString(), HttpStatus.BAD_REQUEST);
+            }
             jo = setReturnValue(user);
             jo.put("message", "로그인 되었습니다.");
             return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
@@ -432,8 +432,8 @@ public class PublicController {
     @GetMapping("/campaign")
     public ResponseEntity<?> campaign(CampaignSearch search){
         JSONObject json = new JSONObject();
-        json.put("list", campaignService.getList(search));
-        json.put("count", campaignService.getListCount(search));
+        json.put("list", campaignService.publicList(search));
+        json.put("count", campaignService.publicCount(search));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 

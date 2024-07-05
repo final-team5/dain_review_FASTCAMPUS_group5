@@ -53,7 +53,8 @@
                                picture_count,
                                account_tag,
                                sound,
-                               advertising_display)
+                               is_advertising,
+                               is_kftc)
         VALUES (#{id},
                 #{userSeq},
                 #{category},
@@ -102,7 +103,8 @@
                 #{pictureCount},
                 #{accountTag},
                 #{sound},
-                #{advertisingDisplay})
+                #{isAdvertising}
+                #{isKftc})
     </insert>
 
     <insert id="application">
@@ -113,9 +115,9 @@
         VALUES (#{campaignSeq}, #{userSeq}, #{link}, #{attachments})
     </insert>
     <insert id="insertMission">
-        INSERT INTO missions (title, hash_tag, map, link, characters, video_length, picture_count, account_tag, sound, advertising_display)
+        INSERT INTO missions (title, hash_tag, map, link, characters, video_length, picture_count, account_tag, sound, is_advertising, is_kftc)
         VALUES (#{title}, #{hashTag}, #{map}, #{link}, #{characters}, #{videoLength}, #{pictureCount}, #{accountTag}, #{sound},
-                #{advertisingDisplay})
+                #{isAdvertising}, #{isKftc})
     </insert>
     <insert id="insertFavorites">
         INSERT INTO campaign_favorites (user_seq, campaign_seq) VALUES (#{userSeq}, #{campaignSeq})
@@ -123,6 +125,10 @@
     <insert id="insertComments">
         INSERT INTO campaign_comments (user_seq, campaign_seq, comment_seq, comment)
         VALUES (#{userSeq}, #{campaignSeq}, #{commentSeq}, #{comment})
+    </insert>
+    <insert id="insertCampaignPerformance">
+        INSERT INTO campaign_performance (campaign_seq, user_seq, pc_view, mobile_view, date)
+        SELECT #{campaignSeq}, user_seq, #{pcView}, #{mobileView}, #{date} FROM user_influencer WHERE nickname = #{nickname}
     </insert>
 
 
@@ -138,19 +144,23 @@
         UPDATE campaigns
         <set>
             <if test="userSeq!=null">user_seq = #{userSeq}, </if>
+            <if test="category!=null">category = #{category}, </if>
+            <if test="platform!=null">platform = #{platform}, </if>
+            <if test="type!=null">type = #{type}, </if>
             <if test="title!=null">title = #{title}, </if>
             <if test="contents!=null">contents = #{contents}, </if>
             <if test="service!=null">service = #{service}, </if>
-            <if test="keyword1!=null">keyword1 = #{keyword1}, </if>
-            <if test="keyword2!=null">keyword2 = #{keyword2}, </if>
-            <if test="keyword3!=null">keyword3 = #{keyword3}, </if>
+            <if test="keyword1!=null">keyword_1 = #{keyword1}, </if>
+            <if test="keyword2!=null">keyword_2 = #{keyword2}, </if>
+            <if test="keyword3!=null">keyword_3 = #{keyword3}, </if>
             <if test="campaignLink!=null">campaign_link = #{campaignLink}, </if>
             <if test="mission!=null">mission = #{mission}, </if>
             <if test="recruiter!=null">recruiter = #{recruiter}, </if>
             <if test="image!=null">image = #{image}, </if>
-            <if test="categorySeq!=null">category_seq = #{categorySeq}, </if>
-            <if test="platformSeq!=null">platform_seq = #{platformSeq}, </if>
-            <if test="typeSeq!=null">type_seq = #{typeSeq}, </if>
+            <if test="city!=null">city = #{city}, </if>
+            <if test="district!=null">district = #{district}, </if>
+            <if test="point!=null">`point` = #{point}, </if>
+            <if test="tag!=null">`tag` = #{tag}, </if>
             <if test="status!=null">`status` = #{status}, </if>
             <if test="applicationStartDate!=null">application_start_date = #{applicationStartDate}, </if>
             <if test="applicationEndDate!=null">application_end_date = #{applicationEndDate}, </if>
@@ -158,17 +168,27 @@
             <if test="experienceEndDate!=null">experience_end_date = #{experienceEndDate}, </if>
             <if test="experienceStartTime!=null">experience_start_time = #{experienceStartTime}, </if>
             <if test="experienceEndTime!=null">experience_end_time = #{experienceEndTime}, </if>
-            <if test="monday!=null">monday = #{monday}, </if>
-            <if test="tuesday!=null">tuesday = #{tuesday}, </if>
-            <if test="wednesday!=null">wednesday = #{wednesday}, </if>
-            <if test="thursday!=null">thursday = #{thursday}, </if>
-            <if test="friday!=null">friday = #{friday}, </if>
-            <if test="saturday!=null">saturday = #{saturday}, </if>
-            <if test="sunday!=null">sunday = #{sunday}, </if>
-            <if test="city!=null">city = #{city}, </if>
-            <if test="district!=null">district = #{district}, </if>
-            <if test="point!=null">`point` = #{point}, </if>
-            <if test="location!=null">location = #{location}, </if>
+            <if test="isMondayAvailable!=null">is_monday_available = #{isMondayAvailable}, </if>
+            <if test="isMondayUnavailable!=null">is_monday_unavailable = #{isMondayUnavailable}, </if>
+            <if test="isTuesdayAvailable!=null">is_tuesday_available = #{isTuesdayAvailable}, </if>
+            <if test="isTuesdayUnavailable!=null">is_tuesday_unavailable = #{isTuesdayUnavailable}, </if>
+            <if test="isWednesdayAvailable!=null">is_wednesday_available = #{isWednesdayAvailable}, </if>
+            <if test="isWednesdayUnavailable!=null">is_wednesday_unavailable = #{isWednesdayUnavailable}, </if>
+            <if test="isThursdayAvailable!=null">is_thursday_available = #{isThursdayAvailable}, </if>
+            <if test="isThursdayUnavailable!=null">is_thursday_unavailable = #{isThursdayUnavailable}, </if>
+            <if test="isFridayAvailable!=null">is_friday_available = #{isFridayAvailable}, </if>
+            <if test="isFridayUnavailable!=null">is_friday_unavailable = #{isFridayUnavailable}, </if>
+            <if test="isSaturdayAvailable!=null">is_saturday_available = #{isSaturdayAvailable}, </if>
+            <if test="isSaturdayUnavailable!=null">is_saturday_unavailable = #{isSaturdayUnavailable}, </if>
+            <if test="isSundayAvailable!=null">is_sunday_available = #{isSundayAvailable}, </if>
+            <if test="isSundayUnavailable!=null">is_sunday_unavailable = #{isSundayUnavailable}, </if>
+            <if test="hashTag!=null">hash_tag = #{hashTag}, </if>
+            <if test="link!=null">link = #{link}, </if>
+            <if test="characters!=null">characters = #{characters}, </if>
+            <if test="videoLength!=null">video_length = #{videoLength}, </if>
+            <if test="accountTag!=null">account_tag = #{accountTag}, </if>
+            <if test="sound!=null">sound = #{sound}, </if>
+            <if test="isAdvertising!=null">is_advertising = #{isAdvertising}, </if>
         </set>
         WHERE seq = #{campaignSeq}
     </update>
@@ -184,7 +204,8 @@
             <if test="pictureCount!=null">picture_count = #{pictureCount}, </if>
             <if test="accountTag!=null">account_tag = #{accountTag}, </if>
             <if test="sound!=null">sound = #{sound}, </if>
-            <if test="advertisingDisplay!=null">advertising_display = #{advertisingDisplay}, </if>
+            <if test="isAdvertising!=null">is_advertising = #{isAdvertising}, </if>
+            <if test="isKftc!=null">is_kftc = #{isKftc}, </if>
         </set>
         WHERE seq = #{seq}
     </update>
@@ -196,8 +217,16 @@
         WHERE seq = #{seq} AND user_seq = #{userSeq}
     </update>
 
+    <update id="campaignCancel">
+        UPDATE campaigns
+        <set>
+            status = 0,
+        </set>
+        WHERE id = #{id} AND user_seq = #{userSeq}
+    </update>
+
     <delete id="delete">
-        DELETE FROM campaigns WHERE seq = #{seq}
+        DELETE FROM campaigns WHERE seq = #{campaignSeq}
     </delete>
 
     <delete id="cancellation">
@@ -213,11 +242,28 @@
         DELETE FROM campaign_comments WHERE seq = #{seq} AND user_seq = #{userSeq}
     </delete>
     <delete id="cancel">
-        INSERT INTO cancel (user_seq, campaign_seq, reason, evidentiary_1, evidentiary_2, evidentiary_3, type)
+        INSERT INTO campaign_cancels (user_seq, campaign_seq, reason, evidentiary_1, evidentiary_2, evidentiary_3, type)
         VALUES (#{userSeq}, #{campaignSeq}, #{reason}, #{evidentiary1}, #{evidentiary2}, #{evidentiary3}, #{type})
     </delete>
+    <delete id="deleteCampaign">
+        DELETE FROm campaigns WHERE id = #{id} AND user_seq = #{userSeq}
+    </delete>
+    <select id="isCampaignDelete" resultType="boolean">
+        SELECT EXISTS(
+            SELECT
+                CASE
+                    WHEN status = 1 THEN FALSE
+                    WHEN status = 2 THEN FALSE
+                    WHEN status = 3 THEN TRUE
+                    WHEN status = 4 THEN TRUE
+                    WHEN status = 5 THEN TRUE
+                END
+            FROM campaigns
+            WHERE id = #{id})
+    </select>
+
     <select id="cancelRequestCheck" resultType="boolean">
-        SELECT EXISTS(SELECT 1 FROM cancel WHERE campaign_seq = #{campaignSeq} AND user_seq = #{userSeq})
+        SELECT EXISTS(SELECT 1 FROM campaign_cancels WHERE campaign_seq = #{campaignSeq} AND user_seq = #{userSeq})
     </select>
 
     <select id="cancelList" resultType="kr.co.dain_review.be.model.campaign.Cancel">
@@ -228,7 +274,7 @@
                evidentiary_1 as evidentiary1,
                evidentiary_2 as evidentiary2,
                evidentiary_3 as evidentiary3
-        FROM cancel
+        FROM campaign_cancels
         ORDER BY
                  CASE
                      WHEN status = 1 THEN 1
@@ -238,7 +284,7 @@
     </select>
 
     <select id="cancelCount" resultType="integer">
-        SELECT COUNT(*) FROM cancel
+        SELECT COUNT(*) FROM campaign_cancels
     </select>
 
 
@@ -254,76 +300,39 @@
             p.status,
             p.city,
             p.district,
-            MAX(pa.seq) as applicant,
-            p.tag
+            p.tag,
+            u.email,
+            ub.company
         FROM campaigns p
-        LEFT JOIN campaign_applicants pa on p.seq = pa.campaign_seq
+        LEFT JOIN users u on p.user_seq = u.seq
+        LEFT JOIN user_businesses ub on u.seq = ub.user_seq
         <where>
-            <if test="city!=null and district!=null">
-                AND (p.city, p.district) IN
-                <foreach item="location" index="index" collection="locations" open="(" separator="), (" close=")">
-                    #{location.city}, #{location.district}
-                </foreach>
-            </if>
-            <if test="searchWord!=null"> AND p.title LIKE #{searchWord} </if>
-            <if test="userSeq!=null"> AND p.user_seq = #{userSeq} </if>
-            <if test="applicantSeq!=null"> AND pa.user_seq = #{applicantSeq}</if>
             <choose>
-                <when test="isPremium">
-                    AND p.tag IS NOT null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
-                </when>
-                <when test="orderParam!=null and (orderParam.equals('point') or orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
-                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
-                </when>
+                <when test="searchType!=null and searchType.equals('title')">AND p.title = #{searchWord}</when>
+                <when test="searchType!=null and searchType.equals('id')">AND p.id = #{searchWord}</when>
+                <when test="searchType!=null and searchType.equals('company')">AND ub.company = #{searchWord}</when>
+                <when test="searchType!=null and searchType.equals('phone')">AND u.phone = #{searchWord}</when>
+                <otherwise>
+                    AND (p.title = #{searchWord} OR p.id = #{searchWord} OR ub.company = #{searchWord} OR u.phone = #{searchWord})
+                </otherwise>
             </choose>
         </where>
-        GROUP BY p.seq
-        ORDER BY CASE
-        WHEN p.tag = '다인리뷰' THEN 1
-        WHEN p.tag = '프리미엄' THEN 2
-        WHEN p.tag IS NULL THEN 3
-        ELSE 4
-        END
-        <if test="orderParam != null">
-            <choose>
-                <when test="orderParam.equals('point')">
-                    , p.point DESC
-                </when>
-                <when test="orderParam.equals('latest')">
-                    , p.application_start_date DESC
-                </when>
-                <when test="orderParam.equals('deadline')">
-                    , p.application_end_date ASC
-                </when>
-                <when test="orderParam.equals('popularity')">
-                    , pa.applicant DESC
-                </when>
-            </choose>
-        </if>
         LIMIT #{page}, 10
-
     </select>
     <select id="selectListCount" resultType="java.lang.Integer">
-        SELECT
-            COUNT(p.seq)
+        SELECT COUNT(p.seq)
         FROM campaigns p
+        LEFT JOIN users u on p.user_seq = u.seq
+        LEFT JOIN user_businesses ub on u.seq = ub.user_seq
         <where>
-            <if test="city!=null and district!=null">
-                AND (p.city, p.district) IN
-                <foreach item="location" index="index" collection="locations"
-                         open="(" separator="), (" close=")">
-                    #{location.city}, #{location.district}
-                </foreach>
-            </if>
-            <if test="searchWord!=null">AND p.title LIKE #{searchWord}</if>
-            <if test="userSeq!=null">AND p.user_seq = #{userSeq}</if>
             <choose>
-                <when test="isPremium">
-                    AND p.tag != null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
-                </when>
-                <when test="orderParam!=null and (orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
-                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
-                </when>
+                <when test="searchType!=null and searchType.equals('title')">AND p.title = #{searchWord}</when>
+                <when test="searchType!=null and searchType.equals('id')">AND p.id = #{searchWord}</when>
+                <when test="searchType!=null and searchType.equals('company')">AND ub.company = #{searchWord}</when>
+                <when test="searchType!=null and searchType.equals('phone')">AND u.phone = #{searchWord}</when>
+                <otherwise>
+                    AND (p.title = #{searchWord} OR p.id = #{searchWord} OR ub.company = #{searchWord} OR u.phone = #{searchWord})
+                </otherwise>
             </choose>
         </where>
     </select>
@@ -356,7 +365,7 @@
         FROM campaigns p
         LEFT JOIN campaign_favorites pp on pp.campaign_seq = p.seq
         LEFT JOIN campaign_applicants pa on pa.campaign_seq = p.seq
-        WHERE pp.user_seq = #{userSeq}
+        WHERE pp.user_seq = #{userSeq} AND p.status = 3
         GROUP BY (p.seq)
     </select>
 
@@ -365,11 +374,11 @@
         FROM campaigns p
                  LEFT JOIN campaign_favorites pp on pp.campaign_seq = p.seq
                  LEFT JOIN campaign_applicants pa on pa.campaign_seq = p.seq
-        WHERE pp.user_seq = #{userSeq}
+        WHERE pp.user_seq = #{userSeq} AND p.status = 3
     </select>
 
     <select id="myCampaignCheck" resultType="java.lang.Boolean">
-        SELECT EXISTS(SELECT 1 FROM campaigns WHERE user_seq = #{userSeq} AND seq = #{campaignSeq})
+        SELECT NOT EXISTS(SELECT 1 FROM campaigns WHERE user_seq = #{userSeq} AND id = #{campaignId})
     </select>
 
     <select id="applicationInfluencer" resultType="kr.co.dain_review.be.model.campaign.CampaignInfluencer">
@@ -452,7 +461,8 @@
             picture_count as pictureCount,
             account_tag as accountTag,
             sound,
-            advertising_display as  advertisingDisplay
+            is_advertising as isAdvertising,
+            is_kftc as isKftc
         FROM missions
 
     </select>
@@ -465,7 +475,7 @@
 
     </select>
     <select id="getCampaignSeq" resultType="java.lang.Integer">
-        SELECT seq FROM campaigns WHERE id = #{id}
+        SELECT seq FROM campaigns WHERE id = #{campaignId}
     </select>
     <select id="getKeywordView" resultType="java.lang.Boolean">
         SELECT * FROM campaigns
@@ -520,7 +530,8 @@
         c.picture_count as pictureCount,
         c.account_tag as accountTag,
         c.sound,
-        c.advertising_display as advertisingDisplay
+        c.is_advertising as isAdvertising,
+        c.is_kftc as isKftc
     </sql>
 
     <select id="hostedCampaigns" resultType="kr.co.dain_review.be.model.campaign.Campaign">
@@ -553,6 +564,125 @@
         FROM campaigns c
         JOIN campaign_applicants ca on c.seq = ca.campaign_seq
         WHERE ca.user_seq = #{userSeq} AND c.status = 4 AND ca.application = 1
+    </select>
+    <select id="getCampaignCancelRequest" resultType="kr.co.dain_review.be.model.campaign.Cancel">
+        SELECT seq,
+               type,
+               user_seq as userSeq,
+               campaign_seq,
+               reason,
+               evidentiary_1 as evidentiary1,
+               evidentiary_2 as evidentiary2,
+               evidentiary_3 as evidentiary3
+        FROM campaign_cancels WHERE seq = #{seq}
+    </select>
+    <select id="selectPublicList" resultType="kr.co.dain_review.be.model.campaign.Campaign">
+        SELECT
+            p.id,
+            p.title,
+            p.recruiter,
+            p.image,
+            p.category,
+            p.type,
+            p.status,
+            p.city,
+            p.district,
+            MAX(pa.seq) as applicant,
+            p.tag
+        FROM campaigns p
+        LEFT JOIN campaign_applicants pa on p.seq = pa.campaign_seq
+        <where>
+            AND p.status = 3
+            <if test="city!=null and district!=null">
+                AND (p.city, p.district) IN
+                <foreach item="location" index="index" collection="locations" open="(" separator="), (" close=")">
+                    #{location.city}, #{location.district}
+                </foreach>
+            </if>
+            <if test="searchWord!=null"> AND p.title LIKE #{searchWord} </if>
+            <if test="userSeq!=null"> AND p.user_seq = #{userSeq} </if>
+            <if test="applicantSeq!=null"> AND pa.user_seq = #{applicantSeq}</if>
+            <choose>
+                <when test="isPremium">
+                    AND p.tag IS NOT null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+                <when test="orderParam!=null and (orderParam.equals('point') or orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
+                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+            </choose>
+        </where>
+        GROUP BY p.seq
+        ORDER BY CASE
+        WHEN p.tag = '다인리뷰' THEN 1
+        WHEN p.tag = '프리미엄' THEN 2
+        WHEN p.tag IS NULL THEN 3
+        ELSE 4
+        END
+        <if test="orderParam != null">
+            <choose>
+                <when test="orderParam.equals('point')">
+                    , p.point DESC
+                </when>
+                <when test="orderParam.equals('latest')">
+                    , p.application_start_date DESC
+                </when>
+                <when test="orderParam.equals('deadline')">
+                    , p.application_end_date ASC
+                </when>
+                <when test="orderParam.equals('popularity')">
+                    , pa.applicant DESC
+                </when>
+            </choose>
+        </if>
+        LIMIT #{page}, 10
+
+    </select>
+    <select id="selectPublicListCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM campaigns p
+        LEFT JOIN campaign_applicants pa on p.seq = pa.campaign_seq
+        <where>
+            AND p.status = 3
+            <if test="city!=null and district!=null">
+                AND (p.city, p.district) IN
+                <foreach item="location" index="index" collection="locations" open="(" separator="), (" close=")">
+                    #{location.city}, #{location.district}
+                </foreach>
+            </if>
+            <if test="searchWord!=null"> AND p.title LIKE #{searchWord} </if>
+            <if test="userSeq!=null"> AND p.user_seq = #{userSeq} </if>
+            <if test="applicantSeq!=null"> AND pa.user_seq = #{applicantSeq}</if>
+            <choose>
+                <when test="isPremium">
+                    AND p.tag IS NOT null AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+                <when test="orderParam!=null and (orderParam.equals('point') or orderParam.equals('latest') or orderParam.equals('deadline') or orderParam.equals('popularity'))">
+                    AND CURDATE() BETWEEN p.application_start_date AND p.application_end_date
+                </when>
+            </choose>
+        </where>
+    </select>
+    <select id="getCampaignPeriod" resultType="kr.co.dain_review.be.model.campaign.CampaignDate">
+        SELECT experience_start_date as experienceStartDate, experience_end_date as experienceEndDate FROM campaigns WHERE seq = #{campaignSeq}
+    </select>
+
+    <select id="getCampaignParticipants" resultType="string">
+        SELECT ui.nickname
+        FROM campaign_applicants ca
+        LEFT JOIN user_influencer ui on ca.user_seq = ui.user_seq
+        WHERE ca.campaign_seq = #{campaignSeq}
+    </select>
+    <select id="campaignRecruiterCheck" resultType="java.lang.Boolean">
+        SELECT EXISTS(
+                       SELECT 1
+                       FROM (
+                                SELECT COUNT(1) as applicant_count
+                                FROM campaign_applicants
+                                WHERE campaign_seq = #{campaignSeq} AND application = 1
+                            ) ca_count,
+                            (SELECT recruiter FROM campaigns WHERE seq = #{campaignSeq}) c
+                       WHERE ca_count.applicant_count > c.recruiter
+                   )
     </select>
 
 

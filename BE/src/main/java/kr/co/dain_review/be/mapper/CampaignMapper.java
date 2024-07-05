@@ -32,7 +32,7 @@ public interface CampaignMapper {
 
     void progress(HashMap<String, Object> map);
 
-    void InfluencerSelect(HashMap<String, Object> map);
+    void influencerSelect(HashMap<String, Object> map);
 
     boolean myCampaignCheck(HashMap<String, Object> map);
 
@@ -90,5 +90,25 @@ public interface CampaignMapper {
 
     Integer cancelCount(HashMap<String, Object> map);
 
-    boolean cancelRequestCheck(HashMap<String, Object> map);
+    Boolean cancelRequestCheck(HashMap<String, Object> map);
+
+    Cancel getCampaignCancelRequest(HashMap<String, Object> map);
+
+    void campaignCancel(HashMap<String, Object> map);
+
+    Boolean isCampaignDelete(HashMap<String, Object> map);
+
+    void deleteCampaign(HashMap<String, Object> map);
+
+    ArrayList<Campaign> selectPublicList(HashMap<String, Object> map);
+
+    Integer selectPublicListCount(HashMap<String, Object> map);
+
+    CampaignDate getCampaignPeriod(HashMap<String, Object> map);
+
+    ArrayList<String> getCampaignParticipants(HashMap<String, Object> map);
+
+    void insertCampaignPerformance(HashMap<String, Object> map);
+
+    Boolean campaignRecruiterCheck(HashMap<String, Object> map);
 }

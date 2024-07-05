@@ -34,7 +34,6 @@ public class BusinessesController {
     private final CampaignService campaignService;
     private final TokenProvider tokenProvider;
     private final CommunityService communityService;
-    private final AlarmService alarmService;
     private final UserService userService;
     private final TransactionService transactionService;
 
@@ -67,7 +66,7 @@ public class BusinessesController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "체험단 신규 모집", tags = "사업자 - 체험단")
+    @ApiOperation(value = "체험단 모집 신청", tags = "사업자 - 체험단")
     @PostMapping("/campaign")
     public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody CampaignInsert insert){
         Integer userSeq = null;
@@ -82,7 +81,7 @@ public class BusinessesController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "검수 중인 체험단 취소", tags = "사업자 - 체험단")
+    @ApiOperation(value = "검수&모집 중인 체험단 삭제", tags = "사업자 - 체험단")
     @DeleteMapping("/campaign")
     public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody CampaignId target){
         Integer userSeq = null;
@@ -90,52 +89,78 @@ public class BusinessesController {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        campaignService.cancellation(target.getId(), userSeq);
         JSONObject json = new JSONObject();
+        if(campaignService.isCampaignDelete(target.getId())){
+            json.put("message", "이미 모집 완료 혹은 리뷰 중인 캠페인이라 삭제가 불가능 합니다");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        }
+        campaignService.deleteCampaign(target.getId(), userSeq);
+        json.put("message", "SUCCESS");
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "모집완료&리뷰 중인 체험단 취소 요청", tags = "사업자 - 체험단")
+    @PutMapping("/campaign")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @ModelAttribute CancelInsert cancel){
+        Integer userSeq = null;
+        if(header.getFirst("Authorization")!=null) {
+            String token = header.getFirst("Authorization");
+            userSeq = tokenProvider.getSeq(token);
+        }
+        JSONObject json = new JSONObject();
+        if(campaignService.cancelRequestCheck(cancel.getCampaignId(), userSeq)){
+            json.put("message", "이미 신청한 취소 요청입니다");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        }
+        cancel.setIsHost(1);
+        campaignService.cancellation2(cancel, userSeq);
+        campaignService.campaignSimpleCancellation(cancel, userSeq);
+        campaignService.campaignCancel(cancel.getCampaignId(), userSeq);
+
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
 
     @ApiOperation(value = "체험단 진행 상세", tags = "사업자 - 체험단")
-    @GetMapping("/campaign/{id}")
-    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @PathVariable String id){
+    @GetMapping("/campaign/{campaignId}")
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @PathVariable String campaignId){
         String token = header.getFirst("Authorization");
         Integer userSeq = tokenProvider.getSeq(token);
-        return new ResponseEntity<>(campaignService.getDetail(id, userSeq), HttpStatus.OK);
+        return new ResponseEntity<>(campaignService.getDetail(campaignId, userSeq), HttpStatus.OK);
     }
 
     @ApiOperation(value = "신청한 인플루언서 리스트", tags = "사업자 - 체험단")
-    @GetMapping("/campaign/{seq}/application")
-    public ResponseEntity<?> applicationInfluencer(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+    @GetMapping("/campaign/{campaignId}/application")
+    public ResponseEntity<?> applicationInfluencer(@RequestHeader HttpHeaders header, @PathVariable String campaignId){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
         JSONObject json = new JSONObject();
-        if(!campaignService.myCampaignCheck(userSeq, seq)){
+        if(campaignService.myCampaignCheck(userSeq, campaignId)){
             json.put("message", "확인 권한이 없습니다");
             return new ResponseEntity<>(json.toString(), HttpStatus.OK);
         }
-        json.put("list", campaignService.applicationInfluencer(seq));
+        json.put("list", campaignService.applicationInfluencer(campaignId));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "선정한 체험단 리스트", tags = "사업자 - 체험단")
-    @GetMapping("/campaign/{seq}/selection")
-    public ResponseEntity<?> selectionInfluencer(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+    @GetMapping("/campaign/{campaignId}/selection")
+    public ResponseEntity<?> selectionInfluencer(@RequestHeader HttpHeaders header, @PathVariable String campaignId){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
         JSONObject json = new JSONObject();
-        if(!campaignService.myCampaignCheck(userSeq, seq)){
+        if(campaignService.myCampaignCheck(userSeq, campaignId)){
             json.put("message", "확인 권한이 없습니다");
             return new ResponseEntity<>(json.toString(), HttpStatus.OK);
         }
-        json.put("list", campaignService.selectionInfluencer(seq));
+        json.put("list", campaignService.selectionInfluencer(campaignId));
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -147,42 +172,38 @@ public class BusinessesController {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        if(campaignService.myCampaignCheck(userSeq, select.getCampaignSeq())) {
-            campaignService.InfluencerSelect(select);
-        }
         JSONObject json = new JSONObject();
+        if(campaignService.myCampaignCheck(userSeq, select.getCampaignId())){
+            json.put("message", "해당 캠페인을 수정하실 수 없습니다.");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        }
+        if(campaignService.campaignRecruiterCheck(select)){
+            json.put("message", "캠페인 모집 인원을 초과하였습니다.");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        }
+        campaignService.influencerSelect(select);
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "체험 진행하기", tags = "사업자 - 체험단")
-    @PostMapping("/campaign/{seq}")
-    public ResponseEntity<?> campaign_(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
+    @ApiOperation(value = "체험 모집 완료", tags = "사업자 - 체험단")
+    @PutMapping("/campaign/completeRecruitment")
+    public ResponseEntity<?> campaign_(@RequestHeader HttpHeaders header, @RequestBody CampaignId campaign){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
             userSeq = tokenProvider.getSeq(token);
         }
-        campaignService.setProgress(seq, userSeq);
-        alarmService.campaignProgress(seq);
         JSONObject json = new JSONObject();
+        if(campaignService.myCampaignCheck(userSeq, campaign.getId())){
+            json.put("message", "해당 캠페인을 수정하실 수 없습니다.");
+            return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        }
+        campaignService.completeRecruitment(campaign.getId());
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "신청 인플루언서 목록 다운로드", tags = "사업자 - 체험단")
-    @PostMapping("/campaign/{seq}/download")
-    public ResponseEntity<?> download(@RequestHeader HttpHeaders header, @PathVariable Integer seq){
-        Integer userSeq = null;
-        if(header.getFirst("Authorization")!=null) {
-            String token = header.getFirst("Authorization");
-            userSeq = tokenProvider.getSeq(token);
-        }
-        campaignService.setProgress(seq, userSeq);
-        JSONObject json = new JSONObject();
-        json.put("message", "SUCCESS");
-        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
-    }
 
 
     @ApiOperation(value = "커뮤니티 리스트", tags = "사업자 - 커뮤니티", notes = "searchType : myPost(내 글 보기)")

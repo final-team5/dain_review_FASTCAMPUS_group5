@@ -1,6 +1,7 @@
 package kr.co.dain_review.be.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.co.dain_review.be.mapper.AlarmMapper;
 import kr.co.dain_review.be.mapper.CampaignMapper;
 import kr.co.dain_review.be.mapper.UserMapper;
 import kr.co.dain_review.be.model.list.Delete;
@@ -22,6 +23,9 @@ import java.util.UUID;
 
 @Service
 public class UserService {
+    @Autowired
+    private AlarmMapper alarmMapper;
+
     @Autowired
     private UserMapper userMapper;
 
@@ -511,5 +515,43 @@ public class UserService {
         userMapper.agencyApplication(map);
         userMapper.updateBusinesses(map);
 
+    }
+
+    public void setPenalty(Penalty penalty) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(penalty, HashMap.class);
+        if(penalty.getCancel()!=null) {
+            userMapper.updateCancelCount(map);
+        }
+        if(penalty.getPenalty()!=null) {
+            userMapper.updatePenaltyCount(map);
+        }
+        userMapper.updateBanReason(map);
+
+        map.put("message", penalty.getReason());
+        map.put("targetSeq", penalty.getUserSeq());
+        map.put("targetType", 2);
+        alarmMapper.insert(map);
+    }
+
+    public void agencyUpdate(AgencyUpdate update) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> map = objectMapper.convertValue(update, HashMap.class);
+        userMapper.updateAgency(map);
+
+        if(update.getStatus()==2){
+            map.put("role", "ROLE_AGENCY");
+            map.put("type", 3);
+            userMapper.updateUser(map);
+            map.put("message", "대행사 신청이 승인되었습니다.");
+            map.put("targetSeq", update.getUserSeq());
+            map.put("targetType", 2);
+            alarmMapper.insert(map);
+        } else if(update.getStatus()==3){
+            map.put("message", "다음 사유로 인해 대행사 신청이 거부되었습니다. 사유 : "+update.getReason());
+            map.put("targetSeq", update.getUserSeq());
+            map.put("targetType", 2);
+            alarmMapper.insert(map);
+        }
     }
 }

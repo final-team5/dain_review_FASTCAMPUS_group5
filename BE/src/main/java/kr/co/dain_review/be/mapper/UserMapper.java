@@ -93,4 +93,12 @@ public interface UserMapper {
     BusinessesProfile getBusinessesProfile(HashMap<String, Object> map);
 
     void agencyApplication(HashMap<String, Object> map);
+
+    void updateBanReason(HashMap<String, Object> map);
+
+    void updateCancelCount(HashMap<String, Object> map);
+
+    void updatePenaltyCount(HashMap<String, Object> map);
+
+    void updateAgency(HashMap<String, Object> map);
 }

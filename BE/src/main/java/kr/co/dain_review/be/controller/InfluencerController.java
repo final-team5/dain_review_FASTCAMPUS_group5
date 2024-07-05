@@ -67,7 +67,7 @@ public class InfluencerController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "일반 체험단 신청 취소", tags = "인플루언서 - 체험단")
+    @ApiOperation(value = "모집중인 체험단 신청 취소", tags = "인플루언서 - 체험단")
     @DeleteMapping("/campaign")
     public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @RequestBody CampaignId target){
         Integer userSeq = null;
@@ -83,7 +83,7 @@ public class InfluencerController {
 
     @ApiOperation(value = "진행중인 체험단 신청 취소", tags = "인플루언서 - 체험단")
     @PutMapping("/campaign")
-    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @ModelAttribute Cancel cancel){
+    public ResponseEntity<?> campaign(@RequestHeader HttpHeaders header, @ModelAttribute CancelInsert cancel){
         Integer userSeq = null;
         if(header.getFirst("Authorization")!=null) {
             String token = header.getFirst("Authorization");
@@ -94,7 +94,10 @@ public class InfluencerController {
             json.put("message", "이미 신청한 취소 요청입니다");
             return new ResponseEntity<>(json.toString(), HttpStatus.OK);
         }
+        cancel.setIsHost(0);
         campaignService.cancellation2(cancel, userSeq);
+        campaignService.campaignSimpleCancellation(cancel, userSeq);
+
         json.put("message", "SUCCESS");
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }

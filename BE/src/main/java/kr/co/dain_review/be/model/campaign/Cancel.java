@@ -9,12 +9,13 @@ import org.springframework.web.multipart.MultipartFile;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Cancel {
+    private Integer seq;
     private String type;
     private Integer userSeq;
-    private String campaignId;
+    private Integer campaignSeq;
     private String reason;
-    private MultipartFile evidentiary1;
-    private MultipartFile evidentiary2;
-    private MultipartFile evidentiary3;
+    private String evidentiary1;
+    private String evidentiary2;
+    private String evidentiary3;
 
 }

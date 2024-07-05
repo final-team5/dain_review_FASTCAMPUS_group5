@@ -11,6 +11,5 @@ public class Penalty {
     private Integer userSeq;
     private Integer cancel;
     private Integer penalty;
-    private String message;
-
+    private String reason = "";
 }

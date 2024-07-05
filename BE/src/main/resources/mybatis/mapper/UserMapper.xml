@@ -112,6 +112,7 @@
             <if test="email!=null">email = #{email}, </if>
             <if test="pw!=null">pw = #{pw}, </if>
             <if test="name!=null">`name` = #{name}, </if>
+            <if test="role!=null">`role` = #{role}, </if>
             <if test="phone!=null">phone = #{phone}, </if>
             <if test="signupSource!=null">signup_source = #{signupSource}, </if>
             <if test="postalCode!=null">postal_code = #{postalCode}, </if>
@@ -152,6 +153,24 @@
             <if test="attachment!=null">attachment = #{attachment}, </if>
         </set>
         WHERE user_seq = #{userSeq}
+    </update>
+    <update id="updateBanReason">
+        UPDATE users
+        <set>
+            <if test="message!=null">
+                ban_reason = #{reason},
+            </if>
+        </set>
+        WHERE user_seq = #{userSeq}
+    </update>
+    <update id="updateCancelCount">
+        UPDATE user_cancel SET count = count + #{cancel} WHERE user_seq = #{userSeq}
+    </update>
+    <update id="updatePenaltyCount">
+        UPDATE user_penalty SET count = count + #{penalty} WHERE user_seq = #{userSeq}
+    </update>
+    <update id="updateAgency">
+        UPDATE user_agency set status = #{status}, reason = #{reason} WHERE seq = #{seq}
     </update>
 
 
@@ -264,13 +283,16 @@
     <select id="selectProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
         SELECT u.seq,
                CONCAT(u.id, '/', u.profile) as profileImage,
-               u.cancel,
+               uc.count as cancel,
+               up.count as penalty,
                ui.blog_visitors as blogVisitors,
                ui.instagram_follower as instagramFollower,
                ui.tiktok_follower as tiktokFollower,
                ui.youtube_subscriber as youtubeSubscriber
         FROM users u
         LEFT JOIN user_influencer ui on u.seq = ui.user_seq
+        LEFT JOIN user_cancel uc on u.seq = uc.user_seq
+        LEFT JOIN user_penalty up on u.seq = up.user_seq
         WHERE u.seq = #{userSeq}
     </select>
 
@@ -308,33 +330,40 @@
     </select>
 
     <select id="getUserDetail" resultType="kr.co.dain_review.be.model.user.User">
-        SELECT seq,
-               id,
-               name,
-               phone,
-               create_date as createDate,
-               signup_source as signupSource,
-               postal_code as postalCode,
-               address,
-               address_detail as addressDetail,
-               point,
-               status,
-               cancel,
-               penalty,
-               type
-        FROM users WHERE seq = #{userSeq}
+        SELECT u.seq,
+               u.id,
+               u.name,
+               u.phone,
+               u.create_date as createDate,
+               u.signup_source as signupSource,
+               u.postal_code as postalCode,
+               u.address,
+               u.address_detail as addressDetail,
+               u.point,
+               u.status,
+               uc.count as cancel,
+               up.count as penalty,
+               u.type
+        FROM users u
+        LEFT JOIN user_cancel uc on u.seq = uc.user_seq
+        LEFT JOIN user_penalty up on u.seq = up.user_seq
+        WHERE seq = #{userSeq}
+
     </select>
 
     <select id="getUserSeq" resultType="java.lang.Integer">
         SELECT seq FROM users WHERE id = #{id}
     </select>
     <select id="getUserProfile" resultType="kr.co.dain_review.be.model.user.UserProfile">
-        SELECT seq,
-               profile as profile,
-               cancel,
-               penalty,
-               type
-        FROM users WHERE id = #{id}
+        SELECT u.seq,
+               u.profile as profile,
+               uc.count as cancel,
+               up.count as penalty,
+               u.type
+        FROM users u
+        LEFT JOIN user_cancel uc on u.seq = uc.user_seq
+        LEFT JOIN user_penalty up on u.seq = up.user_seq
+        WHERE id = #{id}
     </select>
     <select id="getInfluencerProfile" resultType="kr.co.dain_review.be.model.user.InfluencerProfile">
         SELECT ui.nickname,

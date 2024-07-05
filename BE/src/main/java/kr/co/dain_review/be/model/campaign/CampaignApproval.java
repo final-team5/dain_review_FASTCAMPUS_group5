@@ -7,7 +7,8 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InfluencerSelect {
+public class CampaignApproval {
     private String campaignId;
-    private String userId;
+    private Integer approval;
+    private String reason;
 }

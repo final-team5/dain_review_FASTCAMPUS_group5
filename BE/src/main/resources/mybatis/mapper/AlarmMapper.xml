@@ -5,8 +5,8 @@
 
 <mapper namespace="kr.co.dain_review.be.mapper.AlarmMapper">
     <insert id="insert">
-        INSERT INTO alarm (user_seq, campaign_seq, message)
-        VALUES (#{userSeq}, #{campaignSeq}, #{message})
+        INSERT INTO alarm (user_seq, target_seq, target_type, message)
+        VALUES (#{userSeq}, #{targetSeq}, #{targetType}, #{message})
     </insert>
     <update id="update">
         UPDATE alarm
