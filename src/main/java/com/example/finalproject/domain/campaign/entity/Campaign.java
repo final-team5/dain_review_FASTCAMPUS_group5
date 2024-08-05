@@ -1,10 +1,12 @@
 package com.example.finalproject.domain.campaign.entity;
 
+import com.google.api.client.util.DateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @NoArgsConstructor
@@ -71,6 +73,41 @@ public class Campaign {
 
     private Integer status;
 
+    @Column(name = "application_start_date")
+    private Date applicationStartDate;
+
+    @Column(name = "application_end_date")
+    private Date applicationEndDate;
+
+    @Column(name = "experience_start_date")
+    private Date experienceStartDate;
+
+    @Column(name = "experience_end_date")
+    private Date experienceEndDate;
+
+    @Column(name = "experience_start_time")
+    private DateTime experienceStartTime;
+
+    @Column(name = "experience_end_time")
+    private DateTime experienceEndTime;
+
+    private Integer monday;
+    private Integer tuesday;
+    private Integer wednesday;
+    private Integer thursday;
+    private Integer friday;
+    private Integer saturday;
+    private Integer sunday;
+
+    @Column(name = "hash_tag")
+    private Integer hashtag;
+    private Integer map;
+    private Integer link;
+
+    private Integer characters;
+
+    @Column(name = "video_length")
+    private Integer videoLength;
 
 
 }
