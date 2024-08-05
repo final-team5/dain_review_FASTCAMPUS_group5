@@ -37,6 +37,9 @@ public class User {
     @Column(length = 50)
     private String phone;
 
+    @Column(length = 50)
+    private String profile;
+
     @Column(name = "create_date")
     private Date createDate;
 
