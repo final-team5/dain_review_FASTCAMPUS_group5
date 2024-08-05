@@ -27,5 +27,5 @@ public class Enterpriser {
     private String representative;
 
     @Column(name = "attached_file", length = 50)
-    private String atta;
+    private String attachedFile;
 }
