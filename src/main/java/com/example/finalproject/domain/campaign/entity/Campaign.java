@@ -109,5 +109,14 @@ public class Campaign {
     @Column(name = "video_length")
     private Integer videoLength;
 
+    @Column(name = "picture_count")
+    private Integer pictureCount;
 
+    @Column(name = "account_tag")
+    private Integer accountTag;
+
+    private Integer sound;
+
+    @Column(name = "advertising_display")
+    private Integer advertisingDisplay;
 }
