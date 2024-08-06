@@ -11,6 +11,10 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
+jar {
+    enabled = false
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
