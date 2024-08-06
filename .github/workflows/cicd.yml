@@ -10,6 +10,8 @@ env:
   CODE_DEPLOY_APPLICATION_NAME: fastcampers-final-codeDeploy
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: fastcampers-final-group
 
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -50,20 +52,25 @@ jobs:
    #     name: packaged-app
    #     path: build/libs/*.jar
 
-    - name: Upload to S3
+    - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-        run: aws s3 cp ./$GITHUB_SHA.zip s3://fastcampers-final/$GITHUB_SHA.zip
-             
+
+    - name: Upload to AWS S3
+      run: |
+        --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+        --ignore-hidden-files \
+        --s3-location s3://${{env.S3_BUCKET_NAME}}/$GITHUB_SHA.zip \
+        --source .            
              
     - name: Deploy to EC2 using CodeDeploy
       run: |
         aws deploy create-deployment \
           --deployment-config-name CodeDeployDefault.AllAtOnce \
-          --application-name fastcampers-final-codeDeploy \
-          --deployment-group-name fastcampers-final-group \
-          --s3-location bucket=fastcampers-final,bundleType=zip,key=$GITHUB_SHA.zip
+          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+          --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip
 
