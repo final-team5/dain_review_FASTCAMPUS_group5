@@ -60,12 +60,8 @@ jobs:
         aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Upload to AWS S3
-      run: |
-        --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-        --ignore-hidden-files \
-        --s3-location s3://${{env.S3_BUCKET_NAME}}/$GITHUB_SHA.zip \
-        --source .            
-             
+      run: aws s3 cp ./$GITHUB_SHA.zip s3://fastcampers-final/$GITHUB_SHA.zip
+
     - name: Deploy to EC2 using CodeDeploy
       run: |
         aws deploy create-deployment \
