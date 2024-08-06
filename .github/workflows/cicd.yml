@@ -9,7 +9,6 @@ env:
   RESOURCE_PATH: ./src/main/resources/application.properties <- 참고 블로그에선 application.yml 로 진행하였는데...
   CODE_DEPLOY_APPLICATION_NAME: fastcampers-final-codeDeploy
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: fastcampers-final-group
-  AWS_REGION: ap-southeast-2a
 
 permissions:
   contents: read
