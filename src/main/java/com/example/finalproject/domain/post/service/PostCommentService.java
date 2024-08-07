@@ -35,4 +35,15 @@ public class PostCommentService {
 
         return PostCommentDto.from(savedPostComment);
     }
+
+    @Transactional
+    public PostCommentDto update(Integer postSeq, Integer postCommentSeq, String comment) {
+        // TODO : Post 존재 여부 체크
+
+        // TODO : 댓글 존재 여부 체크
+
+        // TODO : 댓글 변경감지로 update
+
+        return PostCommentDto.from(new PostComment());      // TODO : Entity 부분 수정 필요
+    }
 }
