@@ -7,6 +7,7 @@ import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -22,6 +23,7 @@ public class PostCommentService {
      * @param comment : 게시글 댓글
      * @return PostCommentDto
      */
+    @Transactional
     public PostCommentDto save(Integer userSeq, Integer postSeq, String comment) {
         // TODO : Post 존재 여부 체크
 
