@@ -46,4 +46,11 @@ public class PostCommentService {
 
         return PostCommentDto.from(new PostComment());      // TODO : Entity 부분 수정 필요
     }
+
+    @Transactional
+    public void delete(Integer postCommentSeq, Integer userSeq) {
+        // TODO : 내가 쓴 댓글인지 체크
+
+        postCommentRepository.deleteById(postCommentSeq);
+    }
 }
