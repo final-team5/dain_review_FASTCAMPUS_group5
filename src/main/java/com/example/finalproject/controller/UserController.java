@@ -1,11 +1,15 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.request.PostCommentRequest;
+import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,13 +22,16 @@ public class UserController {
 
     private final PostCommentService postCommentService;
 
-    public ResponseApi<String> savePostComment(
+    @ApiOperation(value = "커뮤니티 댓글 추가", tags = "사용자 - 커뮤니티")
+    @PostMapping(path = "/community/comments")
+    public ResponseApi<PostCommentResponse> savePostComment(
             @RequestBody PostCommentRequest postCommentRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        postCommentService.save(userSeq, postCommentRequest.getPostSeq(), postCommentRequest.getComment());
+        PostCommentDto postCommentDto = postCommentService.save(userSeq, postCommentRequest.getPostSeq(), postCommentRequest.getComment());
+        PostCommentResponse postCommentResponse = PostCommentResponse.from(postCommentDto);
 
-        return ResponseApi.success(HttpStatus.OK, "SUCCESS");
+        return ResponseApi.success(HttpStatus.OK, postCommentResponse);
     }
 }
