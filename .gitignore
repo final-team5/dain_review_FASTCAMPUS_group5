@@ -337,3 +337,4 @@ $RECYCLE.BIN/
 
 
 !gradle/wrapper/gradle-wrapper.jar
+src/main/resources/application-local.properties
