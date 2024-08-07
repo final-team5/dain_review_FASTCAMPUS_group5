@@ -1,6 +1,7 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.post.dto.PostCommentDto;
+import com.example.finalproject.domain.post.dto.request.PostCommentDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.PostCommentSaveRequest;
 import com.example.finalproject.domain.post.dto.request.PostCommentUpdateRequest;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
@@ -44,5 +45,17 @@ public class UserController {
         PostCommentResponse postCommentResponse = PostCommentResponse.from(postCommentDto);
 
         return ResponseApi.success(HttpStatus.OK, postCommentResponse);
+    }
+
+    @ApiOperation(value = "커뮤니티 댓글 삭제", tags = "사용자 - 커뮤니티")
+    @DeleteMapping(path = "/community/comments")
+    public ResponseApi<String> deletePostComment(
+            @RequestBody PostCommentDeleteRequest postCommentDeleteRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        postCommentService.delete(postCommentDeleteRequest.getPostCommentSeq(), userSeq);
+
+        return ResponseApi.success(HttpStatus.OK, "comment delete success");
     }
 }
