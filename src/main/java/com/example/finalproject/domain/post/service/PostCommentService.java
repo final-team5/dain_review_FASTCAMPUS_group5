@@ -16,7 +16,7 @@ public class PostCommentService {
     private final PostCommentRepository postCommentRepository;
 
     /**
-     * 게시글에 댓글 저장.
+     * 게시글에 댓글 저장
      *
      * @param userSeq : 회원 ID
      * @param postSeq : 게시글 ID
@@ -36,6 +36,14 @@ public class PostCommentService {
         return PostCommentDto.from(savedPostComment);
     }
 
+    /**
+     * 게시글에 댓글 수정
+     *
+     * @param postSeq : 게시판 ID
+     * @param postCommentSeq : 수정할 댓글 ID
+     * @param comment : 수정할 댓글
+     * @return PostCommentDto
+     */
     @Transactional
     public PostCommentDto update(Integer postSeq, Integer postCommentSeq, String comment) {
         // TODO : Post 존재 여부 체크
@@ -47,6 +55,12 @@ public class PostCommentService {
         return PostCommentDto.from(new PostComment());      // TODO : Entity 부분 수정 필요
     }
 
+    /**
+     * 게시글에 댓글 삭제
+     *
+     * @param postCommentSeq : 삭제할 댓글 ID
+     * @param userSeq : 로그인한 사용자 ID
+     */
     @Transactional
     public void delete(Integer postCommentSeq, Integer userSeq) {
         // TODO : 내가 쓴 댓글인지 체크
