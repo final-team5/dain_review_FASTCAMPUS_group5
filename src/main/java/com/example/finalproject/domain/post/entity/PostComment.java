@@ -4,12 +4,18 @@ import com.example.finalproject.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE post_comments SET deleted_at = NOW() where seq=?")
+@Where(clause = "deleted_at is NULL")
 @Table(name = "post_comments")
 @Entity
 public class PostComment {
@@ -29,7 +35,23 @@ public class PostComment {
     @Column(columnDefinition = "TEXT")
     private String comment;
 
+    @Column(name = "registered_at")
+    private Timestamp registeredAt;
+
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
+
+    @Column(name = "deleted_at")
+    private Timestamp deletedAt;
+
     public PostComment(User user, Post post, String comment) {
+        this.user = user;
+        this.post = post;
+        this.comment = comment;
+    }
+
+    public PostComment(Integer seq, User user, Post post, String comment) {
+        this.seq = seq;
         this.user = user;
         this.post = post;
         this.comment = comment;
@@ -41,5 +63,15 @@ public class PostComment {
 
     public static PostComment of(Integer seq, User user, Post post, String comment) {
         return new PostComment(seq, user, post, comment);
+    }
+
+    @PrePersist
+    void registeredAt() {
+        this.registeredAt = Timestamp.from(Instant.now());
+    }
+
+    @PreUpdate
+    void updatedAt() {
+        this.updatedAt = Timestamp.from(Instant.now());
     }
 }
