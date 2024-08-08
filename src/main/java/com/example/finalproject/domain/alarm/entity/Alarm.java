@@ -30,5 +30,6 @@ public class Alarm {
     @Column(name = "create_date")
     private Date createDate;
 
+    @Column(name = "`check`")
     private Integer check;
 }
