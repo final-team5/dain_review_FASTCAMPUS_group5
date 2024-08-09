@@ -59,6 +59,6 @@ jobs:
          key: ${{ secrets.AWS_KEY_PEM }}
          script: |
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
-          sudo docker stop $(docker ps -q)
-          sudo docker rm $(docker ps -aq)
+          sudo docker stop $(sudo docker ps -q)
+          sudo docker rm $(sudo docker ps -aq)
           sudo docker run -d --name app -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
