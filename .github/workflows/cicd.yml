@@ -44,8 +44,8 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest .
-          sudo docker push ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
 
   deploy:
     runs-on: ubuntu-latest
