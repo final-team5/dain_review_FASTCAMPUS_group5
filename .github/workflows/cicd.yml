@@ -19,13 +19,13 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
-#      - name: Cache Gradle packages
-#        uses: actions/cache@v3
-#        with:
-#          path: ~/.gradle/caches
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
         run: ./gradlew build
@@ -39,13 +39,13 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PW }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/dain_review_fastcampus_group5:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dain_review_fastcampus_group5:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -54,8 +54,8 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_PASSWORD }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/dain_review_fastcampus_group5:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
           docker stop app || true
           docker rm app || true
-          docker run -d --name app -p 8080:8080 --env-file .env ${{ secrets.DOCKERHUB_USERNAME }}/dain_review_fastcampus_group5:latest
+          docker run -d --name app -p 8080:8080 --env-file .env ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
           EOF
