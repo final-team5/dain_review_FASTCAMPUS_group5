@@ -44,8 +44,8 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
+          sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest .
+          sudo docker push ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,8 +58,8 @@ jobs:
          username: ubuntu
          key: ${{ secrets.AWS_KEY_PEM }}
          script: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
-          docker stop app || true
-          docker rm app || true
-          docker run -d --name app -p 8080:8080 --env-file .env ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
+          sudo docker stop app || true
+          sudo docker rm app || true
+          sudo docker run -d --name app -p 8080:8080 --env-file .env ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
           EOF
