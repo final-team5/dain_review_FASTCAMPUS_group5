@@ -62,4 +62,3 @@ jobs:
           sudo docker stop app || true
           sudo docker rm app || true
           sudo docker run -d --name app -p 8080:8080 --env-file .env ${{ secrets.DOCKER_USERNAME }}/dain_review_fastcampus_group5:latest
-          EOF
