@@ -2,63 +2,69 @@ name: Dain Review CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  S3_BUCKET_NAME: fastcampers-final
+  RESOURCE_PATH: ./src/main/resources/application.properties
+  CODE_DEPLOY_APPLICATION_NAME: fastcampers-final-codeDeploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: fastcampers-final-group
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v2
-      with:
-        java-version: '8'
-        distribution: 'adopt'
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'adopt'
 
-    - name: Set Environment Variables
-      run: |
-        echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
-        echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}" >> $GITHUB_ENV
-        echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> $GITHUB_ENV
-        
-        echo "AWS_ACCESS_KEY_ID=${{ secrets.aws_access_key_id }}" >> $GITHUB_ENV
-        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.aws_secret_access_key }}" >> $GITHUB_ENV
-        echo "EC2_HOST=${{ secrets.ec2_host }}" >> $GITHUB_ENV
-        echo "EC2_KEY=${{ secrets.ec2_key }}" >> $GITHUB_ENV
-        echo "EC2_USER=${{ secrets.ec2_user }}" >> $GITHUB_ENV
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x ./gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
 
-    - name: Build with Gradle
-      run: ./gradlew build
+      - name: Run tests
+        run: ./gradlew test
 
-    - name: Run tests
-      run: ./gradlew test
+      - name: Package application
+        run: ./gradlew assemble
 
-    - name: Package application
-      run: ./gradlew assemble
+      - name: Make zip file
+        run: zip -qq -r ./$GITHUB_SHA.zip .
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: packaged-app
-        path: build/libs/*.jar
+      - name: Set Environment Variables
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
+          echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}" >> $GITHUB_ENV
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> $GITHUB_ENV
 
-    - name: Deploy to EC2
-      env:
-        EC2_HOST: ${{ secrets.ec2_host }}
-        EC2_KEY: ${{ secrets.ec2_key }}
-        EC2_USER: ${{ secrets.ec2_user }}
-      run: |
-        echo "${{ secrets.ec2_key }}" > ec2_key.pem
-        chmod 400 ec2_key.pem
-        scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/*.jar ${{ secrets.ec2_user }}@${{ secrets.ec2_host }}:/home/${{ secrets.ec2_user }}/app.jar
-        ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.ec2_user }}@${{ secrets.ec2_host }} << 'EOF'
-          # Stop existing application
-          pkill -f 'java -jar'
-          # Start new application
-          nohup java -jar /home/${{ secrets.ec2_user }}/app.jar > app.log 2>&1 &
-        EOF
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Upload to AWS S3
+        run: aws s3 cp ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/$GITHUB_SHA.zip
+
+      - name: Deploy to EC2 using CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=$GITHUB_SHA.zip
