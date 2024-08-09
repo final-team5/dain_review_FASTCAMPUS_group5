@@ -73,7 +73,7 @@ jobs:
             docker stop my-app || true
             docker rm my-app || true
             docker run -d --name my-app -p 8080:8080 \
-              -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.DATABASE_URL }}:3306/your_database_name \ <- 추가해야 할 부분
+              -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.DATABASE_URL }}:3306/fastCampersFinal \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/dain_review_FASTCAMPUS_group5:latest

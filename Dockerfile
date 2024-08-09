@@ -11,4 +11,4 @@ COPY build/libs/final-project-0.0.1-SNAPSHOT.jar /app/final-project-0.0.1-SNAPSH
 EXPOSE 8080
 
 # Run the JAR file
-ENTRYPOINT ["java", "-jar", "dain_review_FASTCAMPUS_group5.jar"]
+ENTRYPOINT ["java", "-jar", "final-project-0.0.1-SNAPSHOT.jar"]
