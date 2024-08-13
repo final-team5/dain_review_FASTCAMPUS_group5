@@ -1,4 +1,4 @@
-package com.example.finalproject.global.swagger.config;
+package com.example.finalproject.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
