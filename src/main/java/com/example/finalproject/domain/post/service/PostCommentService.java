@@ -6,6 +6,8 @@ import com.example.finalproject.domain.post.entity.PostComment;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,4 +71,8 @@ public class PostCommentService {
 
         postCommentRepository.deleteById(postCommentSeq);
     }
+
+//    public Page<PostComment> getComments(Integer postSeq, Pageable pageable) {
+//
+//    }
 }
