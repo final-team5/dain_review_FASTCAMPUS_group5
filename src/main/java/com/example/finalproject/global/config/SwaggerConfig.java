@@ -16,6 +16,10 @@ import javax.swing.*;
 @EnableSwagger2
 public class SwaggerConfig {
 
+    private static final String API_NAME = "FastCampus Final Project HiFive! Rest API";
+    private static final String API_VERSION = "1.0.0";
+    private static final String API_DESCRIPTION = "dain review API 명세서";
+
     @Bean
     public Docket restAPI() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -28,9 +32,9 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("FastCampers Final Project HiFive! Rest API")
-                .version("1.0.0")
-                .description("")
+                .title(API_NAME)
+                .version(API_VERSION)
+                .description(API_DESCRIPTION)
                 .build();
     }
 }
