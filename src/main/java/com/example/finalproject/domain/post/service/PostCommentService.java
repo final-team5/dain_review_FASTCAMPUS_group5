@@ -4,7 +4,10 @@ import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostComment;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
+import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.global.exception.error.ValidErrorCode;
+import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostCommentService {
 
     private final PostCommentRepository postCommentRepository;
+    private final PostRepository postRepository;
 
     /**
      * 게시글에 댓글 저장
@@ -27,12 +31,12 @@ public class PostCommentService {
      */
     @Transactional
     public PostCommentDto save(Integer userSeq, Integer postSeq, String comment) {
-        // TODO : Post 존재 여부 체크
+        Post post = getPostOrException(postSeq);
 
         // TODO : userSeq 로 User 가져오기
 
         // post comment save
-        PostComment postComment = PostComment.of(new User(), new Post(), comment);      // TODO : user, post 부분 채워넣기
+        PostComment postComment = PostComment.of(new User(), post, comment);      // TODO : user, post 부분 채워넣기
         PostComment savedPostComment = postCommentRepository.save(postComment);
 
         return PostCommentDto.from(savedPostComment);
@@ -48,7 +52,7 @@ public class PostCommentService {
      */
     @Transactional
     public PostCommentDto update(Integer postSeq, Integer postCommentSeq, String comment) {
-        // TODO : Post 존재 여부 체크
+        Post post = getPostOrException(postSeq);
 
         // TODO : 댓글 존재 여부 체크
 
@@ -80,11 +84,17 @@ public class PostCommentService {
      * @return Page<PostCommentDto>
      */
     public Page<PostCommentDto> getComments(Integer postSeq, Pageable pageable) {
-        // TODO : 게시글 존재 여부 체크
+        Post post = getPostOrException(postSeq);
 
         // post 전체 조회
-        Page<PostComment> postCommentPage = postCommentRepository.findAllByPostSeq(postSeq, pageable);  // TODO : 게시글 존재 여부 체크 과정 구현 후 findAllByPost 로 변경 예정
+        Page<PostComment> postCommentPage = postCommentRepository.findAllByPost(post, pageable);
 
         return postCommentPage.map(PostCommentDto::from);
+    }
+
+    private Post getPostOrException(Integer postSeq) {
+        return postRepository.findById(postSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
+        );
     }
 }
