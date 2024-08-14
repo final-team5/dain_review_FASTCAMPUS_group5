@@ -52,7 +52,7 @@ public class Campaign {
     @Column(name = "campaign_link", columnDefinition = "TEXT")
     private String campaignLink;
 
-    @Column(columnDefinition = "mission")
+    @Column(columnDefinition = "TEXT")
     private String mission;
 
     private Integer recruiter;
