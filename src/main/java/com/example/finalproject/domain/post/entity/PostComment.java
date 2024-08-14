@@ -4,6 +4,7 @@ import com.example.finalproject.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -32,6 +33,7 @@ public class PostComment {
     @JoinColumn(name = "post_seq")
     private Post post;
 
+    @Setter
     @Column(columnDefinition = "TEXT")
     private String comment;
 
