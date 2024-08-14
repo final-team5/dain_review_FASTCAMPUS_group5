@@ -17,7 +17,7 @@ public class Influencer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Integer seq;
 
     @Column(length = 50)
     private String nickname;
