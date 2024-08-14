@@ -72,7 +72,12 @@ public class PostCommentService {
         postCommentRepository.deleteById(postCommentSeq);
     }
 
-//    public Page<PostComment> getComments(Integer postSeq, Pageable pageable) {
-//
-//    }
+    public Page<PostCommentDto> getComments(Integer postSeq, Pageable pageable) {
+        // TODO : 게시글 존재 여부 체크
+
+        // post 전체 조회
+        Page<PostComment> postCommentPage = postCommentRepository.findAllByPostSeq(postSeq, pageable);  // TODO : 게시글 존재 여부 체크 과정 구현 후 findAllByPost 로 변경 예정
+
+        return postCommentPage.map(PostCommentDto::from);
+    }
 }
