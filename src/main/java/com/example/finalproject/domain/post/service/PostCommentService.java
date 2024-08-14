@@ -92,6 +92,12 @@ public class PostCommentService {
         return postCommentPage.map(PostCommentDto::from);
     }
 
+    /**
+     * 게시글 존재 여부 체크
+     *
+     * @param postSeq : 게시글 ID
+     * @return Post
+     */
     private Post getPostOrException(Integer postSeq) {
         return postRepository.findById(postSeq).orElseThrow(
                 () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
