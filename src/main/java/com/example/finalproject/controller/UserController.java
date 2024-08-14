@@ -10,6 +10,8 @@ import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,5 +59,19 @@ public class UserController {
         postCommentService.delete(postCommentDeleteRequest.getPostCommentSeq(), userSeq);
 
         return ResponseApi.success(HttpStatus.OK, "comment delete success");
+    }
+
+    // TODO : 인플루언서, 사업자 커뮤니티 상세 조회 기능과 겹치는 것 같아 삭제 될 수 있음.
+    @ApiOperation(value = "커뮤니티 댓글 리스트 조회", tags = "사용자 - 커뮤니티")
+    @GetMapping(path = "/community/comments/{postSeq}")
+    public ResponseApi<Page<PostCommentResponse>> getPostComments(
+            // TODO : security 도입 후 user 인자 추가 예정
+            @PathVariable Integer postSeq,
+            Pageable pageable
+    ) {
+        Page<PostCommentDto> commentDtoPage = postCommentService.getComments(postSeq, pageable);
+        Page<PostCommentResponse> postCommentResponsePage = commentDtoPage.map(PostCommentResponse::from);
+
+        return ResponseApi.success(HttpStatus.OK, postCommentResponsePage);
     }
 }
