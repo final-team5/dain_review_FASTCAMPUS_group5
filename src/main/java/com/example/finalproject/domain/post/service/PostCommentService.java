@@ -6,6 +6,8 @@ import com.example.finalproject.domain.post.entity.PostComment;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.repository.UserRepository;
+import com.example.finalproject.global.exception.error.ErrorCode;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class PostCommentService {
 
     private final PostCommentRepository postCommentRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     /**
      * 게시글에 댓글 저장
@@ -33,10 +36,10 @@ public class PostCommentService {
     public PostCommentDto save(Integer userSeq, Integer postSeq, String comment) {
         Post post = getPostOrException(postSeq);
 
-        // TODO : userSeq 로 User 가져오기
+        User user = getUserOrException(userSeq);
 
         // post comment save
-        PostComment postComment = PostComment.of(new User(), post, comment);      // TODO : user, post 부분 채워넣기
+        PostComment postComment = PostComment.of(user, post, comment);
         PostComment savedPostComment = postCommentRepository.save(postComment);
 
         return PostCommentDto.from(savedPostComment);
@@ -51,16 +54,20 @@ public class PostCommentService {
      * @return PostCommentDto
      */
     @Transactional
-    public PostCommentDto update(Integer postSeq, Integer postCommentSeq, String comment) {
+    public PostCommentDto update(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
         Post post = getPostOrException(postSeq);
 
-        // TODO : 댓글 존재 여부 체크
+        User user = getUserOrException(userSeq);
 
-        // TODO : 내가 쓴 댓글인지 체크
+        PostComment postComment = getPostCommentOrException(postCommentSeq);
 
-        // TODO : 댓글 변경감지로 update
+        validatePostCommentPostMatch(post, postComment);
 
-        return PostCommentDto.from(new PostComment());      // TODO : Entity 부분 수정 필요
+        validatePostCommentUserMatch(user, postComment);
+
+        postComment.setComment(comment);
+
+        return PostCommentDto.from(postComment);
     }
 
     /**
@@ -71,7 +78,11 @@ public class PostCommentService {
      */
     @Transactional
     public void delete(Integer postCommentSeq, Integer userSeq) {
-        // TODO : 내가 쓴 댓글인지 체크
+        User user = getUserOrException(userSeq);
+
+        PostComment postComment = getPostCommentOrException(postCommentSeq);
+
+        validatePostCommentUserMatch(user, postComment);
 
         postCommentRepository.deleteById(postCommentSeq);
     }
@@ -102,5 +113,53 @@ public class PostCommentService {
         return postRepository.findById(postSeq).orElseThrow(
                 () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
         );
+    }
+
+    /**
+     * 회원 정보 존재 여부 체크
+     *
+     * @param userSeq : 회원 ID
+     * @return User
+     */
+    private User getUserOrException(Integer userSeq) {
+        return userRepository.findById(userSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
+        );
+    }
+
+    /**
+     * 댓글 존재 여부 체크
+     *
+     * @param postCommentSeq : 댓글 ID
+     * @return PostComment
+     */
+    private PostComment getPostCommentOrException(Integer postCommentSeq) {
+        return postCommentRepository.findById(postCommentSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.POST_COMMENT_NOT_FOUND)
+        );
+    }
+
+    /**
+     * 회원 본인이 작성한 댓글인지 체크
+     *
+     * @param user : 회원 정보
+     * @param postComment : 댓글 정보
+     */
+    private void validatePostCommentUserMatch(User user, PostComment postComment) {
+        if (!user.getSeq().equals(postComment.getUser().getSeq())) {
+            throw new ValidException(ValidErrorCode.POST_COMMENT_USER_MISMATCH);
+        }
+    }
+
+    /**
+     * 게시글에 달린 댓글인지 체크
+     *
+     * @param post : 게시글 정보
+     * @param postComment : 댓글 정보
+     */
+    private void validatePostCommentPostMatch(Post post, PostComment postComment) {
+        if (!post.getSeq().equals(postComment.getPost().getSeq())) {
+            throw new ValidException(ValidErrorCode.POST_COMMENT_POST_MISMATCH);
+        }
     }
 }
