@@ -72,6 +72,13 @@ public class PostCommentService {
         postCommentRepository.deleteById(postCommentSeq);
     }
 
+    /**
+     * 게시글 댓글 전체 조회
+     *
+     * @param postSeq : 게시글 ID
+     * @param pageable : 페이징 구현을 위한 Pageable 인자
+     * @return Page<PostCommentDto>
+     */
     public Page<PostCommentDto> getComments(Integer postSeq, Pageable pageable) {
         // TODO : 게시글 존재 여부 체크
 
