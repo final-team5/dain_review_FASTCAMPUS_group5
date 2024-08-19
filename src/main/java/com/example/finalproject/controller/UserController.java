@@ -30,7 +30,7 @@ public class UserController {
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostCommentDto postCommentDto = postCommentService.save(userSeq, postCommentSaveRequest.getPostSeq(), postCommentSaveRequest.getComment());
+        PostCommentDto postCommentDto = postCommentService.save(userSeq, postCommentSaveRequest.getPostSeq(), postCommentSaveRequest.getCommentSeq(), postCommentSaveRequest.getComment());
         PostCommentResponse postCommentResponse = PostCommentResponse.from(postCommentDto);
 
         return ResponseApi.success(HttpStatus.OK, postCommentResponse);
