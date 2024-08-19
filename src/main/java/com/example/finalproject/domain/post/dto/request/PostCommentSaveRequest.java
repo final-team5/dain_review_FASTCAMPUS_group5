@@ -16,9 +16,11 @@ public class PostCommentSaveRequest {
 
     private Integer postSeq;
 
+    private Integer commentSeq;
+
     private String comment;
 
-    public static PostCommentSaveRequest of(Integer postSeq, String comment) {
-        return new PostCommentSaveRequest(postSeq, comment);
+    public static PostCommentSaveRequest of(Integer postSeq, Integer commentSeq, String comment) {
+        return new PostCommentSaveRequest(postSeq, commentSeq, comment);
     }
 }

@@ -42,4 +42,10 @@ public class ExceptionAdvice {
 		return ResponseEntity.status(ex.getStatusCode()).body(ResponseApi.failed(ex));
 	}
 
+	@ExceptionHandler(ValidException.class)
+	public ResponseEntity<ResponseApi<?>> authException(ValidException ex) {
+		log.warn(ex.getMessage());
+		return ResponseEntity.status(ex.getStatusCode()).body(ResponseApi.failed(ex));
+	}
+
 }

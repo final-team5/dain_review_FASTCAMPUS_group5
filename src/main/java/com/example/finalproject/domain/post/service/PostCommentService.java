@@ -29,17 +29,21 @@ public class PostCommentService {
      *
      * @param userSeq : 회원 ID
      * @param postSeq : 게시글 ID
+     * @param postCommentSeq : 댓글 ID (답글인 경우 사용)
      * @param comment : 게시글 댓글
      * @return PostCommentDto
      */
     @Transactional
-    public PostCommentDto save(Integer userSeq, Integer postSeq, String comment) {
+    public PostCommentDto save(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
         Post post = getPostOrException(postSeq);
 
         User user = getUserOrException(userSeq);
 
-        // post comment save
         PostComment postComment = PostComment.of(user, post, comment);
+
+        saveIfIsReplyComment(postCommentSeq, post, user, postComment);
+
+        // post comment save
         PostComment savedPostComment = postCommentRepository.save(postComment);
 
         return PostCommentDto.from(savedPostComment);
@@ -162,4 +166,25 @@ public class PostCommentService {
             throw new ValidException(ValidErrorCode.POST_COMMENT_POST_MISMATCH);
         }
     }
+
+    /**
+     * 답글 저장 기능
+     *
+     * @param postCommentSeq : 답글 달 댓글 ID
+     * @param post : 게시판 정보
+     * @param user : 사용자 정보
+     * @param postComment : 댓글 정보
+     */
+    private void saveIfIsReplyComment(Integer postCommentSeq, Post post, User user, PostComment postComment) {
+        if (postCommentSeq != null) {
+            PostComment replyPostComment = getPostCommentOrException(postCommentSeq);
+
+            validatePostCommentPostMatch(post, replyPostComment);
+            validatePostCommentUserMatch(user, replyPostComment);
+
+            postComment.setCommentSeq(replyPostComment);
+            replyPostComment.getMyComments().add(postComment);
+        }
+    }
+
 }
