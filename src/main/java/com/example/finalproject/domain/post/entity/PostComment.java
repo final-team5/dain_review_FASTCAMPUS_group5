@@ -11,6 +11,8 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -36,6 +38,14 @@ public class PostComment {
     @Setter
     @Column(columnDefinition = "TEXT")
     private String comment;
+
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "comment_seq")
+    private PostComment commentSeq;
+
+    @OneToMany(mappedBy = "commentSeq", orphanRemoval = true)
+    private List<PostComment> myComments = new ArrayList<>();
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;
