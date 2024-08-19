@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,10 +23,26 @@ public class PostCommentDto {
 
     private Integer postSeq;
 
+    private Integer postCommentSeq;
+
     private String comment;
 
-    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, String comment) {
-        return new PostCommentDto(seq, userSeq, postSeq, comment);
+    private List<PostComment> replyComments;
+
+    public PostCommentDto(Integer seq, Integer userSeq, Integer postSeq, String comment, List<PostComment> replyComments) {
+        this.seq = seq;
+        this.userSeq = userSeq;
+        this.postSeq = postSeq;
+        this.comment = comment;
+        this.replyComments = replyComments;
+    }
+
+    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment, List<PostComment> replyComments) {
+        return new PostCommentDto(seq, userSeq, postSeq, postCommentSeq, comment, replyComments);
+    }
+
+    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, String comment, List<PostComment> replyComments) {
+        return new PostCommentDto(seq, userSeq, postSeq, comment, replyComments);
     }
 
     public static PostCommentDto from(PostComment postComment) {
@@ -32,7 +50,9 @@ public class PostCommentDto {
                 postComment.getSeq(),
                 postComment.getUser().getSeq(),
                 postComment.getPost().getSeq(),
-                postComment.getComment()
+                postComment.getComment(),
+                postComment.getMyComments()
         );
+
     }
 }
