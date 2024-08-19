@@ -168,11 +168,12 @@ public class PostCommentService {
     }
 
     /**
+     * 답글 저장 기능
      *
-     * @param postCommentSeq
-     * @param post
-     * @param user
-     * @param postComment
+     * @param postCommentSeq : 답글 달 댓글 ID
+     * @param post : 게시판 정보
+     * @param user : 사용자 정보
+     * @param postComment : 댓글 정보
      */
     private void saveIfIsReplyComment(Integer postCommentSeq, Post post, User user, PostComment postComment) {
         if (postCommentSeq != null) {
