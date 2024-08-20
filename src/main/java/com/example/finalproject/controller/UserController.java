@@ -4,6 +4,7 @@ import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.request.PostCommentDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.PostCommentSaveRequest;
 import com.example.finalproject.domain.post.dto.request.PostCommentUpdateRequest;
+import com.example.finalproject.domain.post.dto.request.PostFollowSaveRequest;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.global.util.ResponseApi;
@@ -73,5 +74,16 @@ public class UserController {
         Page<PostCommentResponse> postCommentResponsePage = commentDtoPage.map(PostCommentResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postCommentResponsePage);
+    }
+
+    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
+    @PostMapping(path = "/community")
+    public ResponseApi<?> saveFollowPost(
+            @RequestBody PostFollowSaveRequest postFollowSaveRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+
+        return ResponseApi.success(HttpStatus.OK, null);
     }
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE post_comments SET deleted_at = NOW() where seq=?")
+@SQLDelete(sql = "UPDATE final.post_comments SET deleted_at = NOW() where seq=?")
 @Where(clause = "deleted_at is NULL")
 @Table(name = "post_comments")
 @Entity
@@ -27,11 +27,11 @@ public class PostComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_seq")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_seq")
     private Post post;
 
