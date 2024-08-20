@@ -42,31 +42,4 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 .description(API_DESCRIPTION)
                 .build();
     }
-
-    // Swagger-ui 경로 검증 ignore 처리
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors()
-                .and()
-                .authorizeRequests()
-                .antMatchers("/swagger-ui.html", "/swagger-resources/**", "/v2/api-docs", "/webjars/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .csrf().disable();
-
-        return http.build();
-    }
-
-    // Swagger CORS 설정
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry
-                .addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
-    }
-
-
 }
