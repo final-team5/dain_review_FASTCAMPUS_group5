@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO : getOr~ 메서드들 따로 객체지향적으로 분리
 @RequiredArgsConstructor
 @Service
 public class PostCommentService {
