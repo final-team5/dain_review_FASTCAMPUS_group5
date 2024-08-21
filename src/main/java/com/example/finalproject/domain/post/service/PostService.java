@@ -50,6 +50,16 @@ public class PostService {
         return PostDto.from(savedPost);
     }
 
+    /**
+     * 서이추/맞팔 게시판 게시글 수정
+     *
+     * @param seq : 게시글 ID
+     * @param category : sns 카테고리
+     * @param contents : 게시글 본문
+     * @param title : 게시글 제목
+     * @param userSeq : 로그인한 사용자 ID
+     * @return PostDto
+     */
     @Transactional
     public PostDto updateFollowPost(Integer seq, PostType category, String contents, String title, Integer userSeq) {
         User user = getUserOrException(userSeq);
