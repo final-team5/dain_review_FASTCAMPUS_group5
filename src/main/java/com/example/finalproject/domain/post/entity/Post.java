@@ -45,8 +45,6 @@ public class Post {
     @Column(name = "view_count")
     private Integer viewCount;
 
-    private Integer status;
-
     @Column(name = "registered_at")
     private Timestamp registeredAt;
 
@@ -55,6 +53,19 @@ public class Post {
 
     @Column(name = "deleted_at")
     private Timestamp deletedAt;
+
+    public Post(User user, PostCategories postCategories, PostTypes postTypes, String title, String contents, Integer viewCount) {
+        this.user = user;
+        this.postCategories = postCategories;
+        this.postTypes = postTypes;
+        this.title = title;
+        this.contents = contents;
+        this.viewCount = viewCount;
+    }
+
+    public static Post of(User user, PostCategories postCategories, PostTypes postTypes, String title, String contents, Integer viewCount) {
+        return new Post(user, postCategories, postTypes, title, contents, viewCount);
+    }
 
     @PrePersist
     void registeredAt() {
