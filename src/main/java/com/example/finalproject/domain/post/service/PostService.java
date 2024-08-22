@@ -3,7 +3,6 @@ package com.example.finalproject.domain.post.service;
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostCategories;
-import com.example.finalproject.domain.post.entity.PostComment;
 import com.example.finalproject.domain.post.entity.PostTypes;
 import com.example.finalproject.domain.post.entity.enums.PostCategory;
 import com.example.finalproject.domain.post.entity.enums.PostType;
@@ -67,6 +66,17 @@ public class PostService {
         post.setContents(contents);
 
         return PostDto.from(post);
+    }
+
+    @Transactional
+    public void deleteFollowPost(Integer seq, Integer userSeq) {
+        User user = getUserOrException(userSeq);
+
+        Post post = getPostOrException(seq);
+
+        validatePostUserMatch(user, post);
+
+        postRepository.deleteById(seq);
     }
 
     /**
