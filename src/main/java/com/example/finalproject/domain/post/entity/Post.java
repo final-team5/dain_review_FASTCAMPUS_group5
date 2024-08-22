@@ -4,6 +4,7 @@ import com.example.finalproject.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -32,13 +33,16 @@ public class Post {
     @JoinColumn(name = "category_seq")
     private PostCategories postCategories;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_seq")
     private PostTypes postTypes;
 
+    @Setter
     @Column(length = 50)
     private String title;
 
+    @Setter
     @Column(columnDefinition = "TEXT")
     private String contents;
 
