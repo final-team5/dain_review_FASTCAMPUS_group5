@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserService {
+public class BusinessesService {
 
     /**
      * 대행사 신청을 처리하는 메소드
