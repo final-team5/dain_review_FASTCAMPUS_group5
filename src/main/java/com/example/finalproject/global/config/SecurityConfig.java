@@ -1,5 +1,6 @@
 package com.example.finalproject.global.config;
 
+
 import com.example.finalproject.global.jwt.JwtAccessDeniedHandler;
 import com.example.finalproject.global.jwt.JwtAuthenticationEntryPoint;
 import com.example.finalproject.global.jwt.JwtFilter;
@@ -79,4 +80,5 @@ public class SecurityConfig {
 	JwtDecoder jwtDecoder() {
 		return NimbusJwtDecoder.withJwkSetUri("https://auth-stg.seyfert.kr/oauth2/jwks").build();
 	}
+
 }

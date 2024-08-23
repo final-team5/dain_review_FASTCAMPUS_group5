@@ -1,5 +1,6 @@
 package com.example.finalproject.domain.post.dto.request;
 
+import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -7,20 +8,21 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostCommentSaveRequest {
+public class PostFollowSaveRequest {
 
-    private Integer postSeq;
+    @NotBlank
+    private PostType category;
 
-    private Integer commentSeq;
+    @NotBlank
+    private String contents;
 
-    private String comment;
-
-    public static PostCommentSaveRequest of(Integer postSeq, Integer commentSeq, String comment) {
-        return new PostCommentSaveRequest(postSeq, commentSeq, comment);
-    }
+    @NotBlank
+    private String title;
 }
