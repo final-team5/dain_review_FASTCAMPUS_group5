@@ -21,9 +21,9 @@ public class UserInfluencerDto {
 
     private UserDto userDto;
 
-    private String nickName;
+    private String nickname;
 
-    private Date birthDate;
+    private Date birthdate;
 
     private String Gender;
 
