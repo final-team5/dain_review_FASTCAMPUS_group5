@@ -21,4 +21,12 @@ public class PostCategories {
     @Enumerated(value = EnumType.STRING)
     @Column(length = 50)
     private PostCategory category;
+
+    public PostCategories(PostCategory category) {
+        this.category = category;
+    }
+
+    public static PostCategories of(Integer seq, PostCategory category) {
+        return new PostCategories(seq, category);
+    }
 }
