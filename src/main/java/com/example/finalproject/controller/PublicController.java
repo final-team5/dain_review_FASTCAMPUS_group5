@@ -36,7 +36,6 @@ public class PublicController {
 	@ApiOperation(value = "로그인", tags = "공개 - 회원")
 	@PostMapping("/login")
 	public ResponseEntity<ResponseApi<LoginResponse>> login(@RequestBody Login login) throws ParseException {
-
 		UserInfo userInfo = userService.getUser(login.getEmail(), 1);
 
 		if (!passwordEncoder.matches(login.getPw(), userInfo.getPw())) {
