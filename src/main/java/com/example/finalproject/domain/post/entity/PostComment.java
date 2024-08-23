@@ -4,12 +4,15 @@ import com.example.finalproject.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -24,16 +27,25 @@ public class PostComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_seq")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_seq")
     private Post post;
 
+    @Setter
     @Column(columnDefinition = "TEXT")
     private String comment;
+
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "comment_seq")
+    private PostComment commentSeq;
+
+    @OneToMany(mappedBy = "commentSeq", orphanRemoval = true)
+    private List<PostComment> myComments = new ArrayList<>();
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;

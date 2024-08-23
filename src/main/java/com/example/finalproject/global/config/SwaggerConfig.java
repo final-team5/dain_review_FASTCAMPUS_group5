@@ -42,4 +42,16 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 .description(API_DESCRIPTION)
                 .build();
     }
+
+    // Swagger CORS 설정
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry
+                .addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+    }
+
+
 }

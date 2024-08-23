@@ -4,35 +4,47 @@ import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostComment;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
+import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.repository.UserRepository;
+import com.example.finalproject.global.exception.error.ErrorCode;
+import com.example.finalproject.global.exception.error.ValidErrorCode;
+import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO : getOr~ 메서드들 따로 객체지향적으로 분리
 @RequiredArgsConstructor
 @Service
 public class PostCommentService {
 
     private final PostCommentRepository postCommentRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     /**
      * 게시글에 댓글 저장
      *
      * @param userSeq : 회원 ID
      * @param postSeq : 게시글 ID
+     * @param postCommentSeq : 댓글 ID (답글인 경우 사용)
      * @param comment : 게시글 댓글
      * @return PostCommentDto
      */
     @Transactional
-    public PostCommentDto save(Integer userSeq, Integer postSeq, String comment) {
-        // TODO : Post 존재 여부 체크
+    public PostCommentDto save(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
+        Post post = getPostOrException(postSeq);
 
-        // TODO : userSeq 로 User 가져오기
+        User user = getUserOrException(userSeq);
+
+        PostComment postComment = PostComment.of(user, post, comment);
+
+        saveIfIsReplyComment(postCommentSeq, post, user, postComment);
 
         // post comment save
-        PostComment postComment = PostComment.of(new User(), new Post(), comment);      // TODO : user, post 부분 채워넣기
         PostComment savedPostComment = postCommentRepository.save(postComment);
 
         return PostCommentDto.from(savedPostComment);
@@ -47,16 +59,20 @@ public class PostCommentService {
      * @return PostCommentDto
      */
     @Transactional
-    public PostCommentDto update(Integer postSeq, Integer postCommentSeq, String comment) {
-        // TODO : Post 존재 여부 체크
+    public PostCommentDto update(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
+        Post post = getPostOrException(postSeq);
 
-        // TODO : 댓글 존재 여부 체크
+        User user = getUserOrException(userSeq);
 
-        // TODO : 내가 쓴 댓글인지 체크
+        PostComment postComment = getPostCommentOrException(postCommentSeq);
 
-        // TODO : 댓글 변경감지로 update
+        validatePostCommentPostMatch(post, postComment);
 
-        return PostCommentDto.from(new PostComment());      // TODO : Entity 부분 수정 필요
+        validatePostCommentUserMatch(user, postComment);
+
+        postComment.setComment(comment);
+
+        return PostCommentDto.from(postComment);
     }
 
     /**
@@ -67,17 +83,109 @@ public class PostCommentService {
      */
     @Transactional
     public void delete(Integer postCommentSeq, Integer userSeq) {
-        // TODO : 내가 쓴 댓글인지 체크
+        User user = getUserOrException(userSeq);
+
+        PostComment postComment = getPostCommentOrException(postCommentSeq);
+
+        validatePostCommentUserMatch(user, postComment);
 
         postCommentRepository.deleteById(postCommentSeq);
     }
 
+    /**
+     * 게시글 댓글 전체 조회
+     *
+     * @param postSeq : 게시글 ID
+     * @param pageable : 페이징 구현을 위한 Pageable 인자
+     * @return Page<PostCommentDto>
+     */
     public Page<PostCommentDto> getComments(Integer postSeq, Pageable pageable) {
-        // TODO : 게시글 존재 여부 체크
+        Post post = getPostOrException(postSeq);
 
         // post 전체 조회
-        Page<PostComment> postCommentPage = postCommentRepository.findAllByPostSeq(postSeq, pageable);  // TODO : 게시글 존재 여부 체크 과정 구현 후 findAllByPost 로 변경 예정
+        Page<PostComment> postCommentPage = postCommentRepository.findAllByPost(post, pageable);
 
         return postCommentPage.map(PostCommentDto::from);
     }
+
+    /**
+     * 게시글 존재 여부 체크
+     *
+     * @param postSeq : 게시글 ID
+     * @return Post
+     */
+    private Post getPostOrException(Integer postSeq) {
+        return postRepository.findById(postSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
+        );
+    }
+
+    /**
+     * 회원 정보 존재 여부 체크
+     *
+     * @param userSeq : 회원 ID
+     * @return User
+     */
+    private User getUserOrException(Integer userSeq) {
+        return userRepository.findById(userSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
+        );
+    }
+
+    /**
+     * 댓글 존재 여부 체크
+     *
+     * @param postCommentSeq : 댓글 ID
+     * @return PostComment
+     */
+    private PostComment getPostCommentOrException(Integer postCommentSeq) {
+        return postCommentRepository.findById(postCommentSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.POST_COMMENT_NOT_FOUND)
+        );
+    }
+
+    /**
+     * 회원 본인이 작성한 댓글인지 체크
+     *
+     * @param user : 회원 정보
+     * @param postComment : 댓글 정보
+     */
+    private void validatePostCommentUserMatch(User user, PostComment postComment) {
+        if (!user.getSeq().equals(postComment.getUser().getSeq())) {
+            throw new ValidException(ValidErrorCode.POST_COMMENT_USER_MISMATCH);
+        }
+    }
+
+    /**
+     * 게시글에 달린 댓글인지 체크
+     *
+     * @param post : 게시글 정보
+     * @param postComment : 댓글 정보
+     */
+    private void validatePostCommentPostMatch(Post post, PostComment postComment) {
+        if (!post.getSeq().equals(postComment.getPost().getSeq())) {
+            throw new ValidException(ValidErrorCode.POST_COMMENT_POST_MISMATCH);
+        }
+    }
+
+    /**
+     * 답글 저장 기능
+     *
+     * @param postCommentSeq : 답글 달 댓글 ID
+     * @param post : 게시판 정보
+     * @param user : 사용자 정보
+     * @param postComment : 댓글 정보
+     */
+    private void saveIfIsReplyComment(Integer postCommentSeq, Post post, User user, PostComment postComment) {
+        if (postCommentSeq != null) {
+            PostComment replyPostComment = getPostCommentOrException(postCommentSeq);
+
+            validatePostCommentPostMatch(post, replyPostComment);
+            validatePostCommentUserMatch(user, replyPostComment);
+
+            postComment.setCommentSeq(replyPostComment);
+            replyPostComment.getMyComments().add(postComment);
+        }
+    }
+
 }

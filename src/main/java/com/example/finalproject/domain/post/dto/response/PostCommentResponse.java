@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,16 +20,22 @@ public class PostCommentResponse {
 
     private Integer postCommentSeq;
 
+    private Integer replyCommentSeq;
+
     private String comment;
 
-    public static PostCommentResponse of(Integer postCommentSeq, String comment) {
-        return new PostCommentResponse(postCommentSeq, comment);
+    private List<PostCommentDto> replyList;
+
+    public static PostCommentResponse of(Integer postCommentSeq, Integer replyCommentSeq, String comment, List<PostCommentDto> replyList) {
+        return new PostCommentResponse(postCommentSeq, replyCommentSeq, comment, replyList);
     }
 
     public static PostCommentResponse from(PostCommentDto postCommentDto) {
         return PostCommentResponse.of(
                 postCommentDto.getSeq(),
-                postCommentDto.getComment()
+                postCommentDto.getPostCommentSeq(),
+                postCommentDto.getComment(),
+                postCommentDto.getReplyComments().stream().map(PostCommentDto::from).collect(Collectors.toList())
         );
     }
 }
