@@ -1,8 +1,17 @@
 package com.example.finalproject.domain.post.entity.enums;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum PostType {
-    BLOG,
-    TIKTOK,
-    INSTAGRAM
-    // TODO : 추후 필요에 따라 더 추가 가능성
+    BLOG("블로그"),
+    INSTAGRAM("인스타그램"),
+    YOUTUBE("유튜브"),
+    TIKTOK("틱톡"),
+    ETC("기타")
+    ;
+
+    private final String info;
 }
