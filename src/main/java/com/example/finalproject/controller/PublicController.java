@@ -1,8 +1,8 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.user.dto.Login;
-import com.example.finalproject.domain.user.entity.User;
-import com.example.finalproject.domain.user.entity.UserInfo;
+import com.example.finalproject.domain.user.dto.LoginResponse;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.exception.error.AuthErrorCode;
 import com.example.finalproject.global.exception.type.AuthException;
@@ -11,6 +11,7 @@ import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,7 @@ public class PublicController {
 
 	@ApiOperation(value = "로그인", tags = "공개 - 회원")
 	@PostMapping("/login")
-	public ResponseEntity<ResponseApi<UserInfo>> login(@RequestBody Login login) throws ParseException {
+	public ResponseEntity<ResponseApi<LoginResponse>> login(@RequestBody Login login) throws ParseException {
 
 		UserInfo userInfo = userService.getUser(login.getEmail(), 1);
 
@@ -42,11 +43,9 @@ public class PublicController {
 			throw new AuthException(AuthErrorCode.PASSWORD_NOT_MATCH);
 		}
 
-		ResponseApi<UserInfo> response = ResponseApi.success(HttpStatus.OK, userInfo);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		LoginResponse loginResponse = setReturnValue(userInfo);
+		return ResponseEntity.ok(ResponseApi.success(HttpStatus.OK, loginResponse));
 	}
-
-
 
 	@ApiOperation(value = "닉네임 중복 체크", tags = "공개 - 회원")
 	@GetMapping("/nickname-check")
@@ -58,12 +57,11 @@ public class PublicController {
 		}
 		jo.put("message", "사용 가능한 닉네임 입니다");
 		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
-
 	}
 
 	@ApiOperation(value = "회사명 중복 체크", tags = "공개 - 회원")
 	@GetMapping("/company-check")
-	public ResponseEntity<?> compnayCheck(String company){
+	public ResponseEntity<?> companyCheck(String company){
 		JSONObject jo = new JSONObject();
 
 		if (userService.checkCompany(company)) {
@@ -71,7 +69,17 @@ public class PublicController {
 		}
 		jo.put("message", "사용 가능한 회사명 입니다");
 		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
-
 	}
 
+	public LoginResponse setReturnValue(UserInfo user) throws ParseException {
+		String new_token = tokenProvider.createToken(user);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String strNowDate = simpleDateFormat.format(tokenProvider.getExpireDate(new_token));
+		return LoginResponse.builder()
+			.token(new_token)
+			.name(user.getName())
+			.expireDate(strNowDate)
+			.message("로그인 되었습니다.")
+			.build();
+	}
 }

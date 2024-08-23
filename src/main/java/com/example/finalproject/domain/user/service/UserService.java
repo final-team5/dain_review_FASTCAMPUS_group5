@@ -1,14 +1,10 @@
 package com.example.finalproject.domain.user.service;
 
 import com.example.finalproject.domain.user.entity.User;
-import com.example.finalproject.domain.user.entity.UserInfo;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.repository.EnterpriserRepository;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
-import com.example.finalproject.global.exception.error.AuthErrorCode;
-import com.example.finalproject.global.exception.type.AuthException;
-import java.util.HashMap;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

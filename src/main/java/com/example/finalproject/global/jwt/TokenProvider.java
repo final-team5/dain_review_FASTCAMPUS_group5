@@ -1,6 +1,6 @@
 package com.example.finalproject.global.jwt;
 
-import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -51,7 +51,7 @@ public class TokenProvider implements InitializingBean {
 		this.key = secretKey;
 	}
 
-	public String createToken(User user) throws ParseException {
+	public String createToken(UserInfo user) throws ParseException {
 		// 토큰의 expire 시간을 설정
 		Calendar date = Calendar.getInstance();
 		long timeInSecs = date.getTimeInMillis();
