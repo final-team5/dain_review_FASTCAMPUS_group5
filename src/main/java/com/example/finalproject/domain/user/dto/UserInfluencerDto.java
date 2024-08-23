@@ -33,18 +33,17 @@ public class UserInfluencerDto {
 
     private String instagramLink;
     private String instagramRank;
-    private Integer instagramVisitors;
+    private Integer instagramFollower;
 
     private String youtubeLink;
     private String youtubeRank;
-    private Integer youtubeVisitors;
+    private Integer youtubeSubscriber;
 
     private String tiktokLink;
     private String tiktokRank;
-    private Integer tiktokVisitors;
+    private Integer tiktokFollower;
 
     private String otherLink;
     private String otherRank;
-
 
 }
