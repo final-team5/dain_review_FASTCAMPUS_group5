@@ -2,10 +2,7 @@ package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
-import com.example.finalproject.domain.post.dto.request.PostCommentDeleteRequest;
-import com.example.finalproject.domain.post.dto.request.PostCommentSaveRequest;
-import com.example.finalproject.domain.post.dto.request.PostCommentUpdateRequest;
-import com.example.finalproject.domain.post.dto.request.PostFollowSaveRequest;
+import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowSaveResponse;
 import com.example.finalproject.domain.post.service.PostCommentService;
@@ -91,5 +88,18 @@ public class UserController {
         PostFollowSaveResponse postFollowSaveResponse = PostFollowSaveResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postFollowSaveResponse);
+    }
+
+    @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 커뮤니티")
+    @PutMapping(path = "/community")
+    public ResponseApi<PostFollowSaveResponse> updateFollowPost(
+            @RequestBody PostFollowUpdateRequest postFollowUpdateRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        PostDto postDto = postService.updateFollowPost(postFollowUpdateRequest.getSeq(), postFollowUpdateRequest.getCategory(), postFollowUpdateRequest.getContents(), postFollowUpdateRequest.getTitle(), userSeq);
+        PostFollowSaveResponse postFollowUpdateResponse = PostFollowSaveResponse.from(postDto);
+
+        return ResponseApi.success(HttpStatus.OK, postFollowUpdateResponse);
     }
 }
