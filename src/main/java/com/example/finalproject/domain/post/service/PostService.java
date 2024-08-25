@@ -6,6 +6,7 @@ import com.example.finalproject.domain.post.entity.PostCategories;
 import com.example.finalproject.domain.post.entity.PostTypes;
 import com.example.finalproject.domain.post.entity.enums.PostCategory;
 import com.example.finalproject.domain.post.entity.enums.PostType;
+import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.post.repository.PostTypesRepository;
 import com.example.finalproject.domain.user.entity.User;
@@ -13,6 +14,8 @@ import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,6 +121,32 @@ public class PostService {
     @Transactional
     public void updateViewCounts(Integer seq) {
         postRepository.updateViewCounts(seq);
+    }
+
+    /**
+     * 서이추/맞팔 게시판 리스트 목록 조회
+     *
+     * @param searchType : 검색어 조건
+     * @param searchWord : 검색어
+     * @param pageable : 페이징
+     * @return Page<PostDto>
+     */
+    // TODO : 추후 인플루언서, 사업주 엔티티 설계 완료 시, 반환 내용 닉네임 및 업체명으로 수정해야함.
+    public Page<PostDto> findListFollowPost(SearchType searchType, String searchWord, Pageable pageable) {
+        if (searchWord == null || searchWord.isEmpty()) {
+            return postRepository.findAll(pageable).map(PostDto::from);
+        }
+
+        switch (searchType) {
+            case USER:
+                return postRepository.findByUsernameContaining(4, searchWord, pageable).map(PostDto::from);
+            case TITLE:
+                return postRepository.findByTitleContaining(4, searchWord, pageable).map(PostDto::from);
+            case CONTENTS:
+                return postRepository.findByContentsContaining(4, searchWord, pageable).map(PostDto::from);
+            default:
+                throw new ValidException(ValidErrorCode.POST_SEARCH_TYPE_NOT_FOUND);
+        }
     }
 
     /**
