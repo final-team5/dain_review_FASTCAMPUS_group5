@@ -138,6 +138,8 @@ public class PostService {
         }
 
         switch (searchType) {
+            case ALL:
+                return postRepository.findByContaining(4, searchWord, pageable).map(PostDto::from);
             case USER:
                 return postRepository.findByUsernameContaining(4, searchWord, pageable).map(PostDto::from);
             case TITLE:

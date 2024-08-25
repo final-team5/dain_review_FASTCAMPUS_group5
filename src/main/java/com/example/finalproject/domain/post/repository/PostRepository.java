@@ -31,4 +31,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             @Param(value = "seq") Integer seq,
             @Param(value = "searchKeyword") String contents,
             Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.title LIKE %:searchKeyword% OR p.user.name LIKE %:searchKeyword% OR p.contents LIKE %:searchKeyword% AND p.postCategories.seq = :seq")
+    Page<Post> findByContaining(
+            @Param(value = "seq") Integer seq,
+            @Param(value = "searchKeyword") String searchKeyword,
+            Pageable pageable
+    );
 }
