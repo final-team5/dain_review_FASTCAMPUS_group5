@@ -4,6 +4,7 @@ import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
+import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowResponse;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
@@ -113,5 +114,20 @@ public class UserController {
         postService.deleteFollowPost(postFollowDeleteRequest.getSeq(), userSeq);
 
         return ResponseApi.success(HttpStatus.OK, "follow post delete success");
+    }
+
+    @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 커뮤니티")
+    @GetMapping(path = "/community/{seq}")
+    public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
+            @PathVariable Integer seq,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        PostDto postDto = postService.findDetailFollowPost(seq, userSeq);
+        postService.updateViewCounts(seq);
+
+        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postDto);
+
+        return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
 }

@@ -1,4 +1,4 @@
-package com.example.finalproject.domain.user.entity;
+package com.example.finalproject.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

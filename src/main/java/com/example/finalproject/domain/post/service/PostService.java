@@ -78,6 +78,12 @@ public class PostService {
         return PostDto.from(post);
     }
 
+    /**
+     * 서이추/맞팔 게시글 삭제
+     *
+     * @param seq : 삭제할 게시글 ID
+     * @param userSeq : 로그인한 사용자 ID
+     */
     @Transactional
     public void deleteFollowPost(Integer seq, Integer userSeq) {
         User user = getUserOrException(userSeq);
@@ -87,6 +93,31 @@ public class PostService {
         validatePostUserMatch(user, post);
 
         postRepository.deleteById(seq);
+    }
+
+    /**
+     * 서이추/맞팔 게시글 상세 조회
+     *
+     * @param seq : 조회할 게시글 ID
+     * @param userSeq : 로그인한 사용자 ID
+     * @return PostDto
+     */
+    public PostDto findDetailFollowPost(Integer seq, Integer userSeq) {
+        User user = getUserOrException(userSeq);
+
+        Post post = getPostOrException(seq);
+
+        return PostDto.from(post);
+    }
+
+    /**
+     * 조회수 증가 서비스 로직
+     *
+     * @param seq : 조회된 게시글 ID
+     */
+    @Transactional
+    public void updateViewCounts(Integer seq) {
+        postRepository.updateViewCounts(seq);
     }
 
     /**
