@@ -5,13 +5,19 @@ import com.google.api.client.util.DateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE campaigns SET deleted_at = NOW() WHERE seq=?")
+@Where(clause = "deleted_at is NULL")
 @Table(name = "campaigns")
 @Entity
 public class Campaign {
@@ -124,4 +130,23 @@ public class Campaign {
 
     @Column(name = "advertising_display")
     private Integer advertisingDisplay;
+
+    @Column(name = "registered_at")
+    private Timestamp registeredAt;
+
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
+
+    @Column(name = "deleted_at")
+    private Timestamp deletedAt;
+
+    @PrePersist
+    void registeredAt() {
+        this.registeredAt = Timestamp.from(Instant.now());
+    }
+
+    @PreUpdate
+    void updatedAt() {
+        this.updatedAt = Timestamp.from(Instant.now());
+    }
 }
