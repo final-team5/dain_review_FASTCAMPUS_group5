@@ -1,6 +1,8 @@
 package com.example.finalproject.domain.post.repository;
 
 import com.example.finalproject.domain.post.entity.Post;
+import com.example.finalproject.global.exception.error.ValidErrorCode;
+import com.example.finalproject.global.exception.type.ValidException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +40,10 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             @Param(value = "searchKeyword") String searchKeyword,
             Pageable pageable
     );
+
+    default Post getPostBySeqOrException(Integer postSeq) {
+        return findById(postSeq).orElseThrow(
+                () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
+        );
+    }
 }
