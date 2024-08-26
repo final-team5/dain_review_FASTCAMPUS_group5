@@ -1,5 +1,6 @@
 package com.example.finalproject.domain.campaign.entity;
 
+import com.example.finalproject.domain.user.entity.User;
 import com.google.api.client.util.DateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,10 @@ public class Campaign {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_seq")
+    private User user;
 
     @Column(length = 50)
     private String id;
