@@ -64,4 +64,7 @@ public class User {
     private Integer penalty;
 
     private Integer type;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Influencer influencer;
 }

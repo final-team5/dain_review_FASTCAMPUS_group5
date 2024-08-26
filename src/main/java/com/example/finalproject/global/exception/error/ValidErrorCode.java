@@ -19,7 +19,10 @@ public enum ValidErrorCode implements ErrorCode {
     // PostComment
     POST_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "작성된 댓글 정보가 존재하지 않습니다."),
     POST_COMMENT_USER_MISMATCH(HttpStatus.BAD_REQUEST, "댓글 작성자와 일치하지 않습니다."),
-    POST_COMMENT_POST_MISMATCH(HttpStatus.BAD_REQUEST, "해당 게시글에 존재하지 않는 댓글입니다.")
+    POST_COMMENT_POST_MISMATCH(HttpStatus.BAD_REQUEST, "해당 게시글에 존재하지 않는 댓글입니다."),
+
+    // Influencer
+    INFLUENCER_NOT_FOUND(HttpStatus.NOT_FOUND, "인플루언서 정보를 찾을 수 없습니다.")
     ;
 
     private final HttpStatus code;

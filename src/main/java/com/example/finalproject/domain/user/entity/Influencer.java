@@ -1,5 +1,7 @@
 package com.example.finalproject.domain.user.entity;
 
+import com.example.finalproject.domain.user.dto.UserInfluencerDto;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -18,6 +20,10 @@ public class Influencer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
+
+    @OneToOne
+    @JoinColumn(name = "user_seq")
+    private User user;
 
     @Column(length = 50)
     private String nickname;
@@ -67,4 +73,5 @@ public class Influencer {
 
     @Column(name = "other_rank", length = 50)
     private String otherRank;
+
 }
