@@ -2,9 +2,7 @@ package com.example.finalproject.domain.campaign.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -48,7 +46,7 @@ public class CampaignInsertRequest {
     private String title;
     private boolean tuesdayAvailable;
     private boolean tuesdayUnavailable;
-    private int typeSeq;
+    private int type;   // typeSeq
     private boolean wednesdayAvailable;
     private boolean wednesdayUnavailable;
 }
