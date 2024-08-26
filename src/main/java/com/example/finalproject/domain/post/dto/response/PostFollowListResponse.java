@@ -16,12 +16,13 @@ import lombok.NoArgsConstructor;
 public class PostFollowListResponse {
     private String postType;
     private String title;
+    private String contents;
     private String username;
     private String registeredAt;
     private Integer viewCount;
 
-    public static PostFollowListResponse of(String postType, String title, String username, String registeredAt, Integer viewCount) {
-        return new PostFollowListResponse(postType, title, username, registeredAt, viewCount);
+    public static PostFollowListResponse of(String postType, String title, String contents, String username, String registeredAt, Integer viewCount) {
+        return new PostFollowListResponse(postType, title, contents, username, registeredAt, viewCount);
     }
 
     public static PostFollowListResponse from(PostDto postDto) {
@@ -31,6 +32,7 @@ public class PostFollowListResponse {
         return PostFollowListResponse.of(
                 postDto.getPostType(),
                 postDto.getTitle(),
+                postDto.getContents(),
                 postDto.getUserDto().getName(),
                 registeredDate,
                 postDto.getViewCount()
