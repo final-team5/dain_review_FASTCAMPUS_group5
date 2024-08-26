@@ -1,5 +1,7 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.campaign.dto.request.CampaignPreferenceSaveRequest;
+import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceSaveResponse;
 import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.request.*;
@@ -148,5 +150,16 @@ public class UserController {
         Page<PostFollowListResponse> postFollowListResponses = listFollowPost.map(PostFollowListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postFollowListResponses);
+    }
+
+    @ApiOperation(value = "찜 하기", tags = "사용자 - 체험단")
+    @PostMapping(path = "/favorites")
+    public ResponseApi<CampaignPreferenceSaveResponse> saveCampaignPreference(
+            @RequestBody CampaignPreferenceSaveRequest campaignPreferenceSaveRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+
+        return ResponseApi.success(HttpStatus.OK, null);
     }
 }
