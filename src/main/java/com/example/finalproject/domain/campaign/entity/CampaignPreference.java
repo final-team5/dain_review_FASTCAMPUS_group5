@@ -25,4 +25,13 @@ public class CampaignPreference {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_seq")
     private Campaign campaign;
+
+    public CampaignPreference(User user, Campaign campaign) {
+        this.user = user;
+        this.campaign = campaign;
+    }
+
+    public static CampaignPreference of(User user, Campaign campaign) {
+        return new CampaignPreference(user, campaign);
+    }
 }
