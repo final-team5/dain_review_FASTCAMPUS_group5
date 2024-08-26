@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CampaignDto {
 
-
+    private Integer seq;
 }
