@@ -59,10 +59,14 @@ public class BusinessesController {
         return ResponseApi.success(HttpStatus.OK, "체험단 모집이 시작되었습니다.");
     }
 
-    @ApiOperation(value = "검수 중인 체험단 취소(준비 중)", tags = "사업자 - 체험단")
+    @ApiOperation(value = "검수 중인 체험단 취소", tags = "사업자 - 체험단")
     @DeleteMapping("/campaign")
-    public ResponseApi<?> cancelCampaign(@RequestBody CampaignCancelRequest cancelRequest) {
-        businessesService.cancelCampaign(cancelRequest);
+    @PreAuthorize("hasRole('ROLE_BUSINESS')")
+    public ResponseApi<?> cancelCampaign(@PathVariable String id) {
+        // TODO: 패널티 부여 시 회원에게 알림 발송
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfo userInfo = userService.findByUsername(authentication.getName());
+        businessesService.cancelCampaign(id, userInfo.getSeq());
         return ResponseApi.success(HttpStatus.OK, "체험단 취소 요청이 처리되었습니다.");
     }
 

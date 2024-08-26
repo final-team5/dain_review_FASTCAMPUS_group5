@@ -1,21 +1,31 @@
 package com.example.finalproject.domain.user.service;
 
-import com.example.finalproject.domain.campaign.dto.request.CampaignCancelRequest;
 import com.example.finalproject.domain.campaign.dto.request.CampaignInsertRequest;
 import com.example.finalproject.domain.campaign.dto.request.ReviewerSelectRequest;
+import com.example.finalproject.domain.campaign.entity.Campaign;
+import com.example.finalproject.domain.campaign.entity.CampaignStatus;
+import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.payment.dto.request.PaymentRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostUpdateRequest;
 import com.example.finalproject.domain.user.dto.request.AgencyInsertRequest;
+import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class BusinessesService {
+
+    private CampaignRepository campaignRepository;
+    private UserRepository userRepository;
 
     /**
      * 대행사 신청을 처리하는 메소드
@@ -34,15 +44,105 @@ public class BusinessesService {
      * @param userSeq 사용자 식별자
      */
     public void createCampaign(CampaignInsertRequest insert, Integer userSeq) {
-        // TODO: 사용자 인증 확인 및 체험단 모집 정보 저장
+
+        switch (insert.getType()) {
+            case 1: // 방문형, 포장형
+                validateVisitOrPackageCampaign(insert);
+                break;
+            case 2: // 구매형, 배송형, 기자단형
+                validatePurchaseOrDeliveryCampaign(insert);
+                break;
+            default:
+                throw new IllegalArgumentException("잘못된 체험단 유형입니다.");
+        }
+
+        Campaign campaign = new Campaign();
+        campaign.setTitle(insert.getTitle());
+        campaign.setContents(insert.getContents());
+        campaign.setCampaignLink(insert.getCampaignLink());
+        campaign.setCity(insert.getCity());
+        campaign.setDistrict(insert.getDistrict());
+        campaign.setApplicationStartDate(parseDate(insert.getApplicationStartDate()));
+        campaign.setApplicationEndDate(parseDate(insert.getApplicationEndDate()));
+        campaign.setExperienceStartDate(parseDate(insert.getExperienceStartDate()));
+        campaign.setExperienceEndDate(parseDate(insert.getExperienceEndDate()));
+        campaign.setRecruiter(userSeq);
+        campaign.setStatus(CampaignStatus.DRAFT.getCode());
+        campaign.setType(String.valueOf(insert.getType()));
+
+        campaignRepository.save(campaign);
     }
 
     /**
-     * 검수 중인 체험단 취소하는 메소드
-     * @param cancelRequest 취소 정보
+     * 방문형, 포장형의 체험단을 등록하는 메소드
+     * @param insert
      */
-    public void cancelCampaign(CampaignCancelRequest cancelRequest) {
-        // TODO: 체험단 취소 처리
+    private void validateVisitOrPackageCampaign(CampaignInsertRequest insert) {
+        if (insert.getLocation() == null || insert.getLocation().isEmpty()) {
+            throw new IllegalArgumentException("방문형, 포장형 체험단은 위치 정보가 필수입니다.");
+        }
+        if (insert.getExperienceStartDate() == null || insert.getExperienceEndDate() == null) {
+            throw new IllegalArgumentException("체험 날짜는 필수입니다.");
+        }
+    }
+
+    /**
+     * 구매형, 배송형, 기자단형의 체험단을 등록하는 메소드
+     * @param insert
+     */
+    private void validatePurchaseOrDeliveryCampaign(CampaignInsertRequest insert) {
+        if (insert.getCampaignLink() == null || insert.getCampaignLink().isEmpty()) {
+            throw new IllegalArgumentException("구매형, 배송형, 기자단 유형 체험단은 구매 URL이 필수입니다.");
+        }
+    }
+
+    /**
+     * 문자열 날짜를 Date 객체로 변환하는 메서드
+     * @param dateString
+     * @return
+     */
+    private Date parseDate(String dateString) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            return dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("잘못된 날짜 형식입니다.");
+        }
+    }
+
+    /**
+     * 캠페인을 취소하는 메소드
+     * @param campaignId 캠페인 식별자
+     * @param userSeq 사용자 식별자
+     * @throws IllegalArgumentException 해당 캠페인이 존재하지 않을 때 발생
+     * @throws IllegalStateException 캠페인 상태가 취소 가능한 상태가 아닐 때 발생
+     */
+    public void cancelCampaign(String campaignId, Integer userSeq) {
+        Campaign campaign = campaignRepository.findById(Integer.parseInt(campaignId))
+                .orElseThrow(() -> new IllegalArgumentException("해당 캠페인이 존재하지 않습니다."));
+
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        if (campaign.getStatus() == CampaignStatus.COMPLETE.getCode()) {
+            throw new IllegalStateException("완료된 캠페인은 취소할 수 없습니다.");
+        }
+
+        if (campaign.getStatus() == CampaignStatus.DRAFT.getCode() ||
+                campaign.getStatus() == CampaignStatus.READY.getCode()) {
+
+            campaign.setStatus(CampaignStatus.CANCELED.getCode());
+            campaignRepository.save(campaign);
+
+        } else if (campaign.getStatus() == CampaignStatus.ACTIVE.getCode()) {
+            campaign.setStatus(CampaignStatus.CANCELED.getCode());
+            campaignRepository.save(campaign);
+
+            user.setPenalty(user.getPenalty() + 1);
+            userRepository.save(user);
+        } else {
+            throw new IllegalStateException("이 상태에서는 캠페인을 취소할 수 없습니다.");
+        }
     }
 
     /**
