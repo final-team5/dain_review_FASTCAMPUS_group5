@@ -1,5 +1,7 @@
 package com.example.finalproject.domain.user.dto;
 
+import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
+import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.IOException;
