@@ -42,6 +42,13 @@ public class CampaignService {
         return CampaignPreferenceDto.from(savedCampaignPreference);
     }
 
+    /**
+     * 찜 목록 전체 조회 리스트 기능.
+     *
+     * @param userSeq : 로그인한 사용자 ID
+     * @param pageable : 페이징 인자
+     * @return Page<CampaignWithApplicantCountDto>
+     */
     public Page<CampaignWithApplicantCountDto> getCampaignPreferenceList(Integer userSeq, Pageable pageable) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
