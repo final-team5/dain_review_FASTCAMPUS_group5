@@ -49,6 +49,31 @@ public class UserService {
 			;
 	}
 
+	public UserInfo findByUsername(String username) {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+		return UserInfo.builder()
+				.seq(user.getSeq())
+				.email(user.getEmail())
+				.id(user.getId())
+				.pw(user.getPw())
+				.role(user.getRole())
+				.name(user.getName())
+				.phone(user.getPhone())
+				.createDate(user.getCreateDate())
+				.signupSource(user.getSignupSource())
+				.postalCode(user.getPostalCode())
+				.address(user.getAddress())
+				.addressDetail(user.getAddressDetail())
+				.point(user.getPoint())
+				.status(user.getStatus())
+				.cancel(user.getCancel())
+				.penalty(user.getPenalty())
+				.type(user.getType())
+				.build();
+	}
+
 	public boolean checkNickname(String nickname) {
 		return influencerRepository.existsByNickname(nickname);
 	}

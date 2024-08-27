@@ -2,18 +2,16 @@ package com.example.finalproject.domain.user.entity;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-@Builder
 @Entity
 public class User {
 
@@ -40,14 +38,7 @@ public class User {
     private String phone;
 
     @Column(length = 50)
-    private Integer loginType;
-
-    @Column(length = 50)
     private String profile;
-
-    public void setProfile(String profile) {
-        this.profile = profile;
-    }
 
     @Column(name = "create_date")
     private Date createDate;
