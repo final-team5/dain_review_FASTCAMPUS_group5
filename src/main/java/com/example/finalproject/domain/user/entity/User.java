@@ -2,6 +2,7 @@ package com.example.finalproject.domain.user.entity;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
+@Builder
 @Entity
 public class User {
 
@@ -39,6 +41,9 @@ public class User {
 
     @Column(length = 50)
     private String profile;
+
+    @Column(length = 50)
+    private Integer loginType;
 
     @Column(name = "create_date")
     private Date createDate;
