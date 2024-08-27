@@ -35,6 +35,8 @@ public class CampaignService {
 
         Campaign campaign = campaignRepository.getCampaignBySeqOrException(campaignSeq);
 
+        validateAlreadySavedPreference(user, campaign);
+
         CampaignPreference campaignPreference = CampaignPreference.of(user, campaign);
         CampaignPreference savedCampaignPreference = campaignPreferenceRepository.save(campaignPreference);
 
@@ -68,6 +70,18 @@ public class CampaignService {
     private static void validateCampaignPreferenceUserMatch(Integer userSeq, CampaignPreference campaignPreference) {
         if (!campaignPreference.getUser().getSeq().equals(userSeq)) {
             throw new ValidException(ValidErrorCode.CAMPAIGN_PREFERENCE_USER_MISMATCH);
+        }
+    }
+
+    /**
+     * 이미 찜을 누른 체험단인지 판단 기능.
+     *
+     * @param user : 사용자 정보
+     * @param campaign : 체험단 정보
+     */
+    private void validateAlreadySavedPreference(User user, Campaign campaign) {
+        if (campaignPreferenceRepository.existsByCampaignAndUser(campaign, user)) {
+            throw new ValidException(ValidErrorCode.CAMPAIGN_PREFERENCE_ALREADY_SAVED);
         }
     }
 }

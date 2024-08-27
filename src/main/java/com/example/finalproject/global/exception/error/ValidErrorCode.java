@@ -14,6 +14,7 @@ public enum ValidErrorCode implements ErrorCode {
     // Campaign Preference
     CAMPAIGN_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "찜 했던 내역이 존재하지 않습니다."),
     CAMPAIGN_PREFERENCE_USER_MISMATCH(HttpStatus.BAD_REQUEST, "찜을 한 사용자가 아닙니다."),
+    CAMPAIGN_PREFERENCE_ALREADY_SAVED(HttpStatus.BAD_REQUEST, "이미 찜을 누른 체험단 입니다."),
 
     // Post
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
