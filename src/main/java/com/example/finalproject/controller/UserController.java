@@ -1,7 +1,9 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
+import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
 import com.example.finalproject.domain.campaign.dto.request.CampaignPreferenceSaveRequest;
+import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceListResponse;
 import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceSaveResponse;
 import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.post.dto.PostCommentDto;
@@ -166,5 +168,18 @@ public class UserController {
         CampaignPreferenceSaveResponse campaignPreferenceSaveResponse = CampaignPreferenceSaveResponse.from(campaignPreferenceDto);
 
         return ResponseApi.success(HttpStatus.OK, campaignPreferenceSaveResponse);
+    }
+
+    @ApiOperation(value = "찜 목록", tags = "사용자 - 체험단")
+    @GetMapping(path = "/favorites")
+    public ResponseApi<Page<CampaignPreferenceListResponse>> getCampaignPreferenceList(
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq,
+            Pageable pageable
+    ) {
+        Page<CampaignWithApplicantCountDto> campaignDtoPage = campaignService.getCampaignPreferenceList(userSeq, pageable);
+        Page<CampaignPreferenceListResponse> campaignPreferenceListResponses = campaignDtoPage.map(CampaignPreferenceListResponse::from);
+
+        return ResponseApi.success(HttpStatus.OK, campaignPreferenceListResponses);
     }
 }
