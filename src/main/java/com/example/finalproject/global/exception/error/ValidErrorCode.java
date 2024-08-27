@@ -11,6 +11,10 @@ public enum ValidErrorCode implements ErrorCode {
     // Campaign
     CAMPAIGN_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 체험단에 대한 정보가 존재하지 않습니다."),
 
+    // Campaign Preference
+    CAMPAIGN_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "찜 했던 내역이 존재하지 않습니다."),
+    CAMPAIGN_PREFERENCE_USER_MISMATCH(HttpStatus.BAD_REQUEST, "찜을 한 사용자가 아닙니다."),
+
     // Post
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
     POST_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 SNS 종류가 존재하지 않습니다."),
