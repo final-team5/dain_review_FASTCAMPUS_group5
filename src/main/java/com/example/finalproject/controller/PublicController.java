@@ -1,7 +1,10 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.user.dto.BusinessesSignup;
+import com.example.finalproject.domain.user.dto.InfluencerSignup;
 import com.example.finalproject.domain.user.dto.Login;
 import com.example.finalproject.domain.user.dto.LoginResponse;
+import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.exception.error.AuthErrorCode;
@@ -18,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +48,62 @@ public class PublicController {
 
 		LoginResponse loginResponse = setReturnValue(userInfo);
 		return ResponseEntity.ok(ResponseApi.success(HttpStatus.OK, loginResponse));
+	}
+
+	@ApiOperation(value = "회원 가입(인플루언서)", tags = "공개 - 회원")
+	@PostMapping("/influencers/signup")
+	public ResponseEntity<?> influencers_signup(@ModelAttribute InfluencerSignup signup){
+		Register register = new Register(signup);
+		register.setLoginType(1);
+		register.setRole("ROLE_INFLUENCER");
+		register.setType(2);
+
+		JSONObject jo = new JSONObject();
+		UserInfo userInfo = userService.getUser(register.getEmail(), 1);
+
+		if(userService.checkEmail(register.getEmail())){
+			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
+		}
+		if(userService.checkNickname(register.getNickname())){
+			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
+		}
+		if(userService.checkPhone(register.getPhone())){
+			throw new AuthException(AuthErrorCode.PHONE_ALREADY_IN_USE);
+		}
+		String pw = passwordEncoder.encode(register.getPw());
+		register.setPw(pw);
+		userService.signup(register);
+
+		jo.put("message", "회원가입 되었습니다");
+		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "회원 가입(사업자)", tags = "공개 - 회원")
+	@PostMapping("/businesses/signup")
+	public ResponseEntity<?> businesses_signup(@ModelAttribute BusinessesSignup signup){
+		Register register = new Register(signup);
+		register.setLoginType(1);
+		register.setRole("ROLE_BUSINESSES");
+		register.setType(1);
+
+		JSONObject jo = new JSONObject();
+		UserInfo userInfo = userService.getUser(register.getEmail(), 1);
+
+		if(userService.checkEmail(register.getEmail())){
+			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
+		}
+		if(userService.checkNickname(register.getNickname())){
+			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
+		}
+		if(userService.checkPhone(register.getPhone())){
+			throw new AuthException(AuthErrorCode.PHONE_ALREADY_IN_USE);
+		}
+		String pw = passwordEncoder.encode(register.getPw());
+		register.setPw(pw);
+		userService.signup(register);
+
+		jo.put("message", "회원가입 되었습니다");
+		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "닉네임 중복 체크", tags = "공개 - 회원")
@@ -81,4 +141,5 @@ public class PublicController {
 			.message("로그인 되었습니다.")
 			.build();
 	}
+
 }

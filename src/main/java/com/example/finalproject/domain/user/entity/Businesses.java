@@ -1,6 +1,7 @@
 package com.example.finalproject.domain.user.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,12 +11,17 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_enterpriser")
+@Builder
 @Entity
-public class Enterpriser {
+public class Businesses {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
+
+    @OneToOne
+    @JoinColumn(name = "user_seq")
+    private User user;
 
     @Column(length = 50)
     private String company;

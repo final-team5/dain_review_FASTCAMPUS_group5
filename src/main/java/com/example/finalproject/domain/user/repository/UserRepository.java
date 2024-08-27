@@ -17,3 +17,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 			() -> new AuthException(AuthErrorCode.NOT_FOUND_USER)
 		);
 	}
+
+	boolean existsByEmail(String email);
+	boolean existsByPhone(String phone);
+}
