@@ -8,6 +8,8 @@ import com.example.finalproject.domain.campaign.repository.CampaignPreferenceRep
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.UserRepository;
+import com.example.finalproject.global.exception.error.ValidErrorCode;
+import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,5 +39,23 @@ public class CampaignService {
         CampaignPreference savedCampaignPreference = campaignPreferenceRepository.save(campaignPreference);
 
         return CampaignPreferenceDto.from(savedCampaignPreference);
+    }
+
+    @Transactional
+    public void deleteCampaignPreference(Integer campaignSeq, Integer userSeq) {
+        User user = userRepository.getUserBySeqOrException(userSeq);
+        Campaign campaign = campaignRepository.getCampaignBySeqOrException(campaignSeq);
+
+        CampaignPreference campaignPreference = campaignPreferenceRepository.getCampaignPreferenceByCampaignOrException(campaign);
+
+        validateCampaignPreferenceUserMatch(userSeq, campaignPreference);
+
+        campaignPreferenceRepository.deleteById(campaignPreference.getSeq());
+    }
+
+    private static void validateCampaignPreferenceUserMatch(Integer userSeq, CampaignPreference campaignPreference) {
+        if (!campaignPreference.getUser().getSeq().equals(userSeq)) {
+            throw new ValidException(ValidErrorCode.CAMPAIGN_PREFERENCE_USER_MISMATCH);
+        }
     }
 }
