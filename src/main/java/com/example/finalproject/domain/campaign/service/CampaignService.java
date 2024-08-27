@@ -41,6 +41,12 @@ public class CampaignService {
         return CampaignPreferenceDto.from(savedCampaignPreference);
     }
 
+    /**
+     * 체험단 찜 제거 기능.
+     *
+     * @param campaignSeq : 찜을 취소할 체험단 ID
+     * @param userSeq : 로그인한 사용자 ID
+     */
     @Transactional
     public void deleteCampaignPreference(Integer campaignSeq, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
@@ -53,6 +59,12 @@ public class CampaignService {
         campaignPreferenceRepository.deleteById(campaignPreference.getSeq());
     }
 
+    /**
+     * 사용자 본인이 찜한 내역인지 판단 기능.
+     *
+     * @param userSeq : 사용자 ID
+     * @param campaignPreference : 찜 내역 ID
+     */
     private static void validateCampaignPreferenceUserMatch(Integer userSeq, CampaignPreference campaignPreference) {
         if (!campaignPreference.getUser().getSeq().equals(userSeq)) {
             throw new ValidException(ValidErrorCode.CAMPAIGN_PREFERENCE_USER_MISMATCH);
