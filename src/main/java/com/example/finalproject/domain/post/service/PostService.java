@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO : getOr~ 메서드들 따로 객체지향적으로 분리
 @RequiredArgsConstructor
 @Service
 public class PostService {
@@ -39,9 +38,9 @@ public class PostService {
      */
     @Transactional
     public PostDto saveFollowPost(PostType category, String contents, String title, Integer userSeq) {
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
-        PostTypes postTypes = getPostTypesOrException(category);
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(category);
 
         PostCategories postCategories = PostCategories.of(4, PostCategory.EACH_OTHER_NEIGHBOR_FOLLOW);
 
@@ -64,13 +63,13 @@ public class PostService {
      */
     @Transactional
     public PostDto updateFollowPost(Integer seq, PostType category, String contents, String title, Integer userSeq) {
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
-        PostTypes postTypes = getPostTypesOrException(category);
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(category);
 
         PostCategories postCategories = PostCategories.of(4, PostCategory.EACH_OTHER_NEIGHBOR_FOLLOW);
 
-        Post post = getPostOrException(seq);
+        Post post = postRepository.getPostBySeqOrException(seq);
 
         validatePostUserMatch(user, post);
 
@@ -89,9 +88,9 @@ public class PostService {
      */
     @Transactional
     public void deleteFollowPost(Integer seq, Integer userSeq) {
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
-        Post post = getPostOrException(seq);
+        Post post = postRepository.getPostBySeqOrException(seq);
 
         validatePostUserMatch(user, post);
 
@@ -106,9 +105,9 @@ public class PostService {
      * @return PostDto
      */
     public PostDto findDetailFollowPost(Integer seq, Integer userSeq) {
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
-        Post post = getPostOrException(seq);
+        Post post = postRepository.getPostBySeqOrException(seq);
 
         return PostDto.from(post);
     }
@@ -151,41 +150,6 @@ public class PostService {
         }
     }
 
-    /**
-     * 회원 정보 존재 여부 체크
-     *
-     * @param userSeq : 회원 ID
-     * @return User
-     */
-    private User getUserOrException(Integer userSeq) {
-        return userRepository.findById(userSeq).orElseThrow(
-                () -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
-        );
-    }
-
-    /**
-     * 회원 정보 존재 여부 체크
-     *
-     * @param category : sns 카테고리
-     * @return PostTypes
-     */
-    private PostTypes getPostTypesOrException(PostType category) {
-        return postTypesRepository.findByType(category).orElseThrow(
-                () -> new ValidException(ValidErrorCode.POST_TYPE_NOT_FOUND)
-        );
-    }
-
-    /**
-     * 게시글 존재 여부 체크
-     *
-     * @param postSeq : 게시글 ID
-     * @return Post
-     */
-    private Post getPostOrException(Integer postSeq) {
-        return postRepository.findById(postSeq).orElseThrow(
-                () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
-        );
-    }
 
     /**
      * 회원 본인이 작성한 게시글인지 체크

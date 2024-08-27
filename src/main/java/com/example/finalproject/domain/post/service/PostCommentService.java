@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO : getOr~ 메서드들 따로 객체지향적으로 분리
 @RequiredArgsConstructor
 @Service
 public class PostCommentService {
@@ -36,9 +35,9 @@ public class PostCommentService {
      */
     @Transactional
     public PostCommentDto save(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
-        Post post = getPostOrException(postSeq);
+        Post post = postRepository.getPostBySeqOrException(postSeq);
 
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
         PostComment postComment = PostComment.of(user, post, comment);
 
@@ -60,11 +59,11 @@ public class PostCommentService {
      */
     @Transactional
     public PostCommentDto update(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
-        Post post = getPostOrException(postSeq);
+        Post post = postRepository.getPostBySeqOrException(postSeq);
 
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
-        PostComment postComment = getPostCommentOrException(postCommentSeq);
+        PostComment postComment = postCommentRepository.getPostCommentBySeqOrException(postCommentSeq);
 
         validatePostCommentPostMatch(post, postComment);
 
@@ -83,9 +82,9 @@ public class PostCommentService {
      */
     @Transactional
     public void delete(Integer postCommentSeq, Integer userSeq) {
-        User user = getUserOrException(userSeq);
+        User user = userRepository.getUserBySeqOrException(userSeq);
 
-        PostComment postComment = getPostCommentOrException(postCommentSeq);
+        PostComment postComment = postCommentRepository.getPostCommentBySeqOrException(postCommentSeq);
 
         validatePostCommentUserMatch(user, postComment);
 
@@ -100,48 +99,12 @@ public class PostCommentService {
      * @return Page<PostCommentDto>
      */
     public Page<PostCommentDto> getComments(Integer postSeq, Pageable pageable) {
-        Post post = getPostOrException(postSeq);
+        Post post = postRepository.getPostBySeqOrException(postSeq);
 
         // post 전체 조회
         Page<PostComment> postCommentPage = postCommentRepository.findAllByPost(post, pageable);
 
         return postCommentPage.map(PostCommentDto::from);
-    }
-
-    /**
-     * 게시글 존재 여부 체크
-     *
-     * @param postSeq : 게시글 ID
-     * @return Post
-     */
-    private Post getPostOrException(Integer postSeq) {
-        return postRepository.findById(postSeq).orElseThrow(
-                () -> new ValidException(ValidErrorCode.POST_NOT_FOUND)
-        );
-    }
-
-    /**
-     * 회원 정보 존재 여부 체크
-     *
-     * @param userSeq : 회원 ID
-     * @return User
-     */
-    private User getUserOrException(Integer userSeq) {
-        return userRepository.findById(userSeq).orElseThrow(
-                () -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
-        );
-    }
-
-    /**
-     * 댓글 존재 여부 체크
-     *
-     * @param postCommentSeq : 댓글 ID
-     * @return PostComment
-     */
-    private PostComment getPostCommentOrException(Integer postCommentSeq) {
-        return postCommentRepository.findById(postCommentSeq).orElseThrow(
-                () -> new ValidException(ValidErrorCode.POST_COMMENT_NOT_FOUND)
-        );
     }
 
     /**
@@ -178,7 +141,7 @@ public class PostCommentService {
      */
     private void saveIfIsReplyComment(Integer postCommentSeq, Post post, User user, PostComment postComment) {
         if (postCommentSeq != null) {
-            PostComment replyPostComment = getPostCommentOrException(postCommentSeq);
+            PostComment replyPostComment = postCommentRepository.getPostCommentBySeqOrException(postCommentSeq);
 
             validatePostCommentPostMatch(post, replyPostComment);
             validatePostCommentUserMatch(user, replyPostComment);

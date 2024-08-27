@@ -2,13 +2,13 @@ package com.example.finalproject.domain.user.entity;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
