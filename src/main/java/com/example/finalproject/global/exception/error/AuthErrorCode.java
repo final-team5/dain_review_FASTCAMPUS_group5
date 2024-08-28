@@ -17,7 +17,9 @@ public enum AuthErrorCode implements ErrorCode{
 	NOT_FOUND_USER(HttpStatus.BAD_REQUEST,"사용자를 찾을 수 없습니다"),
 	PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST,"비밀번호가 일치하지 않습니다"),
 	NICKNAME_ALREADY_IN_USE(HttpStatus.CONFLICT,"이미 사용중인 닉네임 입니다"),
-	COMPANY_ALREADY_IN_USE(HttpStatus.CONFLICT,"이미 사용중인 회사명 입니다")
+	COMPANY_ALREADY_IN_USE(HttpStatus.CONFLICT,"이미 사용중인 회사명 입니다"),
+	EMAIL_ALREADY_IN_USE(HttpStatus.CONFLICT,"이미 사용중인 이메일 입니다"),
+	PHONE_ALREADY_IN_USE(HttpStatus.CONFLICT,"이미 사용중인 전화번호 입니다")
 	;
 
 	private final HttpStatus code;
