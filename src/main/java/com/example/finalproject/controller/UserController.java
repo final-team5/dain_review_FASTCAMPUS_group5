@@ -118,9 +118,10 @@ public class UserController {
     public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
             @PathVariable Integer seq,
             // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            Integer userSeq,
+            Pageable pageable
     ) {
-        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq);
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq, pageable);
         postService.updateViewCounts(seq);
 
         PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
