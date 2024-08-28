@@ -92,22 +92,6 @@ public class PostCommentService {
     }
 
     /**
-     * 게시글 댓글 전체 조회
-     *
-     * @param postSeq : 게시글 ID
-     * @param pageable : 페이징 구현을 위한 Pageable 인자
-     * @return Page<PostCommentDto>
-     */
-    public Page<PostCommentDto> getComments(Integer postSeq, Pageable pageable) {
-        Post post = postRepository.getPostBySeqOrException(postSeq);
-
-        // post 전체 조회
-        Page<PostComment> postCommentPage = postCommentRepository.findAllByPost(post, pageable);
-
-        return postCommentPage.map(PostCommentDto::from);
-    }
-
-    /**
      * 회원 본인이 작성한 댓글인지 체크
      *
      * @param user : 회원 정보
