@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
@@ -28,19 +28,22 @@ public class PostCommentDto {
 
     private String comment;
 
-    public PostCommentDto(Integer seq, UserDto userDto, Integer postSeq, String comment) {
+    private Timestamp registeredAt;
+
+    public PostCommentDto(Integer seq, UserDto userDto, Integer postSeq, String comment, Timestamp registeredAt) {
         this.seq = seq;
         this.userDto = userDto;
         this.postSeq = postSeq;
         this.comment = comment;
+        this.registeredAt = registeredAt;
     }
 
-    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, Integer postCommentSeq, String comment) {
-        return new PostCommentDto(seq, userDto, postSeq, postCommentSeq, comment);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, Integer postCommentSeq, String comment, Timestamp registeredAt) {
+        return new PostCommentDto(seq, userDto, postSeq, postCommentSeq, comment, registeredAt);
     }
 
-    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, String comment) {
-        return new PostCommentDto(seq, userDto, postSeq, comment);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, String comment, Timestamp registeredAt) {
+        return new PostCommentDto(seq, userDto, postSeq, comment, registeredAt);
     }
 
     public static PostCommentDto from(PostComment postComment) {
@@ -48,7 +51,8 @@ public class PostCommentDto {
                 postComment.getSeq(),
                 UserDto.from(postComment.getUser()),
                 postComment.getPost().getSeq(),
-                postComment.getComment()
+                postComment.getComment(),
+                postComment.getRegisteredAt()
         );
 
     }
