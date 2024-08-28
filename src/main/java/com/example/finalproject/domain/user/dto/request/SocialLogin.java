@@ -1,13 +1,13 @@
-package com.example.finalproject.domain.user.dto;
+package com.example.finalproject.domain.user.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Login {
-	private String email;
-	private String pw;
+public class SocialLogin {
+	private String accessToken;
+	private Integer loginType;
 }
