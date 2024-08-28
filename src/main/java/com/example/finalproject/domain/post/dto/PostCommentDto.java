@@ -1,6 +1,7 @@
 package com.example.finalproject.domain.post.dto;
 
 import com.example.finalproject.domain.post.entity.PostComment;
+import com.example.finalproject.domain.user.dto.UserDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -13,13 +14,13 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostCommentDto {
 
     private Integer seq;
 
-    private Integer userSeq;
+    private UserDto userDto;
 
     private Integer postSeq;
 
@@ -27,31 +28,27 @@ public class PostCommentDto {
 
     private String comment;
 
-    private List<PostComment> replyComments;
-
-    public PostCommentDto(Integer seq, Integer userSeq, Integer postSeq, String comment, List<PostComment> replyComments) {
+    public PostCommentDto(Integer seq, UserDto userDto, Integer postSeq, String comment) {
         this.seq = seq;
-        this.userSeq = userSeq;
+        this.userDto = userDto;
         this.postSeq = postSeq;
         this.comment = comment;
-        this.replyComments = replyComments;
     }
 
-    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment, List<PostComment> replyComments) {
-        return new PostCommentDto(seq, userSeq, postSeq, postCommentSeq, comment, replyComments);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, Integer postCommentSeq, String comment) {
+        return new PostCommentDto(seq, userDto, postSeq, postCommentSeq, comment);
     }
 
-    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, String comment, List<PostComment> replyComments) {
-        return new PostCommentDto(seq, userSeq, postSeq, comment, replyComments);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, String comment) {
+        return new PostCommentDto(seq, userDto, postSeq, comment);
     }
 
     public static PostCommentDto from(PostComment postComment) {
         return PostCommentDto.of(
                 postComment.getSeq(),
-                postComment.getUser().getSeq(),
+                UserDto.from(postComment.getUser()),
                 postComment.getPost().getSeq(),
-                postComment.getComment(),
-                postComment.getMyComments()
+                postComment.getComment()
         );
 
     }
