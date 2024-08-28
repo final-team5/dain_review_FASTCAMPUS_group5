@@ -1,6 +1,7 @@
 package com.example.finalproject.domain.post.dto.response;
 
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostFollowDetailResponse {
 
@@ -27,6 +28,21 @@ public class PostFollowDetailResponse {
     }
 
     public static PostFollowDetailResponse from(PostDto postDto) {
+        String registeredTime = postDto.getRegisteredAt().toString().replace('T', ' ');
+
+        return PostFollowDetailResponse.of(
+                postDto.getPostType(),
+                postDto.getUserDto().getId(),
+                postDto.getTitle(),
+                postDto.getContents(),
+                postDto.getViewCount(),
+                registeredTime
+        );
+    }
+
+    public static PostFollowDetailResponse from(PostWithCommentsDto postWithCommentsDto) {
+        PostDto postDto = postWithCommentsDto.getPostDto();
+
         String registeredTime = postDto.getRegisteredAt().toString().replace('T', ' ');
 
         return PostFollowDetailResponse.of(
