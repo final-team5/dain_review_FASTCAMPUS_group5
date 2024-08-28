@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE post_comments SET deleted_at = NOW() where seq=?")
+@SQLDelete(sql = "UPDATE ${schema}.post_comments SET deleted_at = NOW() where seq=?")
 @Where(clause = "deleted_at is NULL")
 @Table(name = "post_comments")
 @Entity
