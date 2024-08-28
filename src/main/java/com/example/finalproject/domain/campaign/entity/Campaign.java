@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE ${schema}.campaigns SET deleted_at = NOW() WHERE seq=?")
+@SQLDelete(sql = "UPDATE campaigns SET deleted_at = NOW() WHERE seq=?")
 @Where(clause = "deleted_at is NULL")
 @Table(name = "campaigns")
 @Entity
