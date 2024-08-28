@@ -4,7 +4,10 @@ import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
+import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
+import com.example.finalproject.domain.post.dto.response.PostFollowListResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowResponse;
+import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
 import com.example.finalproject.global.util.ResponseApi;
@@ -13,6 +16,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -113,5 +118,35 @@ public class UserController {
         postService.deleteFollowPost(postFollowDeleteRequest.getSeq(), userSeq);
 
         return ResponseApi.success(HttpStatus.OK, "follow post delete success");
+    }
+
+    @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 커뮤니티")
+    @GetMapping(path = "/community/{seq}")
+    public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
+            @PathVariable Integer seq,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        PostDto postDto = postService.findDetailFollowPost(seq, userSeq);
+        postService.updateViewCounts(seq);
+
+        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postDto);
+
+        return ResponseApi.success(HttpStatus.OK, detailResponse);
+    }
+
+    @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 커뮤니티")
+    @GetMapping(path = "/communities")
+    public ResponseApi<Page<PostFollowListResponse>> findListFollowPost(
+            @RequestParam(required = false) SearchType searchType,
+            @RequestParam(required = false) String searchWord,
+            @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        Page<PostDto> listFollowPost = postService.findListFollowPost(searchType, searchWord, pageable);
+        Page<PostFollowListResponse> postFollowListResponses = listFollowPost.map(PostFollowListResponse::from);
+
+        return ResponseApi.success(HttpStatus.OK, postFollowListResponses);
     }
 }

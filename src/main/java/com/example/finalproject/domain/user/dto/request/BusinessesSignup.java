@@ -1,31 +1,22 @@
-package com.example.finalproject.domain.user.entity;
+package com.example.finalproject.domain.user.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Date;
-import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Builder
-public class UserInfo {
-	private Integer seq;
+public class BusinessesSignup {
 	private String email;
-	private String id;
 	private String pw;
-	private String role;
 	private String name;
 	private String phone;
-	private Date createDate;
+	private String company;
 	private String signupSource;
-	private Integer postalCode;
+	private String postalCode;
 	private String address;
 	private String addressDetail;
-	private Integer point;
-	private Integer status;
-	private Integer cancel;
-	private Integer penalty;
-	private Integer type;
+	private MultipartFile profile;
 }
