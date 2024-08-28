@@ -1,6 +1,7 @@
 package com.example.finalproject.domain.post.service;
 
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostCategories;
 import com.example.finalproject.domain.post.entity.PostTypes;
@@ -104,12 +105,12 @@ public class PostService {
      * @param userSeq : 로그인한 사용자 ID
      * @return PostDto
      */
-    public PostDto findDetailFollowPost(Integer seq, Integer userSeq) {
+    public PostWithCommentsDto findDetailFollowPost(Integer seq, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
         Post post = postRepository.getPostBySeqOrException(seq);
 
-        return PostDto.from(post);
+        return PostWithCommentsDto.from(post);
     }
 
     /**

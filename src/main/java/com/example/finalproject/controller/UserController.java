@@ -6,6 +6,7 @@ import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceS
 import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
@@ -132,7 +133,7 @@ public class UserController {
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostDto postDto = postService.findDetailFollowPost(seq, userSeq);
+        PostWithCommentsDto postDto = postService.findDetailFollowPost(seq, userSeq);
         postService.updateViewCounts(seq);
 
         PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postDto);
