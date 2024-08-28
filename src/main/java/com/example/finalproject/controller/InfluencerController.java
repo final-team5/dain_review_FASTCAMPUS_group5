@@ -1,17 +1,12 @@
 package com.example.finalproject.controller;
-
-import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.entity.Post;
-import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.example.finalproject.domain.user.service.InfluencerService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Api(tags = "인플루언서")

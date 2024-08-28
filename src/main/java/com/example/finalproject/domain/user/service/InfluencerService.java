@@ -1,26 +1,14 @@
 package com.example.finalproject.domain.user.service;
-
-import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.entity.Post;
-import com.example.finalproject.domain.post.entity.PostCategories;
-import com.example.finalproject.domain.post.entity.PostTypes;
-import com.example.finalproject.domain.post.entity.enums.PostCategory;
-import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.example.finalproject.domain.post.repository.PostRepository;
-import com.example.finalproject.domain.post.repository.PostTypesRepository;
-import com.example.finalproject.domain.user.dto.UserInfluencerDto;
-import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
-import com.example.finalproject.global.exception.error.ErrorCode;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.CustomException;
-import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +17,6 @@ import java.util.stream.Collectors;
 public class InfluencerService {
 
     private final PostRepository postRepository;
-    private final PostTypesRepository postTypesRepository;
     private final UserRepository userRepository;
     private final InfluencerRepository influencerRepository;
 
