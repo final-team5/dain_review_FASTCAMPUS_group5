@@ -50,7 +50,7 @@ public class UserService {
 	}
 
 	public UserInfo findByUsername(String username) {
-		User user = userRepository.findByUsername(username)
+		User user = userRepository.findByName(username)
 				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
 		return UserInfo.builder()
