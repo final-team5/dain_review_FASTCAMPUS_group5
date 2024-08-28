@@ -120,10 +120,10 @@ public class UserController {
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostWithCommentsDto postDto = postService.findDetailFollowPost(seq, userSeq);
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq);
         postService.updateViewCounts(seq);
 
-        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postDto);
+        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
