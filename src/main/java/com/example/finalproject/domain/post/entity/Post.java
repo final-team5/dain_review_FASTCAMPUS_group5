@@ -31,6 +31,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_seq")
+    @Setter
     private PostCategories postCategories;
 
     @Setter
