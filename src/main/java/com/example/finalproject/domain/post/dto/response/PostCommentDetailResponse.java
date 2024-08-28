@@ -8,7 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -23,10 +24,12 @@ public class PostCommentDetailResponse {
 
     private String comment;
 
-    private Timestamp registeredAt;
+    private String registeredAt;
 
-    public static PostCommentDetailResponse of(Integer seq, String username, String comment, Timestamp registeredAt) {
-        return new PostCommentDetailResponse(seq, username, comment, registeredAt);
+    private List<PostCommentDetailResponse> myComments;
+
+    public static PostCommentDetailResponse of(Integer seq, String username, String comment, String registeredAt, List<PostCommentDetailResponse> myComments) {
+        return new PostCommentDetailResponse(seq, username, comment, registeredAt, myComments);
     }
 
     public static PostCommentDetailResponse from(PostCommentDto postCommentDto) {
@@ -34,7 +37,8 @@ public class PostCommentDetailResponse {
                 postCommentDto.getSeq(),
                 postCommentDto.getUserDto().getName(),
                 postCommentDto.getComment(),
-                postCommentDto.getRegisteredAt()
+                postCommentDto.getRegisteredAt(),
+                postCommentDto.getMyComments().stream().map(PostCommentDetailResponse::from).collect(Collectors.toList())
         );
     }
 }
