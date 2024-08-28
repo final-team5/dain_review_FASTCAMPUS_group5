@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,23 +25,24 @@ public class PostFollowDetailResponse {
     private String contents;
     private Integer viewCount;
     private String registeredAt;
+    private List<PostCommentDetailResponse> comments;
 
-    public static PostFollowDetailResponse of(String category, String nickname, String title, String contents, Integer viewCount, String registeredAt) {
-        return new PostFollowDetailResponse(category, nickname, title, contents, viewCount, registeredAt);
+    public static PostFollowDetailResponse of(String category, String nickname, String title, String contents, Integer viewCount, String registeredAt, List<PostCommentDetailResponse> comments) {
+        return new PostFollowDetailResponse(category, nickname, title, contents, viewCount, registeredAt, comments);
     }
 
-    public static PostFollowDetailResponse from(PostDto postDto) {
-        String registeredTime = postDto.getRegisteredAt().toString().replace('T', ' ');
-
-        return PostFollowDetailResponse.of(
-                postDto.getPostType(),
-                postDto.getUserDto().getId(),
-                postDto.getTitle(),
-                postDto.getContents(),
-                postDto.getViewCount(),
-                registeredTime
-        );
-    }
+//    public static PostFollowDetailResponse from(PostDto postDto) {
+//        String registeredTime = postDto.getRegisteredAt().toString().replace('T', ' ');
+//
+//        return PostFollowDetailResponse.of(
+//                postDto.getPostType(),
+//                postDto.getUserDto().getId(),
+//                postDto.getTitle(),
+//                postDto.getContents(),
+//                postDto.getViewCount(),
+//                registeredTime
+//        );
+//    }
 
     public static PostFollowDetailResponse from(PostWithCommentsDto postWithCommentsDto) {
         PostDto postDto = postWithCommentsDto.getPostDto();
@@ -51,7 +55,8 @@ public class PostFollowDetailResponse {
                 postDto.getTitle(),
                 postDto.getContents(),
                 postDto.getViewCount(),
-                registeredTime
+                registeredTime,
+                postWithCommentsDto.getCommentDtoList().stream().map(PostCommentDetailResponse::from).collect(Collectors.toList())
         );
     }
 }
