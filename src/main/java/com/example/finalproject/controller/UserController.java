@@ -1,7 +1,7 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
-import com.example.finalproject.domain.campaign.dto.request.CampaignPreferenceSaveRequest;
+import com.example.finalproject.domain.campaign.dto.request.CampaignPreferenceRequest;
 import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceSaveResponse;
 import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.post.dto.PostCommentDto;
@@ -158,13 +158,25 @@ public class UserController {
     @ApiOperation(value = "찜 하기", tags = "사용자 - 체험단")
     @PostMapping(path = "/favorites")
     public ResponseApi<CampaignPreferenceSaveResponse> saveCampaignPreference(
-            @RequestBody CampaignPreferenceSaveRequest campaignPreferenceSaveRequest,
+            @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        CampaignPreferenceDto campaignPreferenceDto = campaignService.saveCampaignPreference(campaignPreferenceSaveRequest.getId(), userSeq);
+        CampaignPreferenceDto campaignPreferenceDto = campaignService.saveCampaignPreference(campaignPreferenceRequest.getId(), userSeq);
         CampaignPreferenceSaveResponse campaignPreferenceSaveResponse = CampaignPreferenceSaveResponse.from(campaignPreferenceDto);
 
         return ResponseApi.success(HttpStatus.OK, campaignPreferenceSaveResponse);
+    }
+
+    @ApiOperation(value = "찜 제거", tags = "사용자 - 체험단")
+    @DeleteMapping(path = "/favorites")
+    public ResponseApi<String> deleteCampaignPreference(
+            @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        campaignService.deleteCampaignPreference(campaignPreferenceRequest.getId(), userSeq);
+
+        return ResponseApi.success(HttpStatus.OK, "campaign preference delete success");
     }
 }
