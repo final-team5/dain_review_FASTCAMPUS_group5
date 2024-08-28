@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -28,27 +29,37 @@ public class PostCommentDto {
 
     private String comment;
 
-    public PostCommentDto(Integer seq, UserDto userDto, Integer postSeq, String comment) {
+    private String registeredAt;
+
+    private List<PostCommentDto> myComments;
+
+    public PostCommentDto(Integer seq, UserDto userDto, Integer postSeq, String comment, String registeredAt, List<PostCommentDto> myComments) {
         this.seq = seq;
         this.userDto = userDto;
         this.postSeq = postSeq;
         this.comment = comment;
+        this.registeredAt = registeredAt;
+        this.myComments = myComments;
     }
 
-    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, Integer postCommentSeq, String comment) {
-        return new PostCommentDto(seq, userDto, postSeq, postCommentSeq, comment);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, Integer postCommentSeq, String comment, String registeredAt, List<PostCommentDto> myComments) {
+        return new PostCommentDto(seq, userDto, postSeq, postCommentSeq, comment, registeredAt, myComments);
     }
 
-    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, String comment) {
-        return new PostCommentDto(seq, userDto, postSeq, comment);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, String comment, String registeredAt, List<PostCommentDto> myComments) {
+        return new PostCommentDto(seq, userDto, postSeq, comment, registeredAt, myComments);
     }
 
     public static PostCommentDto from(PostComment postComment) {
+        String registeredTime = postComment.getRegisteredAt().toString().replace('T', ' ');
+
         return PostCommentDto.of(
                 postComment.getSeq(),
                 UserDto.from(postComment.getUser()),
                 postComment.getPost().getSeq(),
-                postComment.getComment()
+                postComment.getComment(),
+                registeredTime,
+                postComment.getMyComments().stream().map(PostCommentDto::from).collect(Collectors.toList())
         );
 
     }

@@ -8,6 +8,7 @@ import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceS
 import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
@@ -119,12 +120,13 @@ public class UserController {
     public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
             @PathVariable Integer seq,
             // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            Integer userSeq,
+            Pageable pageable
     ) {
-        PostDto postDto = postService.findDetailFollowPost(seq, userSeq);
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq, pageable);
         postService.updateViewCounts(seq);
 
-        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postDto);
+        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
