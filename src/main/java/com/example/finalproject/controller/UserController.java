@@ -1,11 +1,14 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
-import com.example.finalproject.domain.campaign.dto.request.CampaignPreferenceSaveRequest;
+import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
+import com.example.finalproject.domain.campaign.dto.request.CampaignPreferenceRequest;
+import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceListResponse;
 import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceSaveResponse;
 import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.post.dto.PostCommentDto;
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
@@ -73,19 +76,6 @@ public class UserController {
         return ResponseApi.success(HttpStatus.OK, "comment delete success");
     }
 
-    // TODO : 인플루언서, 사업자 커뮤니티 상세 조회 기능과 겹치는 것 같아 삭제 될 수 있음.
-    @ApiOperation(value = "커뮤니티 댓글 리스트 조회", tags = "사용자 - 커뮤니티")
-    @GetMapping(path = "/community/comments/{postSeq}")
-    public ResponseApi<Page<PostCommentResponse>> getPostComments(
-            // TODO : security 도입 후 user 인자 추가 예정
-            @PathVariable Integer postSeq,
-            Pageable pageable
-    ) {
-        Page<PostCommentDto> commentDtoPage = postCommentService.getComments(postSeq, pageable);
-        Page<PostCommentResponse> postCommentResponsePage = commentDtoPage.map(PostCommentResponse::from);
-
-        return ResponseApi.success(HttpStatus.OK, postCommentResponsePage);
-    }
 
     @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
     @PostMapping(path = "/community")
@@ -130,12 +120,13 @@ public class UserController {
     public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
             @PathVariable Integer seq,
             // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            Integer userSeq,
+            Pageable pageable
     ) {
-        PostDto postDto = postService.findDetailFollowPost(seq, userSeq);
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq, pageable);
         postService.updateViewCounts(seq);
 
-        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postDto);
+        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
@@ -158,13 +149,38 @@ public class UserController {
     @ApiOperation(value = "찜 하기", tags = "사용자 - 체험단")
     @PostMapping(path = "/favorites")
     public ResponseApi<CampaignPreferenceSaveResponse> saveCampaignPreference(
-            @RequestBody CampaignPreferenceSaveRequest campaignPreferenceSaveRequest,
+            @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        CampaignPreferenceDto campaignPreferenceDto = campaignService.saveCampaignPreference(campaignPreferenceSaveRequest.getId(), userSeq);
+        CampaignPreferenceDto campaignPreferenceDto = campaignService.saveCampaignPreference(campaignPreferenceRequest.getId(), userSeq);
         CampaignPreferenceSaveResponse campaignPreferenceSaveResponse = CampaignPreferenceSaveResponse.from(campaignPreferenceDto);
 
         return ResponseApi.success(HttpStatus.OK, campaignPreferenceSaveResponse);
+    }
+
+    @ApiOperation(value = "찜 제거", tags = "사용자 - 체험단")
+    @DeleteMapping(path = "/favorites")
+    public ResponseApi<String> deleteCampaignPreference(
+            @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        campaignService.deleteCampaignPreference(campaignPreferenceRequest.getId(), userSeq);
+
+        return ResponseApi.success(HttpStatus.OK, "campaign preference delete success");
+    }
+
+    @ApiOperation(value = "찜 목록", tags = "사용자 - 체험단")
+    @GetMapping(path = "/favorites")
+    public ResponseApi<Page<CampaignPreferenceListResponse>> getCampaignPreferenceList(
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq,
+            Pageable pageable
+    ) {
+        Page<CampaignWithApplicantCountDto> campaignDtoPage = campaignService.getCampaignPreferenceList(userSeq, pageable);
+        Page<CampaignPreferenceListResponse> campaignPreferenceListResponses = campaignDtoPage.map(CampaignPreferenceListResponse::from);
+
+        return ResponseApi.success(HttpStatus.OK, campaignPreferenceListResponses);
     }
 }

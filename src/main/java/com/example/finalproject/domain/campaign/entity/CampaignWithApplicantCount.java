@@ -1,4 +1,4 @@
-package com.example.finalproject.domain.campaign.dto.request;
+package com.example.finalproject.domain.campaign.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CampaignPreferenceSaveRequest {
-
-    private Integer id;
+public class CampaignWithApplicantCount {
+    private Campaign campaign;
+    private long applicantCount;
 }

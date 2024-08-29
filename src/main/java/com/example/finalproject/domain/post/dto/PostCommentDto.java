@@ -1,6 +1,7 @@
 package com.example.finalproject.domain.post.dto;
 
 import com.example.finalproject.domain.post.entity.PostComment;
+import com.example.finalproject.domain.user.dto.UserDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -9,17 +10,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostCommentDto {
 
     private Integer seq;
 
-    private Integer userSeq;
+    private UserDto userDto;
 
     private Integer postSeq;
 
@@ -27,31 +29,37 @@ public class PostCommentDto {
 
     private String comment;
 
-    private List<PostComment> replyComments;
+    private String registeredAt;
 
-    public PostCommentDto(Integer seq, Integer userSeq, Integer postSeq, String comment, List<PostComment> replyComments) {
+    private List<PostCommentDto> myComments;
+
+    public PostCommentDto(Integer seq, UserDto userDto, Integer postSeq, String comment, String registeredAt, List<PostCommentDto> myComments) {
         this.seq = seq;
-        this.userSeq = userSeq;
+        this.userDto = userDto;
         this.postSeq = postSeq;
         this.comment = comment;
-        this.replyComments = replyComments;
+        this.registeredAt = registeredAt;
+        this.myComments = myComments;
     }
 
-    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment, List<PostComment> replyComments) {
-        return new PostCommentDto(seq, userSeq, postSeq, postCommentSeq, comment, replyComments);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, Integer postCommentSeq, String comment, String registeredAt, List<PostCommentDto> myComments) {
+        return new PostCommentDto(seq, userDto, postSeq, postCommentSeq, comment, registeredAt, myComments);
     }
 
-    public static PostCommentDto of(Integer seq, Integer userSeq, Integer postSeq, String comment, List<PostComment> replyComments) {
-        return new PostCommentDto(seq, userSeq, postSeq, comment, replyComments);
+    public static PostCommentDto of(Integer seq, UserDto userDto, Integer postSeq, String comment, String registeredAt, List<PostCommentDto> myComments) {
+        return new PostCommentDto(seq, userDto, postSeq, comment, registeredAt, myComments);
     }
 
     public static PostCommentDto from(PostComment postComment) {
+        String registeredTime = postComment.getRegisteredAt().toString().replace('T', ' ');
+
         return PostCommentDto.of(
                 postComment.getSeq(),
-                postComment.getUser().getSeq(),
+                UserDto.from(postComment.getUser()),
                 postComment.getPost().getSeq(),
                 postComment.getComment(),
-                postComment.getMyComments()
+                registeredTime,
+                postComment.getMyComments().stream().map(PostCommentDto::from).collect(Collectors.toList())
         );
 
     }
