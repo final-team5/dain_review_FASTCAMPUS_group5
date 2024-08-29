@@ -2,7 +2,8 @@ package com.example.finalproject.domain.post.service;
 
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
-import com.example.finalproject.domain.post.dto.request.InfCommunitySaveRequest;
+import com.example.finalproject.domain.post.dto.request.PostSaveRequest;
+import com.example.finalproject.domain.post.dto.request.PostUpdateRequest;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostCategories;
 import com.example.finalproject.domain.post.entity.PostComment;
@@ -161,23 +162,49 @@ public class PostService {
     /**
      * 인플루언서 커뮤니티 게시글 등록 기능.
      *
-     * @param infCommunitySaveRequest : 게시글 등록 요청 정보
+     * @param postSaveRequest : 게시글 등록 요청 정보
      * @param userSeq : 로그인한 사용자 ID 값
      * @return PostDto
      */
     @Transactional
-    public PostDto saveInfCommunityPost(InfCommunitySaveRequest infCommunitySaveRequest, Integer userSeq) {
+    public PostDto saveInfCommunityPost(PostSaveRequest postSaveRequest, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
-        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(infCommunitySaveRequest.getCategory());
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(postSaveRequest.getCategory());
 
         PostCategories postCategories = PostCategories.of(3, PostCategory.COMMUNITY_INFLUENCER);
 
-        Post post = Post.of(user, postCategories, postTypes, infCommunitySaveRequest.getTitle(), infCommunitySaveRequest.getContents(), 0);
+        Post post = Post.of(user, postCategories, postTypes, postSaveRequest.getTitle(), postSaveRequest.getContents(), 0);
 
         Post savedPost = postRepository.save(post);
 
         return PostDto.from(savedPost);
+    }
+
+    /**
+     * 인플루언서 커뮤니티 게시글 수정 기능.
+     *
+     * @param postUpdateRequest : 게시글 수정 정보
+     * @param userSeq : 로그인한 사용자 ID 값
+     * @return PostDto
+     */
+    @Transactional
+    public PostDto updateInfCommunityPost(PostUpdateRequest postUpdateRequest, Integer userSeq) {
+        User user = userRepository.getUserBySeqOrException(userSeq);
+
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(postUpdateRequest.getCategory());
+
+        PostCategories postCategories = PostCategories.of(3, PostCategory.COMMUNITY_INFLUENCER);
+
+        Post post = postRepository.getPostBySeqOrException(postUpdateRequest.getSeq());
+
+        validatePostUserMatch(user, post);
+
+        post.setPostTypes(postTypes);
+        post.setTitle(postUpdateRequest.getTitle());
+        post.setContents(postUpdateRequest.getContents());
+
+        return PostDto.from(post);
     }
 
 
