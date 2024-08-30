@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 	default User getByEmailAndType(String email, Integer type) {
 		return findByEmailAndType(email, type).orElseThrow(
-			() -> new AuthException(AuthErrorCode.NOT_FOUND_USER)
+				() -> new AuthException(AuthErrorCode.NOT_FOUND_USER)
 		);
 	}
 

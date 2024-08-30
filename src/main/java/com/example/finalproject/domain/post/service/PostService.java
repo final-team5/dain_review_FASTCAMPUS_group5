@@ -2,6 +2,7 @@ package com.example.finalproject.domain.post.service;
 
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
+import com.example.finalproject.domain.post.dto.request.InfCommunitySaveRequest;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostCategories;
 import com.example.finalproject.domain.post.entity.PostComment;
@@ -155,6 +156,28 @@ public class PostService {
             default:
                 throw new ValidException(ValidErrorCode.POST_SEARCH_TYPE_NOT_FOUND);
         }
+    }
+
+    /**
+     * 인플루언서 커뮤니티 게시글 등록 기능.
+     *
+     * @param infCommunitySaveRequest : 게시글 등록 요청 정보
+     * @param userSeq : 로그인한 사용자 ID 값
+     * @return PostDto
+     */
+    @Transactional
+    public PostDto saveInfCommunityPost(InfCommunitySaveRequest infCommunitySaveRequest, Integer userSeq) {
+        User user = userRepository.getUserBySeqOrException(userSeq);
+
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(infCommunitySaveRequest.getCategory());
+
+        PostCategories postCategories = PostCategories.of(3, PostCategory.COMMUNITY_INFLUENCER);
+
+        Post post = Post.of(user, postCategories, postTypes, infCommunitySaveRequest.getTitle(), infCommunitySaveRequest.getContents(), 0);
+
+        Post savedPost = postRepository.save(post);
+
+        return PostDto.from(savedPost);
     }
 
 
