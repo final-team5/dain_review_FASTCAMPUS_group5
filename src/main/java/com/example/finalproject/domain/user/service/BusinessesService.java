@@ -3,15 +3,24 @@ package com.example.finalproject.domain.user.service;
 import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.campaign.dto.request.CampaignInsertRequest;
 import com.example.finalproject.domain.campaign.dto.request.ReviewerSelectRequest;
+import com.example.finalproject.domain.campaign.dto.response.ResultReportResponse;
 import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.campaign.entity.CampaignStatus;
+import com.example.finalproject.domain.campaign.entity.ResultReport;
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
+import com.example.finalproject.domain.campaign.repository.ResultReportRepository;
 import com.example.finalproject.domain.payment.dto.request.PaymentRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostUpdateRequest;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.AgencyInsertRequest;
+import com.example.finalproject.domain.user.entity.Agency;
+import com.example.finalproject.domain.user.entity.Businesses;
+import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.repository.AgencyRepository;
+import com.example.finalproject.domain.user.repository.BusinessesRepository;
+import com.example.finalproject.domain.user.repository.UserRepository;
 import lombok.SneakyThrows;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,17 +28,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.security.auth.message.AuthException;
+import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BusinessesService {
 
+    private final ResultReportRepository resultReportRepository;
     private CampaignRepository campaignRepository;
     private UserService userService;
+    private UserRepository userRepository;
+    private BusinessesRepository businessesRepository;
+    private AgencyRepository agencyRepository;
+
+    public BusinessesService(ResultReportRepository resultReportRepository) {
+        this.resultReportRepository = resultReportRepository;
+    }
 
     /**
      * 현재 인증된 사용자의 식별자를 가져오는 메서드
@@ -49,13 +68,32 @@ public class BusinessesService {
 
     /**
      * 대행사 신청을 처리하는 메소드
-     * @param insert 대행사 신청 정보
-     * @param userSeq 사용자 식별자
-     * @return 처리된 대행사 신청 정보
+     *
+     * @param request 대행사 신청 정보
      */
-    public AgencyInsertRequest agencyApplication(AgencyInsertRequest insert, Integer userSeq) {
-        // TODO: 사용자 인증 확인 및 대행사 신청 정보 저장
-        return insert;
+    @Transactional
+    public void applyAgency(AgencyInsertRequest request) {
+        Integer userSeq = getCurrentUserSeq();
+
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+
+        Businesses businesses = businessesRepository.findByUser(user)
+                .orElse(new Businesses());
+
+        businesses.setUser(user);
+        businesses.setCompany(request.getCompany());
+        businesses.setBusinessNumber(request.getBusinessNumber());
+        businesses.setRepresentative(request.getRepresentative());
+        businesses.setAttachedFile(request.getAttachment());
+        businessesRepository.save(businesses);
+
+        // TODO: 관리자 기능 구현
+        Agency agency = new Agency();
+        agency.setReason("신청 사유");
+        agency.setStatus(0);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
+        agencyRepository.save(agency);
     }
 
     /**
@@ -65,8 +103,8 @@ public class BusinessesService {
      * @throws IllegalArgumentException 입력값이 잘못되었을 때 발생
      */
     public void createCampaign(CampaignInsertRequest insert) {
-        Integer userSeq = getCurrentUserSeq(); // 현재 인증된 사용자의 식별자를 가져옴
-        validateCampaignInsertRequest(insert); // 유효성 검사 메서드 호출
+        Integer userSeq = getCurrentUserSeq();
+        validateCampaignInsertRequest(insert);
 
         Campaign campaign = new Campaign();
         campaign.setTitle(insert.getTitle());
@@ -155,7 +193,6 @@ public class BusinessesService {
      * @param id 조회할 체험단의 식별자 (ID)
      * @return 조회한 체험단의 상세 정보 (CampaignDto)
      * @throws IllegalArgumentException 해당 체험단이 존재하지 않을 때 발생
-     * @throws IllegalStateException 해당 체험단에 접근할 권한이 없을 때 발생
      */
     public Object getCampaignDetail(String id) {
         Integer userSeq = getCurrentUserSeq();
@@ -322,6 +359,65 @@ public class BusinessesService {
                               String company, String email, String name, String phone, Integer postalCode, MultipartFile profile,
                               String pw, String representative) {
         // TODO: 프로필 정보 업데이트
+    }
+
+    /**
+     * 결과보고서를 조회하는 메서드
+     *
+     * @param campaignSeq 결과보고서의 캠페인 식별자
+     * @return 결과보고서 객체
+     * @throws IllegalArgumentException 결과보고서가 존재하지 않거나 권한이 없을 때 발생
+     */
+    @Transactional
+    public ResultReportResponse getResultReport(Integer campaignSeq) {
+        // TODO: 결과보고서 생성 및 업데이트 기능 추가
+        if (campaignSeq == null) {
+            throw new IllegalArgumentException("캠페인 식별자는 필수입니다.");
+        }
+
+        Integer userSeq = getCurrentUserSeq();
+
+        Campaign campaign = campaignRepository.findById(campaignSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
+
+        if (!campaign.getRecruiter().equals(userSeq)) {
+            throw new IllegalArgumentException("해당 체험단에 접근할 권한이 없습니다.");
+        }
+
+        ResultReport resultReport = resultReportRepository.findByCampaignId(campaignSeq);
+        if (resultReport == null) {
+            throw new IllegalArgumentException("결과보고서를 찾을 수 없습니다.");
+        }
+
+        ResultReportResponse response = mapResultReportToResponse(resultReport, campaign);
+
+        return response;
+    }
+
+    /**
+     * ResultReport 엔티티를 ResultReportResponse DTO로 변환하는 메서드
+     *
+     * @param resultReport 결과보고서 엔티티
+     * @param campaign 체험단 엔티티
+     * @return 변환된 ResultReportResponse DTO
+     */
+    private ResultReportResponse mapResultReportToResponse(ResultReport resultReport, Campaign campaign) {
+        ResultReportResponse response = new ResultReportResponse();
+        response.setReportId(resultReport.getReportId());
+        response.setCampaignTitle(campaign.getTitle());
+        response.setTotalParticipants(resultReport.getTotalParticipants());
+        response.setCompletedParticipants(resultReport.getCompletedParticipants());
+        response.setStartDate(resultReport.getStartDate().toString());
+        response.setEndDate(resultReport.getEndDate().toString());
+
+        ResultReportResponse.PerformanceMetrics metrics = new ResultReportResponse.PerformanceMetrics();
+        metrics.setReach(resultReport.getReach());
+        metrics.setEngagement(resultReport.getEngagement());
+        metrics.setConversion(resultReport.getConversion());
+        response.setPerformanceMetrics(metrics);
+
+        response.setSummary(resultReport.getSummary());
+        return response;
     }
 
     /**

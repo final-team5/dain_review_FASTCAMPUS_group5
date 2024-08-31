@@ -40,7 +40,7 @@ public class Campaign {
     private String platform;
 
     @Column(length = 50)
-    private String type;
+    private String type;    // 체험단 유형: 일반(GENERAL), 프리미엄(PREMIUM), 다인 PICK(DAIN_PICK)
 
     @Column(length = 50)
     private String title;
