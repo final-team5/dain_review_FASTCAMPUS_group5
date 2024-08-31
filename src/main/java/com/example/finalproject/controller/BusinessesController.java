@@ -50,41 +50,31 @@ public class BusinessesController {
     @PostMapping("/campaign")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<String> createCampaign(@RequestBody CampaignInsertRequest insert) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserInfo userInfo = userService.findByUsername(username);
-        Integer userSeq = userInfo.getSeq();
-
-        businessesService.createCampaign(insert, userSeq);
+        businessesService.createCampaign(insert);
         return ResponseApi.success(HttpStatus.OK, "체험단 모집이 시작되었습니다.");
     }
 
     @ApiOperation(value = "검수 중인 체험단 취소", tags = "사업자 - 체험단")
-    @DeleteMapping("/campaign")
+    @DeleteMapping("/campaign/{id}")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> cancelCampaign(@PathVariable String id) {
-        // TODO: 패널티 부여 시 회원에게 알림 발송
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfo userInfo = userService.findByUsername(authentication.getName());
-        businessesService.cancelCampaign(id, userInfo.getSeq());
+        businessesService.cancelCampaign(id);
         return ResponseApi.success(HttpStatus.OK, "체험단 취소 요청이 처리되었습니다.");
     }
 
-    @ApiOperation(value = "체험단 진행 상세(준비 중)", tags = "사업자 - 체험단")
+    @ApiOperation(value = "체험단 진행 상세 조회", tags = "사업자 - 체험단")
     @GetMapping("/campaign/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> getCampaignDetail(@PathVariable String id) {
-        // TODO: 사용자 인증 추가
-        Integer userSeq = null;
-        Object campaignDetail = businessesService.getCampaignDetail(id, userSeq);
+        Object campaignDetail = businessesService.getCampaignDetail(id);
         return ResponseApi.success(HttpStatus.OK, campaignDetail);
     }
 
-    @ApiOperation(value = "체험 진행하기(준비 중)", tags = "사업자 - 체험단")
-    @PostMapping("/campaign/{seq}")
+    @ApiOperation(value = "체험 진행하기", tags = "사업자 - 체험단")
+    @PostMapping("/campaign/{seq}/start")
+    @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> startCampaign(@PathVariable Integer seq) {
-        // TODO: 사용자 인증 추가
-        Integer userSeq = null;
-        businessesService.startCampaign(seq, userSeq);
+        businessesService.startCampaign(seq);
         return ResponseApi.success(HttpStatus.OK, "체험단 진행이 시작되었습니다.");
     }
 

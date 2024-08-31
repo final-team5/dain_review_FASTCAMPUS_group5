@@ -1,5 +1,6 @@
 package com.example.finalproject.domain.user.service;
 
+import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.campaign.dto.request.CampaignInsertRequest;
 import com.example.finalproject.domain.campaign.dto.request.ReviewerSelectRequest;
 import com.example.finalproject.domain.campaign.entity.Campaign;
@@ -9,9 +10,12 @@ import com.example.finalproject.domain.payment.dto.request.PaymentRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostUpdateRequest;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.AgencyInsertRequest;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +30,18 @@ public class BusinessesService {
 
     private CampaignRepository campaignRepository;
     private UserRepository userRepository;
+    private UserService userService;
+
+    /**
+     * 현재 인증된 사용자의 식별자를 가져오는 메서드
+     *
+     * @return 현재 인증된 사용자의 식별자 (userSeq)
+     */
+    private Integer getCurrentUserSeq() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfo userInfo = userService.findByUsername(authentication.getName());
+        return userInfo.getSeq();
+    }
 
     /**
      * 대행사 신청을 처리하는 메소드
@@ -39,22 +55,14 @@ public class BusinessesService {
     }
 
     /**
-     * 체험단 신규 모집을 처리하는 메소드
-     * @param insert 체험단 모집 정보
-     * @param userSeq 사용자 식별자
+     * 새로운 체험단을 등록하는 메서드
+     *
+     * @param insert 체험단 등록 요청 정보 (CampaignInsertRequest)
+     * @throws IllegalArgumentException 입력값이 잘못되었을 때 발생
      */
-    public void createCampaign(CampaignInsertRequest insert, Integer userSeq) {
-
-        switch (insert.getType()) {
-            case 1: // 방문형, 포장형
-                validateVisitOrPackageCampaign(insert);
-                break;
-            case 2: // 구매형, 배송형, 기자단형
-                validatePurchaseOrDeliveryCampaign(insert);
-                break;
-            default:
-                throw new IllegalArgumentException("잘못된 체험단 유형입니다.");
-        }
+    public void createCampaign(CampaignInsertRequest insert) {
+        Integer userSeq = getCurrentUserSeq(); // 현재 인증된 사용자의 식별자를 가져옴
+        validateCampaignInsertRequest(insert);
 
         Campaign campaign = new Campaign();
         campaign.setTitle(insert.getTitle());
@@ -74,32 +82,108 @@ public class BusinessesService {
     }
 
     /**
-     * 방문형, 포장형의 체험단을 등록하는 메소드
-     * @param insert
+     * 체험단 등록 요청의 유효성을 검사하는 메서드
+     *
+     * @param insert 체험단 등록 요청 정보
+     * @throws IllegalArgumentException 필수 필드가 누락되거나 잘못된 값일 때 발생
      */
-    private void validateVisitOrPackageCampaign(CampaignInsertRequest insert) {
-        if (insert.getLocation() == null || insert.getLocation().isEmpty()) {
-            throw new IllegalArgumentException("방문형, 포장형 체험단은 위치 정보가 필수입니다.");
+    private void validateCampaignInsertRequest(CampaignInsertRequest insert) {
+        if (insert.getTitle() == null || insert.getTitle().isEmpty()) {
+            throw new IllegalArgumentException("체험단 제목은 필수입니다.");
+        }
+        if (insert.getContents() == null || insert.getContents().isEmpty()) {
+            throw new IllegalArgumentException("체험단 내용은 필수입니다.");
+        }
+        if (insert.getApplicationStartDate() == null || insert.getApplicationEndDate() == null) {
+            throw new IllegalArgumentException("신청 기간은 필수입니다.");
         }
         if (insert.getExperienceStartDate() == null || insert.getExperienceEndDate() == null) {
-            throw new IllegalArgumentException("체험 날짜는 필수입니다.");
+            throw new IllegalArgumentException("체험 기간은 필수입니다.");
         }
-    }
-
-    /**
-     * 구매형, 배송형, 기자단형의 체험단을 등록하는 메소드
-     * @param insert
-     */
-    private void validatePurchaseOrDeliveryCampaign(CampaignInsertRequest insert) {
         if (insert.getCampaignLink() == null || insert.getCampaignLink().isEmpty()) {
-            throw new IllegalArgumentException("구매형, 배송형, 기자단 유형 체험단은 구매 URL이 필수입니다.");
+            throw new IllegalArgumentException("캠페인 링크는 필수입니다.");
         }
     }
 
     /**
-     * 문자열 날짜를 Date 객체로 변환하는 메서드
-     * @param dateString
-     * @return
+     * 체험단을 취소하는 메서드
+     *
+     * @param campaignId 취소할 체험단의 식별자 (ID)
+     * @throws IllegalArgumentException 해당 체험단이 존재하지 않을 때 발생
+     * @throws IllegalStateException 해당 체험단을 취소할 권한이 없거나 취소할 수 없는 상태일 때 발생
+     */
+    public void cancelCampaign(String campaignId) {
+        Integer userSeq = getCurrentUserSeq();
+        Campaign campaign = campaignRepository.findById(Integer.parseInt(campaignId))
+                .orElseThrow(() -> new IllegalArgumentException("해당 캠페인이 존재하지 않습니다."));
+
+        if (!campaign.getRecruiter().equals(userSeq)) {
+            throw new IllegalStateException("해당 캠페인을 취소할 권한이 없습니다.");
+        }
+
+        if (campaign.getStatus() == CampaignStatus.COMPLETE.getCode()) {
+            throw new IllegalStateException("완료된 캠페인은 취소할 수 없습니다.");
+        }
+
+        if (campaign.getStatus() == CampaignStatus.DRAFT.getCode() ||
+                campaign.getStatus() == CampaignStatus.READY.getCode()) {
+            campaign.setStatus(CampaignStatus.CANCELED.getCode());
+            campaignRepository.save(campaign);
+        } else {
+            throw new IllegalStateException("현재 상태에서 캠페인을 취소할 수 없습니다.");
+        }
+    }
+
+    /**
+     * 체험단의 상세 정보를 조회하는 메서드
+     *
+     * @param id 조회할 체험단의 식별자 (ID)
+     * @return 조회한 체험단의 상세 정보 (CampaignDto)
+     * @throws IllegalArgumentException 해당 체험단이 존재하지 않을 때 발생
+     * @throws IllegalStateException 해당 체험단에 접근할 권한이 없을 때 발생
+     */
+    public Object getCampaignDetail(String id) {
+        Integer userSeq = getCurrentUserSeq();
+        Campaign campaign = campaignRepository.findById(Integer.parseInt(id))
+                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
+
+        if (!campaign.getRecruiter().equals(userSeq)) {
+            throw new IllegalStateException("해당 체험단에 접근할 권한이 없습니다.");
+        }
+
+        return CampaignDto.from(campaign);
+    }
+
+    /**
+     * 체험단 진행을 시작하는 메서드
+     *
+     * @param seq 진행할 체험단의 식별자 (ID)
+     * @throws IllegalArgumentException 해당 체험단이 존재하지 않을 때 발생
+     * @throws IllegalStateException 해당 체험단을 진행할 권한이 없거나 준비 상태가 아닐 때 발생
+     */
+    public void startCampaign(Integer seq) {
+        Integer userSeq = getCurrentUserSeq();
+        Campaign campaign = campaignRepository.findById(seq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
+
+        if (!campaign.getRecruiter().equals(userSeq)) {
+            throw new IllegalStateException("해당 체험단을 진행할 권한이 없습니다.");
+        }
+
+        if (campaign.getStatus() != CampaignStatus.READY.getCode()) {
+            throw new IllegalStateException("체험단이 준비 상태가 아닙니다.");
+        }
+
+        campaign.setStatus(CampaignStatus.ACTIVE.getCode());
+        campaignRepository.save(campaign);
+    }
+
+    /**
+     * 문자열로 된 날짜를 Date 객체로 변환하는 메서드
+     *
+     * @param dateString 변환할 날짜 문자열 (yyyy-MM-dd 형식)
+     * @return 변환된 Date 객체
+     * @throws IllegalArgumentException 날짜 형식이 잘못되었을 때 발생
      */
     private Date parseDate(String dateString) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -108,61 +192,6 @@ public class BusinessesService {
         } catch (ParseException e) {
             throw new IllegalArgumentException("잘못된 날짜 형식입니다.");
         }
-    }
-
-    /**
-     * 캠페인을 취소하는 메소드
-     * @param campaignId 캠페인 식별자
-     * @param userSeq 사용자 식별자
-     * @throws IllegalArgumentException 해당 캠페인이 존재하지 않을 때 발생
-     * @throws IllegalStateException 캠페인 상태가 취소 가능한 상태가 아닐 때 발생
-     */
-    public void cancelCampaign(String campaignId, Integer userSeq) {
-        Campaign campaign = campaignRepository.findById(Integer.parseInt(campaignId))
-                .orElseThrow(() -> new IllegalArgumentException("해당 캠페인이 존재하지 않습니다."));
-
-        User user = userRepository.findById(userSeq)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-
-        if (campaign.getStatus() == CampaignStatus.COMPLETE.getCode()) {
-            throw new IllegalStateException("완료된 캠페인은 취소할 수 없습니다.");
-        }
-
-        if (campaign.getStatus() == CampaignStatus.DRAFT.getCode() ||
-                campaign.getStatus() == CampaignStatus.READY.getCode()) {
-
-            campaign.setStatus(CampaignStatus.CANCELED.getCode());
-            campaignRepository.save(campaign);
-
-        } else if (campaign.getStatus() == CampaignStatus.ACTIVE.getCode()) {
-            campaign.setStatus(CampaignStatus.CANCELED.getCode());
-            campaignRepository.save(campaign);
-
-            user.setPenalty(user.getPenalty() + 1);
-            userRepository.save(user);
-        } else {
-            throw new IllegalStateException("이 상태에서는 캠페인을 취소할 수 없습니다.");
-        }
-    }
-
-    /**
-     * 체험단 상세 정보 조회하는 메소드
-     * @param id 체험단 식별자
-     * @param userSeq 사용자 식별자
-     * @return 체험단 상세 정보
-     */
-    public Object getCampaignDetail(String id, Integer userSeq) {
-        // TODO: 체험단 상세 정보 조회
-        return null;
-    }
-
-    /**
-     * 체험단 진행을 시작하는 메소드
-     * @param seq 체험단 식별자
-     * @param userSeq 사용자 식별자
-     */
-    public void startCampaign(Integer seq, Integer userSeq) {
-        // TODO: 체험단 진행 상태 업데이트
     }
 
     /**
