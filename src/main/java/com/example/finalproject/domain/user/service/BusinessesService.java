@@ -12,13 +12,13 @@ import com.example.finalproject.domain.post.dto.request.CommunityPostRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostUpdateRequest;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.AgencyInsertRequest;
-import com.example.finalproject.domain.user.entity.User;
-import com.example.finalproject.domain.user.repository.UserRepository;
+import lombok.SneakyThrows;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.security.auth.message.AuthException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,16 +29,20 @@ import java.util.List;
 public class BusinessesService {
 
     private CampaignRepository campaignRepository;
-    private UserRepository userRepository;
     private UserService userService;
 
     /**
      * 현재 인증된 사용자의 식별자를 가져오는 메서드
      *
      * @return 현재 인증된 사용자의 식별자 (userSeq)
+     * @throws AuthException 인증되지 않은 사용자가 요청할 때 발생
      */
+    @SneakyThrows
     private Integer getCurrentUserSeq() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthException();
+        }
         UserInfo userInfo = userService.findByUsername(authentication.getName());
         return userInfo.getSeq();
     }
@@ -62,7 +66,7 @@ public class BusinessesService {
      */
     public void createCampaign(CampaignInsertRequest insert) {
         Integer userSeq = getCurrentUserSeq(); // 현재 인증된 사용자의 식별자를 가져옴
-        validateCampaignInsertRequest(insert);
+        validateCampaignInsertRequest(insert); // 유효성 검사 메서드 호출
 
         Campaign campaign = new Campaign();
         campaign.setTitle(insert.getTitle());
@@ -102,6 +106,17 @@ public class BusinessesService {
         }
         if (insert.getCampaignLink() == null || insert.getCampaignLink().isEmpty()) {
             throw new IllegalArgumentException("캠페인 링크는 필수입니다.");
+        }
+        // 날짜 검증
+        Date applicationStartDate = parseDate(insert.getApplicationStartDate());
+        Date applicationEndDate = parseDate(insert.getApplicationEndDate());
+        if (applicationStartDate.after(applicationEndDate)) {
+            throw new IllegalArgumentException("신청 시작 날짜는 종료 날짜보다 이전이어야 합니다.");
+        }
+        Date experienceStartDate = parseDate(insert.getExperienceStartDate());
+        Date experienceEndDate = parseDate(insert.getExperienceEndDate());
+        if (experienceStartDate.after(experienceEndDate)) {
+            throw new IllegalArgumentException("체험 시작 날짜는 종료 날짜보다 이전이어야 합니다.");
         }
     }
 
