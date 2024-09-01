@@ -35,7 +35,6 @@ public class InfluencerService {
                 .filter(post -> influencerRepository.existsByUser(post.getUser()))
                 .map(PostDto::from)
                 .collect(Collectors.toList());
-        return filteredPosts;
     }
 
     // 게시글 생성 기능
