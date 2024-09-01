@@ -4,6 +4,7 @@ import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.global.exception.error.AuthErrorCode;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.AuthException;
+import com.example.finalproject.global.exception.type.CustomException;
 import com.example.finalproject.global.exception.type.ValidException;
 import org.springframework.data.jpa.repository.JpaRepository;
 
