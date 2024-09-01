@@ -6,6 +6,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -21,8 +23,8 @@ public class InfluencerController {
     // 게시글 전체 조회 기능
     @ApiOperation(value = "커뮤니티 리스트", tags = "인플루언서 - 커뮤니티")
     @GetMapping
-    public ResponseApi<List<Post>> influencerGetAllPosts() {
-        List<Post> posts = influencerService.influencerGetAllPosts();
+    public ResponseApi<List<PostDto>> influencerGetAllPosts() {
+        List<PostDto> posts = influencerService.influencerGetAllPosts();
         return ResponseApi.success(HttpStatus.OK, posts);
     }
 
@@ -39,18 +41,23 @@ public class InfluencerController {
     // 게시글 수정 기능
     @ApiOperation(value = "커뮤니티 글 수정", tags = "인플루언서 - 커뮤니티")
     @PutMapping("/{seq}")
-    public ResponseApi<Post> updateInfluencerPost(
+    public ResponseApi<PostDto> updateInfluencerPost(
             @PathVariable Integer seq,
-            @RequestBody Post postRequest) {
-        Post updatedPost = influencerService.updateInfluencerPost(seq, postRequest);
+            @AuthenticationPrincipal UserDetails details,
+            @RequestBody Post postRequest)
+    {
+        PostDto updatedPost = influencerService.updateInfluencerPost(seq, postRequest, details.getUsername());
         return ResponseApi.success(HttpStatus.OK, updatedPost);
     }
 
     // 게시글 삭제 기능
     @ApiOperation(value = "커뮤니티 글 삭제", tags = "인플루언서 - 커뮤니티")
     @DeleteMapping("/{seq}")
-    public ResponseApi<String> deleteInfluencerPost(@PathVariable Integer seq) {
-        influencerService.deleteInfluencerPost(seq);
+    public ResponseApi<String> deleteInfluencerPost(
+            @AuthenticationPrincipal UserDetails details,
+            @PathVariable Integer seq)
+    {
+        influencerService.deleteInfluencerPost(seq, details.getUsername());
         return ResponseApi.success(HttpStatus.NO_CONTENT, "Post deleted successfully");
     }
 

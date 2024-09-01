@@ -81,4 +81,12 @@ public class Post {
     void updatedAt() {
         this.updatedAt = Timestamp.from(Instant.now());
     }
+
+    public boolean isNotWriter(User user) {
+        return !this.isWriter(user);
+    }
+
+    public boolean isWriter(User user) {
+        return this.user.getSeq().equals(user.getSeq());
+    }
 }

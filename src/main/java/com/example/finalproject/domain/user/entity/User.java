@@ -70,6 +70,4 @@ public class User {
 
     private Integer type;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Influencer influencer;
 }

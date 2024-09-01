@@ -23,8 +23,12 @@ public class Influencer {
     private User user;
 
     private String nickname;
+
     private String gender;
+
     private LocalDate birthdate;
+
+    @Column(name = "blog_link", columnDefinition = "TEXT")
     private String blogLink;
 
     @Column(name = "blog_rank", length = 50)

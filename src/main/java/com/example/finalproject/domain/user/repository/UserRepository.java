@@ -31,4 +31,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 		);
 	}
 
+	default User getByStringId(String id){
+		return findById(id).orElseThrow(
+				() -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
+		);
+	};
+
+	Optional<User> findById(String id);
 }

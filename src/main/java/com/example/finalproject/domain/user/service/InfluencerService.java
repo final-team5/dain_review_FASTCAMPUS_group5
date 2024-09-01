@@ -17,14 +17,15 @@ import java.util.stream.Collectors;
 public class InfluencerService {
 
     private final PostRepository postRepository;
+    private final PostTypesRepository postTypesRepository;
     private final UserRepository userRepository;
     private final InfluencerRepository influencerRepository;
 
     // 게시글 전체 조회 기능
-    public List<Post> influencerGetAllPosts() {
-        List<Post> allPosts = postRepository.findAll();
-        List<Post> filteredPosts = allPosts.stream()
-                .filter(this::isInfluencer)
+    public List<PostDto> influencerGetAllPosts() {
+        return postRepository.findAll().stream()
+                .filter(post -> influencerRepository.existsByUser(post.getUser()))
+                .map(PostDto::from)
                 .collect(Collectors.toList());
         return filteredPosts;
     }
@@ -54,11 +55,15 @@ public class InfluencerService {
 
     // 게시글 수정 기능
     @Transactional
-    public Post updateInfluencerPost(Integer seq, Post postRequest) {
-        Post existingPost = postRepository.findById(seq)
-                .orElseThrow(() -> new CustomException(ValidErrorCode.POST_NOT_FOUND));
+    public PostDto updateInfluencerPost(Integer seq, Post postRequest, String useId) {
+        User user = userRepository.getByStringId(useId);
+        Post existingPost = postRepository.getPostBySeqOrException(seq);
 
-        if (!isInfluencer(existingPost)) {
+        if (existingPost.isNotWriter(user)) {
+            throw new CustomException(ValidErrorCode.POST_USER_MISMATCH);
+        }
+
+        if (!influencerRepository.existsByUser(user)) {
             throw new CustomException(ValidErrorCode.INFLUENCER_NOT_FOUND);
         }
 
@@ -67,16 +72,19 @@ public class InfluencerService {
         existingPost.setPostCategories(postRequest.getPostCategories());
         existingPost.setPostTypes(postRequest.getPostTypes());
 
-        return postRepository.save(existingPost);
+        return PostDto.from(postRepository.save(existingPost));
     }
 
     // 게시글 삭제 기능
     @Transactional
-    public void deleteInfluencerPost(Integer seq) {
-        Post post = postRepository.findById(seq)
-                .orElseThrow(() -> new CustomException(ValidErrorCode.POST_NOT_FOUND));
+    public void deleteInfluencerPost(Integer seq, String userId) {
+        User user = userRepository.getByStringId(userId);
+        Post post = postRepository.getPostBySeqOrException(seq);
 
-        if (!isInfluencer(post)) {
+        if (post.isNotWriter(user)) {
+            throw new CustomException(ValidErrorCode.POST_USER_MISMATCH);
+        }
+        if (!influencerRepository.existsByUser(user)) {
             throw new CustomException(ValidErrorCode.INFLUENCER_NOT_FOUND);
         }
 

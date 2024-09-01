@@ -10,6 +10,12 @@ public enum PostType {
     INSTAGRAM("인스타그램"),
     YOUTUBE("유튜브"),
     TIKTOK("틱톡"),
+
+    // 인플루언서 게시글 생성 시 카테고리 항목
+    QUESTION("질문하기"),
+    TIPS("노하우"),
+    PARTNER("동행"),
+
     ETC("기타")
     ;
 
