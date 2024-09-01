@@ -1,10 +1,7 @@
 package com.example.finalproject.domain.post.entity;
 
 import com.example.finalproject.domain.user.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 

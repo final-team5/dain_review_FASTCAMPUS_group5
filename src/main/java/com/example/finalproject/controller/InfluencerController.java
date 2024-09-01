@@ -1,4 +1,6 @@
 package com.example.finalproject.controller;
+import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.request.InfluencerCreatePostRequest;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.user.service.InfluencerService;
 import com.example.finalproject.global.util.ResponseApi;
