@@ -19,6 +19,7 @@ import java.time.Instant;
 @Where(clause = "deleted_at is NULL")
 @Table(name = "posts")
 @Entity
+@Builder
 public class Post {
 
     @Id

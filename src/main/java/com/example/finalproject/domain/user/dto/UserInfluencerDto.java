@@ -8,9 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -26,9 +24,9 @@ public class UserInfluencerDto {
 
     private String nickname;
 
-    private LocalDate birthdate;
-
     private String gender;
+
+    private LocalDate birthdate;
 
     private String blogLink;
     private String blogRank;
@@ -53,8 +51,8 @@ public class UserInfluencerDto {
         return new UserInfluencerDto(seq,
                 userDto,
                 nickname,
-                birthdate,
                 gender,
+                birthdate,
                 blogLink,
                 blogRank,
                 blogVisitors,

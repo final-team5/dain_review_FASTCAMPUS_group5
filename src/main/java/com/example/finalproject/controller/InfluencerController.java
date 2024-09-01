@@ -31,11 +31,14 @@ public class InfluencerController {
     // 게시글 생성 기능
     @ApiOperation(value = "커뮤니티 글 생성", tags = "인플루언서 - 커뮤니티")
     @PostMapping
-    public ResponseApi<Post> createInfluencerPost(
-            @RequestParam Integer userSeq,
-            @RequestBody Post postRequest) {
-        Post createdPost = influencerService.createInfluencerPost(userSeq, postRequest);
-        return ResponseApi.success(HttpStatus.CREATED, createdPost);
+    public ResponseApi<PostDto> createInfluencerPost(
+            @AuthenticationPrincipal UserDetails details,
+            @RequestBody InfluencerCreatePostRequest influencerCreatePostRequest
+    )
+    {
+        PostDto postDto = influencerService.createInfluencerPost(influencerCreatePostRequest, details.getUsername());
+
+        return ResponseApi.success(HttpStatus.CREATED, postDto);
     }
 
     // 게시글 수정 기능
@@ -61,6 +64,17 @@ public class InfluencerController {
         return ResponseApi.success(HttpStatus.NO_CONTENT, "Post deleted successfully");
     }
 
-    // TODO : 인플루언서 게시글 상세 기능 구현 필요
+    // 게시글 상세 조회 기능
+    // ResponseDto 필요
+    @ApiOperation(value = "커뮤니티 글 상세 조회", tags = "인플루언서 - 커뮤니티")
+    @GetMapping("/{seq}/")
+    public ResponseApi<?> getInfluencerDeteailPost(
+            @AuthenticationPrincipal UserDetails details,
+            @PathVariable Integer seq
+            )
+    {
+        influencerService.getInfluencerDeteailPost(seq,details.getUsername());
+        return ResponseApi.success(HttpStatus.OK,"Get influencer deteail post successfully");
+    }
 
 }

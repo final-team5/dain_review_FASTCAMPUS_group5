@@ -1,6 +1,13 @@
 package com.example.finalproject.domain.user.service;
+
+import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.request.InfluencerCreatePostRequest;
 import com.example.finalproject.domain.post.entity.Post;
+import com.example.finalproject.domain.post.entity.PostCategories;
+import com.example.finalproject.domain.post.entity.PostTypes;
+import com.example.finalproject.domain.post.entity.enums.PostCategory;
 import com.example.finalproject.domain.post.repository.PostRepository;
+import com.example.finalproject.domain.post.repository.PostTypesRepository;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
@@ -9,6 +16,7 @@ import com.example.finalproject.global.exception.type.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,24 +40,22 @@ public class InfluencerService {
 
     // 게시글 생성 기능
     @Transactional
-    public Post createInfluencerPost(Integer userSeq, Post postRequest) {
-        User user = userRepository.findById(userSeq)
-                .orElseThrow(() -> new CustomException(ValidErrorCode.USER_NOT_FOUND));
+    public PostDto createInfluencerPost(InfluencerCreatePostRequest request, String useId) {
+        User user = userRepository.getByStringId(useId);
 
         if (!influencerRepository.existsByUser(user)) {
             throw new CustomException(ValidErrorCode.INFLUENCER_NOT_FOUND);
         }
 
-        Post newPost = new Post(
-                user,
-                postRequest.getPostCategories(),
-                postRequest.getPostTypes(),
-                postRequest.getTitle(),
-                postRequest.getContents(),
-                0
-        );
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(request.getPostType());
+        Post post = Post.of(user,
+                new PostCategories(3, PostCategory.COMMUNITY_INFLUENCER),
+                postTypes,
+                request.getTitle(),
+                request.getContents(),
+                0);
 
-        return postRepository.save(newPost);
+        return PostDto.from(postRepository.save(post));
     }
 
 
@@ -91,13 +97,18 @@ public class InfluencerService {
         postRepository.delete(post);
     }
 
-    // 게시판 조회 시 회원 중 인플루언서인지 검증 하는 코드
-    private boolean isInfluencer(Post post) {
-        User user = post.getUser();
-        if (user == null) {
-            throw new CustomException(ValidErrorCode.USER_NOT_FOUND);
-        }
-        return influencerRepository.existsByUser(user);
-    }
+    // 게시글 상세 조회 기능
+    public void getInfluencerDeteailPost(Integer seq, String userId) {
+        User user = userRepository.getByStringId(userId);
+        Post post = postRepository.getPostBySeqOrException(seq);
 
+        if (post.isNotWriter(user)) {
+            throw new CustomException(ValidErrorCode.POST_USER_MISMATCH);
+        }
+        if (!influencerRepository.existsByUser(user)) {
+            throw new CustomException(ValidErrorCode.INFLUENCER_NOT_FOUND);
+        }
+
+        postRepository.findById(post.getSeq());
+    }
 }
