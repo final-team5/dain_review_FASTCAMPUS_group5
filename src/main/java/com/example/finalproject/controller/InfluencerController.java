@@ -19,7 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InfluencerController {
 
-    private final InfluencerService influencerService;
+    private InfluencerService influencerService;
+
 
 
     // 게시글 전체 조회 기능
