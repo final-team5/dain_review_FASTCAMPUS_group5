@@ -13,7 +13,7 @@ import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowListResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowResponse;
+import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
@@ -79,26 +79,26 @@ public class UserController {
 
     @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
     @PostMapping(path = "/community")
-    public ResponseApi<PostFollowResponse> saveFollowPost(
-            @RequestBody PostFollowSaveRequest postFollowSaveRequest,
+    public ResponseApi<PostResponse> saveFollowPost(
+            @RequestBody PostSaveRequest postSaveRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostDto postDto = postService.saveFollowPost(postFollowSaveRequest.getCategory(), postFollowSaveRequest.getContents(), postFollowSaveRequest.getTitle(), userSeq);
-        PostFollowResponse postFollowResponse = PostFollowResponse.from(postDto);
+        PostDto postDto = postService.saveFollowPost(postSaveRequest.getCategory(), postSaveRequest.getContents(), postSaveRequest.getTitle(), userSeq);
+        PostResponse postResponse = PostResponse.from(postDto);
 
-        return ResponseApi.success(HttpStatus.OK, postFollowResponse);
+        return ResponseApi.success(HttpStatus.OK, postResponse);
     }
 
     @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 커뮤니티")
     @PutMapping(path = "/community")
-    public ResponseApi<PostFollowResponse> updateFollowPost(
-            @RequestBody PostFollowUpdateRequest postFollowUpdateRequest,
+    public ResponseApi<PostResponse> updateFollowPost(
+            @RequestBody PostUpdateRequest postUpdateRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostDto postDto = postService.updateFollowPost(postFollowUpdateRequest.getSeq(), postFollowUpdateRequest.getCategory(), postFollowUpdateRequest.getContents(), postFollowUpdateRequest.getTitle(), userSeq);
-        PostFollowResponse postFollowUpdateResponse = PostFollowResponse.from(postDto);
+        PostDto postDto = postService.updateFollowPost(postUpdateRequest.getSeq(), postUpdateRequest.getCategory(), postUpdateRequest.getContents(), postUpdateRequest.getTitle(), userSeq);
+        PostResponse postFollowUpdateResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postFollowUpdateResponse);
     }
