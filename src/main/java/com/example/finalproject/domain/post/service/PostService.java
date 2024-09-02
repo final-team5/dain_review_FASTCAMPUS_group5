@@ -48,6 +48,8 @@ public class PostService {
     public PostDto saveFollowPost(PostType category, String contents, String title, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
+        validatePostFollowCategory(category);
+
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(category);
 
         PostCategories postCategories = PostCategories.of(4, PostCategory.EACH_OTHER_NEIGHBOR_FOLLOW);
@@ -174,6 +176,8 @@ public class PostService {
     public PostDto saveInfCommunityPost(PostSaveRequest postSaveRequest, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
+        validateInfluencerCommunityCategory(postSaveRequest);
+
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(postSaveRequest.getCategory());
 
         PostCategories postCategories = PostCategories.of(3, PostCategory.COMMUNITY_INFLUENCER);
@@ -221,6 +225,28 @@ public class PostService {
     private void validatePostUserMatch(User user, Post post) {
         if (!user.getSeq().equals(post.getUser().getSeq())) {
             throw new ValidException(ValidErrorCode.POST_USER_MISMATCH);
+        }
+    }
+
+    /**
+     * 서이추/맞팔 게시글 카테고리 검증
+     *
+     * @param category : 게시글 카테고리
+     */
+    private static void validatePostFollowCategory(PostType category) {
+        if (!category.equals(PostType.BLOG) && !category.equals(PostType.INSTAGRAM) && !category.equals(PostType.YOUTUBE) && !category.equals(PostType.TIKTOK) && !category.equals(PostType.ETC)) {
+            throw new ValidException(ValidErrorCode.IS_NOT_POST_FOLLOW_CATEGORY);
+        }
+    }
+
+    /**
+     * 인플루언서 커뮤니티 게시글 카테고리 검증
+     *
+     * @param postSaveRequest : 게시글 등록 정보
+     */
+    private static void validateInfluencerCommunityCategory(PostSaveRequest postSaveRequest) {
+        if (!postSaveRequest.getCategory().equals(PostType.QUESTION) && !postSaveRequest.getCategory().equals(PostType.KNOW_HOW) && !postSaveRequest.getCategory().equals(PostType.ACCOMPANY) && !postSaveRequest.getCategory().equals(PostType.ETC)) {
+            throw new ValidException(ValidErrorCode.IS_NOT_INFLUENCER_COMMUNITY_CATEGORY);
         }
     }
 }
