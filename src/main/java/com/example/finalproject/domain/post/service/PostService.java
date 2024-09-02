@@ -95,7 +95,7 @@ public class PostService {
      * @param userSeq : 로그인한 사용자 ID
      */
     @Transactional
-    public void deleteFollowPost(Integer seq, Integer userSeq) {
+    public void deletePost(Integer seq, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
         Post post = postRepository.getPostBySeqOrException(seq);

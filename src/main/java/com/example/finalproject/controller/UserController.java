@@ -106,11 +106,11 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 삭제", tags = "사용자 - 커뮤니티")
     @DeleteMapping(path = "/communities")
     public ResponseApi<String> deleteFollowPost(
-            @RequestBody PostFollowDeleteRequest postFollowDeleteRequest,
+            @RequestBody PostDeleteRequest postDeleteRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        postService.deleteFollowPost(postFollowDeleteRequest.getSeq(), userSeq);
+        postService.deletePost(postDeleteRequest.getSeq(), userSeq);
 
         return ResponseApi.success(HttpStatus.OK, "follow post delete success");
     }
