@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostFollowUpdateRequest {
+public class PostUpdateRequest {
 
     @NotNull
     private Integer seq;

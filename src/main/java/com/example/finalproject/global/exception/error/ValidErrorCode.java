@@ -21,6 +21,8 @@ public enum ValidErrorCode implements ErrorCode {
     POST_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 SNS 종류가 존재하지 않습니다."),
     POST_USER_MISMATCH(HttpStatus.BAD_REQUEST, "해당 게시글의 작성자가 아닙니다."),
     POST_SEARCH_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 검색 타입이 존재하지 않습니다."),
+    IS_NOT_POST_FOLLOW_CATEGORY(HttpStatus.BAD_REQUEST, "서이추/맞팔 게시판에 해당하는 게시글 카테고리가 아닙니다."),
+    IS_NOT_INFLUENCER_COMMUNITY_CATEGORY(HttpStatus.BAD_REQUEST, "인플루언서 커뮤니티 게시판에 해당하는 게시글 카테고리가 아닙니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."),
