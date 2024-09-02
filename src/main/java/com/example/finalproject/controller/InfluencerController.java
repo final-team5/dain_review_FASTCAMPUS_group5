@@ -1,6 +1,7 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.request.PostDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.PostSaveRequest;
 import com.example.finalproject.domain.post.dto.request.PostUpdateRequest;
 import com.example.finalproject.domain.post.dto.response.PostResponse;
@@ -44,5 +45,17 @@ public class InfluencerController {
         PostResponse postResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postResponse);
+    }
+
+    @ApiOperation(value = "커뮤니티 글 삭제", tags = "인플루언서 - 커뮤니티")
+    @DeleteMapping(path = "/communities")
+    public ResponseApi<String> deleteInfCommunityPost(
+            @RequestBody PostDeleteRequest postDeleteRequest,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq
+    ) {
+        postService.deletePost(postDeleteRequest.getSeq(), userSeq);
+
+        return ResponseApi.success(HttpStatus.OK, "influencer community post delete success");
     }
 }
