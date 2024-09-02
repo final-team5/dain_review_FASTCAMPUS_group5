@@ -142,7 +142,11 @@ public class PostService {
     // TODO : 추후 인플루언서, 사업주 엔티티 설계 완료 시, 반환 내용 닉네임 및 업체명으로 수정해야함.
     public Page<PostDto> findListFollowPost(SearchType searchType, String searchWord, Pageable pageable) {
         if (searchWord == null || searchWord.isEmpty()) {
-            return postRepository.findAll(pageable).map(PostDto::from);
+            return postRepository.findAllByCategorySeq(4, pageable).map(PostDto::from);
+        }
+
+        if (searchType == null) {
+            return postRepository.findByContaining(4, searchWord, pageable).map(PostDto::from);
         }
 
         switch (searchType) {
