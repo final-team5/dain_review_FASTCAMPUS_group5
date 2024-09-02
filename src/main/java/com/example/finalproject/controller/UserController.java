@@ -77,7 +77,7 @@ public class UserController {
     }
 
 
-    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
+    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티", notes = "category : BLOG, INSTAGRAM, TIKTOK, YOUTUBE, ETC 중")
     @PostMapping(path = "/community")
     public ResponseApi<PostResponse> saveFollowPost(
             @RequestBody PostSaveRequest postSaveRequest,

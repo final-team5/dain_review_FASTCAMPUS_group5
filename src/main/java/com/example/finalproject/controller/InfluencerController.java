@@ -21,7 +21,7 @@ public class InfluencerController {
 
     private final PostService postService;
 
-    @ApiOperation(value = "커뮤니티 글 추가", tags = "인플루언서 - 커뮤니티")
+    @ApiOperation(value = "커뮤니티 글 추가", tags = "인플루언서 - 커뮤니티", notes = "category : QUESTION, KNOW_HOW, ACCOMPANY, ETC 중")
     @PostMapping(path = "/communities")
     public ResponseApi<PostResponse> saveInfCommunityPost(
             @RequestBody PostSaveRequest postSaveRequest,
