@@ -11,7 +11,7 @@ import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
+import com.example.finalproject.domain.post.dto.response.PostDetailResponse;
 import com.example.finalproject.domain.post.dto.response.PostListResponse;
 import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
@@ -117,7 +117,7 @@ public class UserController {
 
     @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 커뮤니티")
     @GetMapping(path = "/community/{seq}")
-    public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
+    public ResponseApi<PostDetailResponse> findDetailFollowPost(
             @PathVariable Integer seq,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq,
@@ -126,7 +126,7 @@ public class UserController {
         PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq, pageable);
         postService.updateViewCounts(seq);
 
-        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
+        PostDetailResponse detailResponse = PostDetailResponse.from(postWithCommentsDto);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
