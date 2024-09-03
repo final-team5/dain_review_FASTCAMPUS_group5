@@ -54,7 +54,7 @@ public class Register {
 		this.name = signup.getName();
 		this.phone = signup.getPhone();
 		this.nickname = signup.getNickname();
-		this.signupSource = signup.getSignupSource();
+//		this.signupSource = signup.getSignupSource();
 		this.blog = signup.getBlog();
 		this.instagram = signup.getInstagram();
 		this.youtube = signup.getYoutube();
@@ -65,12 +65,12 @@ public class Register {
 		this.addressDetail = signup.getAddressDetail();
 		this.birthdate = signup.getBirthdate();
 		this.gender = signup.getGender();
-		try {
-			this.profile = signup.getProfile().getBytes();
-			this.fileName = signup.getProfile().getOriginalFilename();
-		} catch (IOException e){
-			System.out.println(e);
-		}
+//		try {
+//			this.profile = signup.getProfile().getBytes();
+//			this.fileName = signup.getProfile().getOriginalFilename();
+//		} catch (IOException e){
+//			System.out.println(e);
+//		}
 	}
 
 	public Register(BusinessesSignup signup){
