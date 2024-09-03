@@ -26,6 +26,8 @@ public enum ValidErrorCode implements ErrorCode {
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."),
+    SIGN_UP_SOURCE_NOT_VALID(HttpStatus.BAD_REQUEST, "가입 경로가 올바르지 않습니다."),
+    SNS_DOES_NOT_SELECTED(HttpStatus.BAD_REQUEST, "SNS 를 적어도 하나 선택해주세요."),
 
     // PostComment
     POST_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "작성된 댓글 정보가 존재하지 않습니다."),
