@@ -1,13 +1,11 @@
 package com.example.finalproject.domain.user.service;
 
-import com.example.finalproject.domain.user.dto.Register;
-import com.example.finalproject.domain.user.dto.UserDto;
-import com.example.finalproject.domain.user.dto.UserInfluencerDto;
+import com.example.finalproject.domain.user.dto.*;
+import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
 import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
-import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.entity.enums.SignUpSourceType;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
@@ -106,53 +104,6 @@ public class UserService {
 		return userRepository.existsByPhone(phone);
 	}
 
-	public void signup(Register register) {
-		String id = UUID.randomUUID().toString();
-		User user = User.builder()
-			.id(id)
-			.pw(register.getPw())
-			.email(register.getEmail())
-			.name(register.getName())
-			.phone(register.getPhone())
-			.signupSource(register.getSignupSource())
-			.type(register.getType())
-			.postalCode(Integer.valueOf(register.getPostalCode()))
-			.address(register.getAddress())
-			.addressDetail(register.getAddressDetail())
-			.loginType(register.getLoginType())
-			.role(register.getRole())
-			.build()
-			;
-
-		if (register.getProfile() != null) {
-			String fileName = FileUtils.setNewName(register.getFileName());
-			FileUtils.saveFile(register.getProfile(), id + "/" + fileName);
-			user.setProfile(fileName);
-		}
-
-		userRepository.save(user);
-
-		if (register.getRole().equals("ROLE_INFLUENCER")) {
-			influencerRepository.save(Influencer.builder()
-				.user(user)
-				.nickname(register.getNickname())
-				.gender(register.getGender())
-				.birthdate(LocalDate.parse(register.getBirthdate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-				.blogLink(register.getBlog())
-				.instagramLink(register.getInstagram())
-				.youtubeLink(register.getYoutube())
-				.tiktokLink(register.getTiktok())
-				.otherLink(register.getOther())
-				.build()
-			);
-		} else if (register.getRole().equals("ROLE_BUSINESSES")) {
-			businessesRepository.save(Businesses.builder()
-				.user(user)
-				.company(register.getCompany())
-				.build()
-		); }
-	}
-
 
 	/**
 	 * 인플루언서 회원가입 기능
@@ -171,7 +122,7 @@ public class UserService {
 			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
 		}
 
-		validateSignUpSource(influencerSignup);
+		validateSignUpSource(influencerSignup.getSignupSource());
 
 		validateSNSAtLeastOneSelected(influencerSignup);
 
@@ -217,14 +168,71 @@ public class UserService {
 		return UserInfluencerDto.from(savedInfluencer);
 	}
 
+	/**
+	 * 사업주 회원가입 기능
+	 *
+	 * @param businessesSignup : 사업주 회원가입 정보
+	 * @param profile : 회원 프로필 사진
+	 * @return UserBusinessesDto
+	 */
+	@Transactional
+	public UserBusinessesDto registerBusinesses(BusinessesSignup businessesSignup, MultipartFile profile) {
+		if (checkEmail(businessesSignup.getEmail())) {
+			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
+		}
+
+		if (checkNickname(businessesSignup.getCompany())) {
+			throw new AuthException(AuthErrorCode.COMPANY_ALREADY_IN_USE);
+		}
+
+		validateSignUpSource(businessesSignup.getSignupSource());
+
+		String encodedPassword = passwordEncoder.encode(businessesSignup.getPw());
+
+		// TODO : 프로필 S3 저장 후 url 가져오기
+
+		User user = User.of(
+				businessesSignup.getEmail(),
+				businessesSignup.getEmail(),
+				encodedPassword,
+				"ROLE_BUSINESSES",
+				businessesSignup.getName(),
+				businessesSignup.getPhone(),
+				"image example",
+				1,
+				null,
+				businessesSignup.getSignupSource().getInfo(),
+				Integer.valueOf(businessesSignup.getPostalCode()),
+				businessesSignup.getAddress(),
+				businessesSignup.getAddressDetail(),
+				0,
+				0,
+				0,
+				0,
+				2
+		);
+		User savedUser = userRepository.save(user);
+
+		Businesses businesses = Businesses.of(
+				savedUser,
+				businessesSignup.getCompany(),
+				businessesSignup.getPhone(),
+				businessesSignup.getName()
+		);
+
+		Businesses savedBusinesses = businessesRepository.save(businesses);
+
+		return UserBusinessesDto.from(savedBusinesses);
+	}
+
 	private static void validateSNSAtLeastOneSelected(InfluencerSignup influencerSignup) {
 		if (influencerSignup.getBlog() == null && influencerSignup.getInstagram() == null && influencerSignup.getYoutube() == null && influencerSignup.getTiktok() == null && influencerSignup.getOther() == null) {
 			throw new ValidException(ValidErrorCode.SNS_DOES_NOT_SELECTED);
 		}
 	}
 
-	private static void validateSignUpSource(InfluencerSignup influencerSignup) {
-		if (!influencerSignup.getSignupSource().equals(SignUpSourceType.PORTAL_SEARCH) && !influencerSignup.getSignupSource().equals(SignUpSourceType.SNS) && !influencerSignup.getSignupSource().equals(SignUpSourceType.INTRODUCTION_TO_ACQUAINTANCES) && !influencerSignup.getSignupSource().equals(SignUpSourceType.ETC)) {
+	private static void validateSignUpSource(SignUpSourceType signUpSourceType) {
+		if (!signUpSourceType.equals(SignUpSourceType.PORTAL_SEARCH) && !signUpSourceType.equals(SignUpSourceType.SNS) && !signUpSourceType.equals(SignUpSourceType.INTRODUCTION_TO_ACQUAINTANCES) && !signUpSourceType.equals(SignUpSourceType.ETC)) {
 			throw new ValidException(ValidErrorCode.SIGN_UP_SOURCE_NOT_VALID);
 		}
 	}
