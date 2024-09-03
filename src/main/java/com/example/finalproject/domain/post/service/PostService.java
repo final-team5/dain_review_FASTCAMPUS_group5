@@ -247,6 +247,22 @@ public class PostService {
         }
     }
 
+    /**
+     * 인플루언서 커뮤니티 게시글 상세 조회
+     *
+     * @param seq : 조회할 게시글 ID
+     * @param userSeq : 로그인한 사용자 ID
+     * @return PostDto
+     */
+    public PostWithCommentsDto findDetailInfCommunityPost(Integer seq, Integer userSeq, Pageable pageable) {
+        User user = userRepository.getUserBySeqOrException(userSeq);
+
+        Post post = postRepository.getPostBySeqOrException(seq);
+        Page<PostComment> postComments = postCommentRepository.findAllByPost(post, pageable);
+
+        return PostWithCommentsDto.from(post, postComments);
+    }
+
 
     /**
      * 회원 본인이 작성한 게시글인지 체크
