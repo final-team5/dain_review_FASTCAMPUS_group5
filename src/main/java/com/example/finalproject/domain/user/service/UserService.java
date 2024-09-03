@@ -154,6 +154,13 @@ public class UserService {
 	}
 
 
+	/**
+	 * 인플루언서 회원가입 기능
+	 *
+	 * @param influencerSignup : 인플루언서 회원가입 정보
+	 * @param profile : 회원 프로필 사진
+	 * @return UserInfluencerDto
+	 */
 	@Transactional
 	public UserInfluencerDto registerInfluencer(InfluencerSignup influencerSignup, MultipartFile profile) {
 		if (checkEmail(influencerSignup.getEmail())) {
