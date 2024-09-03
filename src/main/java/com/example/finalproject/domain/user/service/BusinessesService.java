@@ -80,6 +80,7 @@ public class BusinessesService {
 
         user.setAddress(request.getAddress());
         user.setAddressDetail(request.getAddressDetail());
+        user.setPostalCode(Integer.parseInt(request.getPostalCode()));
         userRepository.save(user);
 
         Businesses businesses = businessesRepository.findByUser(user)
