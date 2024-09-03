@@ -48,6 +48,8 @@ public class PostService {
     public PostDto saveFollowPost(PostType category, String contents, String title, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
+        validatePostFollowCategory(category);
+
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(category);
 
         PostCategories postCategories = PostCategories.of(4, PostCategory.EACH_OTHER_NEIGHBOR_FOLLOW);
@@ -142,7 +144,11 @@ public class PostService {
     // TODO : 추후 인플루언서, 사업주 엔티티 설계 완료 시, 반환 내용 닉네임 및 업체명으로 수정해야함.
     public Page<PostDto> findListFollowPost(SearchType searchType, String searchWord, Pageable pageable) {
         if (searchWord == null || searchWord.isEmpty()) {
-            return postRepository.findAll(pageable).map(PostDto::from);
+            return postRepository.findAllByCategorySeq(4, pageable).map(PostDto::from);
+        }
+
+        if (searchType == null) {
+            return postRepository.findByContaining(4, searchWord, pageable).map(PostDto::from);
         }
 
         switch (searchType) {
@@ -169,6 +175,8 @@ public class PostService {
     @Transactional
     public PostDto saveInfCommunityPost(PostSaveRequest postSaveRequest, Integer userSeq) {
         User user = userRepository.getUserBySeqOrException(userSeq);
+
+        validateInfluencerCommunityCategory(postSaveRequest);
 
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(postSaveRequest.getCategory());
 
@@ -207,6 +215,38 @@ public class PostService {
         return PostDto.from(post);
     }
 
+    /**
+     * 인플루언서 커뮤니티 게시판 리스트 목록 조회
+     *
+     * @param searchType : 검색어 조건
+     * @param searchWord : 검색어
+     * @param pageable : 페이징
+     * @return Page<PostDto>
+     */
+    // TODO : 추후 인플루언서, 사업주 엔티티 설계 완료 시, 반환 내용 닉네임 및 업체명으로 수정해야함.
+    public Page<PostDto> findListInfCommunityPost(SearchType searchType, String searchWord, Pageable pageable) {
+        if (searchWord == null || searchWord.isEmpty()) {
+            return postRepository.findAllByCategorySeq(3, pageable).map(PostDto::from);
+        }
+
+        if (searchType == null) {
+            return postRepository.findByContaining(3, searchWord, pageable).map(PostDto::from);
+        }
+
+        switch (searchType) {
+            case ALL:
+                return postRepository.findByContaining(3, searchWord, pageable).map(PostDto::from);
+            case USER:
+                return postRepository.findByUsernameContaining(3, searchWord, pageable).map(PostDto::from);
+            case TITLE:
+                return postRepository.findByTitleContaining(3, searchWord, pageable).map(PostDto::from);
+            case CONTENTS:
+                return postRepository.findByContentsContaining(3, searchWord, pageable).map(PostDto::from);
+            default:
+                throw new ValidException(ValidErrorCode.POST_SEARCH_TYPE_NOT_FOUND);
+        }
+    }
+
 
     /**
      * 회원 본인이 작성한 게시글인지 체크
@@ -217,6 +257,28 @@ public class PostService {
     private void validatePostUserMatch(User user, Post post) {
         if (!user.getSeq().equals(post.getUser().getSeq())) {
             throw new ValidException(ValidErrorCode.POST_USER_MISMATCH);
+        }
+    }
+
+    /**
+     * 서이추/맞팔 게시글 카테고리 검증
+     *
+     * @param category : 게시글 카테고리
+     */
+    private static void validatePostFollowCategory(PostType category) {
+        if (!category.equals(PostType.BLOG) && !category.equals(PostType.INSTAGRAM) && !category.equals(PostType.YOUTUBE) && !category.equals(PostType.TIKTOK) && !category.equals(PostType.ETC)) {
+            throw new ValidException(ValidErrorCode.IS_NOT_POST_FOLLOW_CATEGORY);
+        }
+    }
+
+    /**
+     * 인플루언서 커뮤니티 게시글 카테고리 검증
+     *
+     * @param postSaveRequest : 게시글 등록 정보
+     */
+    private static void validateInfluencerCommunityCategory(PostSaveRequest postSaveRequest) {
+        if (!postSaveRequest.getCategory().equals(PostType.QUESTION) && !postSaveRequest.getCategory().equals(PostType.KNOW_HOW) && !postSaveRequest.getCategory().equals(PostType.ACCOMPANY) && !postSaveRequest.getCategory().equals(PostType.ETC)) {
+            throw new ValidException(ValidErrorCode.IS_NOT_INFLUENCER_COMMUNITY_CATEGORY);
         }
     }
 }

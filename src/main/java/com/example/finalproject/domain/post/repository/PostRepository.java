@@ -16,6 +16,12 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.seq = :seq")
     void updateViewCounts(@Param("seq") Integer seq);
 
+    @Query("SELECT p FROM Post p WHERE p.postCategories.seq = :seq")
+    Page<Post> findAllByCategorySeq(
+            @Param("seq") Integer seq,
+            Pageable pageable
+    );
+
     @Query("SELECT p FROM Post p WHERE p.postCategories.seq = :seq AND p.user.name LIKE %:searchKeyword%")
     Page<Post> findByUsernameContaining(
             @Param(value = "seq") Integer seq,

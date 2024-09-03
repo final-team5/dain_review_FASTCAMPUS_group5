@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface PostCommentRepository extends JpaRepository<PostComment, Integer> {
 
-    @Query(value = "SELECT pc FROM PostComment pc WHERE pc.commentSeq is NULL")
+    @Query(value = "SELECT pc FROM PostComment pc WHERE pc.commentSeq is NULL AND pc.post = :post")
     Page<PostComment> findAllByPost(Post post, Pageable pageable);
 
     default PostComment getPostCommentBySeqOrException(Integer postCommentSeq) {

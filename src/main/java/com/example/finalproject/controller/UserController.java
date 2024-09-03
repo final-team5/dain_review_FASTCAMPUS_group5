@@ -12,7 +12,7 @@ import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
 import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowListResponse;
+import com.example.finalproject.domain.post.dto.response.PostListResponse;
 import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
@@ -77,7 +77,7 @@ public class UserController {
     }
 
 
-    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
+    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티", notes = "category : BLOG, INSTAGRAM, TIKTOK, YOUTUBE, ETC 중")
     @PostMapping(path = "/community")
     public ResponseApi<PostResponse> saveFollowPost(
             @RequestBody PostSaveRequest postSaveRequest,
@@ -133,7 +133,7 @@ public class UserController {
 
     @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 커뮤니티")
     @GetMapping(path = "/communities")
-    public ResponseApi<Page<PostFollowListResponse>> findListFollowPost(
+    public ResponseApi<Page<PostListResponse>> findListFollowPost(
             @RequestParam(required = false) SearchType searchType,
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
@@ -141,7 +141,7 @@ public class UserController {
             Integer userSeq
     ) {
         Page<PostDto> listFollowPost = postService.findListFollowPost(searchType, searchWord, pageable);
-        Page<PostFollowListResponse> postFollowListResponses = listFollowPost.map(PostFollowListResponse::from);
+        Page<PostListResponse> postFollowListResponses = listFollowPost.map(PostListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postFollowListResponses);
     }

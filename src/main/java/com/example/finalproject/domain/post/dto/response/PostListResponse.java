@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostFollowListResponse {
+public class PostListResponse {
     private String postType;
     private String title;
     private String contents;
@@ -21,15 +21,15 @@ public class PostFollowListResponse {
     private String registeredAt;
     private Integer viewCount;
 
-    public static PostFollowListResponse of(String postType, String title, String contents, String username, String registeredAt, Integer viewCount) {
-        return new PostFollowListResponse(postType, title, contents, username, registeredAt, viewCount);
+    public static PostListResponse of(String postType, String title, String contents, String username, String registeredAt, Integer viewCount) {
+        return new PostListResponse(postType, title, contents, username, registeredAt, viewCount);
     }
 
-    public static PostFollowListResponse from(PostDto postDto) {
+    public static PostListResponse from(PostDto postDto) {
         String[] split = postDto.getRegisteredAt().toString().split("T");
         String registeredDate = split[0];
 
-        return PostFollowListResponse.of(
+        return PostListResponse.of(
                 postDto.getPostType(),
                 postDto.getTitle(),
                 postDto.getContents(),
