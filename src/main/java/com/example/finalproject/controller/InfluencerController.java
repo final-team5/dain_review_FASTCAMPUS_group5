@@ -1,9 +1,11 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.PostDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.PostSaveRequest;
 import com.example.finalproject.domain.post.dto.request.PostUpdateRequest;
+import com.example.finalproject.domain.post.dto.response.PostDetailResponse;
 import com.example.finalproject.domain.post.dto.response.PostListResponse;
 import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
@@ -78,5 +80,21 @@ public class InfluencerController {
         Page<PostListResponse> postListResponses = listInfCommunityPost.map(PostListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postListResponses);
+    }
+
+    @ApiOperation(value = "커뮤니티 상세", tags = "인플루언서 - 커뮤니티")
+    @GetMapping(path = "/communities/{seq}")
+    public ResponseApi<PostDetailResponse> findDetailInfCommunityPost(
+            @PathVariable Integer seq,
+            // TODO : security 도입 후 user 인자로 변경 예정
+            Integer userSeq,
+            Pageable pageable
+    ) {
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailInfCommunityPost(seq, userSeq, pageable);
+        postService.updateViewCounts(seq);
+
+        PostDetailResponse detailResponse = PostDetailResponse.from(postWithCommentsDto);
+
+        return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
 }
