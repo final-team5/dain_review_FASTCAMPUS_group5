@@ -78,6 +78,9 @@ public class BusinessesService {
         User user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
 
+        user.setAddress(request.getAddress());
+        user.setAddressDetail(request.getAddressDetail());
+        userRepository.save(user);
 
         Businesses businesses = businessesRepository.findByUser(user)
                 .orElse(new Businesses());
@@ -92,7 +95,7 @@ public class BusinessesService {
         // TODO: 관리자 기능 구현
         Agency agency = new Agency();
         agency.setReason("신청 사유");
-        agency.setStatus(0);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
+        agency.setStatus(1);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
         agencyRepository.save(agency);
     }
 
