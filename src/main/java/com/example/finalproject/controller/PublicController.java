@@ -1,13 +1,11 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.user.dto.*;
 import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
 import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
 import com.example.finalproject.domain.user.dto.request.Login;
-import com.example.finalproject.domain.user.dto.LoginResponse;
-import com.example.finalproject.domain.user.dto.Register;
-import com.example.finalproject.domain.user.dto.SocialInfo;
 import com.example.finalproject.domain.user.dto.request.SocialLogin;
-import com.example.finalproject.domain.user.dto.UserInfo;
+import com.example.finalproject.domain.user.dto.response.UserInfluencerSaveResponse;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.exception.error.AuthErrorCode;
 import com.example.finalproject.global.exception.type.AuthException;
@@ -17,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
@@ -30,13 +30,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Api(tags = "공용")
 @RequestMapping("/api")
@@ -80,33 +76,45 @@ public class PublicController {
 
 	}
 
-	@ApiOperation(value = "회원 가입(인플루언서)", tags = "공개 - 회원")
-	@PostMapping("/influencers/signup")
-	public ResponseEntity<?> influencers_signup(@ModelAttribute InfluencerSignup signup){
-		Register register = new Register(signup);
-		register.setLoginType(1);
-		register.setRole("ROLE_INFLUENCER");
-		register.setType(2);
+	@ApiOperation(value = "회원 가입(인플루언서)", tags = "공개 - 회원", notes = "signupSource : PORTAL_SEARCH, SNS, INTRODUCTION_TO_ACQUAINTANCES, ETC 중")
+	@PostMapping(path = "/influencers/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseApi<?> influencers_signup(
+			@ModelAttribute InfluencerSignup influencerSignup,
+			@RequestPart(name = "profile", required = false) MultipartFile profile
+	) throws IOException {
+		UserInfluencerDto userInfluencerDto = userService.registerInfluencer(influencerSignup, profile);
+		UserInfluencerSaveResponse userInfluencerSaveResponse = UserInfluencerSaveResponse.from(userInfluencerDto);
 
-		JSONObject jo = new JSONObject();
-		UserInfo userInfo = userService.getUser(register.getEmail(), 1);
-
-		if(userService.checkEmail(register.getEmail())){
-			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
-		}
-		if(userService.checkNickname(register.getNickname())){
-			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
-		}
-		if(userService.checkPhone(register.getPhone())){
-			throw new AuthException(AuthErrorCode.PHONE_ALREADY_IN_USE);
-		}
-		String pw = passwordEncoder.encode(register.getPw());
-		register.setPw(pw);
-		userService.signup(register);
-
-		jo.put("message", "회원가입 되었습니다");
-		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+		return ResponseApi.success(HttpStatus.OK, userInfluencerSaveResponse);
 	}
+
+//	@ApiOperation(value = "회원 가입(인플루언서)", tags = "공개 - 회원")
+//	@PostMapping("/influencers/signup")
+//	public ResponseEntity<?> influencers_signup(@ModelAttribute InfluencerSignup signup){
+//		Register register = new Register(signup);
+//		register.setLoginType(1);
+//		register.setRole("ROLE_INFLUENCER");
+//		register.setType(2);
+//
+//		JSONObject jo = new JSONObject();
+//		UserInfo userInfo = userService.getUser(register.getEmail(), 1);
+//
+//		if(userService.checkEmail(register.getEmail())){
+//			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
+//		}
+//		if(userService.checkNickname(register.getNickname())){
+//			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
+//		}
+//		if(userService.checkPhone(register.getPhone())){
+//			throw new AuthException(AuthErrorCode.PHONE_ALREADY_IN_USE);
+//		}
+//		String pw = passwordEncoder.encode(register.getPw());
+//		register.setPw(pw);
+//		userService.signup(register);
+//
+//		jo.put("message", "회원가입 되었습니다");
+//		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+//	}
 
 	@ApiOperation(value = "회원 가입(사업자)", tags = "공개 - 회원")
 	@PostMapping("/businesses/signup")
