@@ -1,7 +1,10 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.user.dto.UserBusinessesDto;
 import com.example.finalproject.domain.user.dto.UserInfluencerDto;
+import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
 import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
+import com.example.finalproject.domain.user.dto.response.UserBusinessesSaveResponse;
 import com.example.finalproject.domain.user.dto.response.UserInfluencerSaveResponse;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.util.ResponseApi;
@@ -33,5 +36,17 @@ public class PublicControllerEx {
         UserInfluencerSaveResponse userInfluencerSaveResponse = UserInfluencerSaveResponse.from(userInfluencerDto);
 
         return ResponseApi.success(HttpStatus.OK, userInfluencerSaveResponse);
+    }
+
+    @ApiOperation(value = "회원 가입(사업자)", tags = "공개 - 회원", notes = "signupSource : PORTAL_SEARCH, SNS, INTRODUCTION_TO_ACQUAINTANCES, ETC 중")
+    @PostMapping(path = "/businesses/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseApi<?> businesses_signup(
+            @ModelAttribute BusinessesSignup businessesSignup,
+            @RequestPart(name = "profile", required = false) MultipartFile profile
+    ) throws IOException {
+        UserBusinessesDto userBusinessesDto = userService.registerBusinesses(businessesSignup, profile);
+        UserBusinessesSaveResponse userBusinessesSaveResponse = UserBusinessesSaveResponse.from(userBusinessesDto);
+
+        return ResponseApi.success(HttpStatus.OK, userBusinessesSaveResponse);
     }
 }
