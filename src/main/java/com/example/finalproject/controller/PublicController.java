@@ -5,6 +5,7 @@ import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
 import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
 import com.example.finalproject.domain.user.dto.request.Login;
 import com.example.finalproject.domain.user.dto.request.SocialLogin;
+import com.example.finalproject.domain.user.dto.response.UserBusinessesSaveResponse;
 import com.example.finalproject.domain.user.dto.response.UserInfluencerSaveResponse;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.exception.error.AuthErrorCode;
@@ -88,60 +89,16 @@ public class PublicController {
 		return ResponseApi.success(HttpStatus.OK, userInfluencerSaveResponse);
 	}
 
-//	@ApiOperation(value = "회원 가입(인플루언서)", tags = "공개 - 회원")
-//	@PostMapping("/influencers/signup")
-//	public ResponseEntity<?> influencers_signup(@ModelAttribute InfluencerSignup signup){
-//		Register register = new Register(signup);
-//		register.setLoginType(1);
-//		register.setRole("ROLE_INFLUENCER");
-//		register.setType(2);
-//
-//		JSONObject jo = new JSONObject();
-//		UserInfo userInfo = userService.getUser(register.getEmail(), 1);
-//
-//		if(userService.checkEmail(register.getEmail())){
-//			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
-//		}
-//		if(userService.checkNickname(register.getNickname())){
-//			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
-//		}
-//		if(userService.checkPhone(register.getPhone())){
-//			throw new AuthException(AuthErrorCode.PHONE_ALREADY_IN_USE);
-//		}
-//		String pw = passwordEncoder.encode(register.getPw());
-//		register.setPw(pw);
-//		userService.signup(register);
-//
-//		jo.put("message", "회원가입 되었습니다");
-//		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
-//	}
+	@ApiOperation(value = "회원 가입(사업자)", tags = "공개 - 회원", notes = "signupSource : PORTAL_SEARCH, SNS, INTRODUCTION_TO_ACQUAINTANCES, ETC 중")
+	@PostMapping(path = "/businesses/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseApi<?> businesses_signup(
+			@ModelAttribute BusinessesSignup businessesSignup,
+			@RequestPart(name = "profile", required = false) MultipartFile profile
+	) throws IOException {
+		UserBusinessesDto userBusinessesDto = userService.registerBusinesses(businessesSignup, profile);
+		UserBusinessesSaveResponse userBusinessesSaveResponse = UserBusinessesSaveResponse.from(userBusinessesDto);
 
-	@ApiOperation(value = "회원 가입(사업자)", tags = "공개 - 회원")
-	@PostMapping("/businesses/signup")
-	public ResponseEntity<?> businesses_signup(@ModelAttribute BusinessesSignup signup){
-		Register register = new Register(signup);
-		register.setLoginType(1);
-		register.setRole("ROLE_BUSINESSES");
-		register.setType(1);
-
-		JSONObject jo = new JSONObject();
-		UserInfo userInfo = userService.getUser(register.getEmail(), 1);
-
-		if(userService.checkEmail(register.getEmail())){
-			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
-		}
-		if(userService.checkNickname(register.getNickname())){
-			throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_IN_USE);
-		}
-		if(userService.checkPhone(register.getPhone())){
-			throw new AuthException(AuthErrorCode.PHONE_ALREADY_IN_USE);
-		}
-		String pw = passwordEncoder.encode(register.getPw());
-		register.setPw(pw);
-		userService.signup(register);
-
-		jo.put("message", "회원가입 되었습니다");
-		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
+		return ResponseApi.success(HttpStatus.OK, userBusinessesSaveResponse);
 	}
 
 	@ApiOperation(value = "닉네임 중복 체크", tags = "공개 - 회원")
