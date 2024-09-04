@@ -1,20 +1,19 @@
 package com.example.finalproject.domain.user.service;
 
 import com.example.finalproject.domain.user.dto.Register;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
-import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
-import com.example.finalproject.global.util.FileUtils;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -92,6 +91,7 @@ public class UserService {
 		return userRepository.existsByPhone(phone);
 	}
 
+	@Transactional
 	public void signup(Register register) {
 		String id = UUID.randomUUID().toString();
 		User user = new User();
