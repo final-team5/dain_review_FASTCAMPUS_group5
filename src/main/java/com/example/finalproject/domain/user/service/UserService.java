@@ -11,7 +11,7 @@ import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.util.FileUtils;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class UserService {
 	private final BusinessesRepository businessesRepository;
 
 	public UserInfo getUser(String email, Integer loginType) {
-		User user = userRepository.getByEmailAndType(email, loginType);
+		User user = userRepository.getByEmailAndLoginType(email, loginType);
 
 		return UserInfo.builder()
 			.seq(user.getSeq())
@@ -35,7 +35,6 @@ public class UserService {
 			.role(user.getRole())
 			.name(user.getName())
 			.phone(user.getPhone())
-			.createDate(user.getCreateDate())
 			.signupSource(user.getSignupSource())
 			.postalCode(user.getPostalCode())
 			.address(user.getAddress())
@@ -49,8 +48,12 @@ public class UserService {
 			;
 	}
 
+	public Optional<User> getU(String email, Integer loginType) {
+		return userRepository.findByEmailAndLoginType(email, loginType);
+	}
+
 	public UserInfo findByUsername(String username) {
-		User user = userRepository.findByUsername(username)
+		User user = userRepository.findByName(username)
 				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
 		return UserInfo.builder()
@@ -61,7 +64,6 @@ public class UserService {
 				.role(user.getRole())
 				.name(user.getName())
 				.phone(user.getPhone())
-				.createDate(user.getCreateDate())
 				.signupSource(user.getSignupSource())
 				.postalCode(user.getPostalCode())
 				.address(user.getAddress())
@@ -92,49 +94,29 @@ public class UserService {
 
 	public void signup(Register register) {
 		String id = UUID.randomUUID().toString();
-		User user = User.builder()
-			.id(id)
-			.pw(register.getPw())
-			.email(register.getEmail())
-			.name(register.getName())
-			.phone(register.getPhone())
-			.signupSource(register.getSignupSource())
-			.type(register.getType())
-			.postalCode(Integer.valueOf(register.getPostalCode()))
-			.address(register.getAddress())
-			.addressDetail(register.getAddressDetail())
-			.loginType(register.getLoginType())
-			.role(register.getRole())
-			.build()
-			;
-
-		if (register.getProfile() != null) {
+		User user = new User();
+		/*if (register.getProfile() != null) {
 			String fileName = FileUtils.setNewName(register.getFileName());
 			FileUtils.saveFile(register.getProfile(), id + "/" + fileName);
 			user.setProfile(fileName);
-		}
+		}*/
+		user.userEntity(id, register);
 
 		userRepository.save(user);
 
 		if (register.getRole().equals("ROLE_INFLUENCER")) {
-			influencerRepository.save(Influencer.builder()
-				.user(user)
-				.nickname(register.getNickname())
-				.gender(String.valueOf(register.getGender()))
-				.birthdate(LocalDate.parse(register.getBirthdate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-				.blogLink(register.getBlog())
-				.instagramLink(register.getInstagram())
-				.youtubeLink(register.getYoutube())
-				.tiktokLink(register.getTiktok())
-				.otherLink(register.getOther())
-				.build()
-			);
+			Influencer influencer = new Influencer();
+			influencer.influencerEntity(user, register);
+
+			influencerRepository.save(influencer);
 		} else if (register.getRole().equals("ROLE_BUSINESSES")) {
-			businessesRepository.save(Businesses.builder()
+			Businesses businesses = Businesses.builder()
 				.user(user)
 				.company(register.getCompany())
 				.build()
-		); }
+				;
+			businessesRepository.save(businesses);
+		}
 	}
 
 

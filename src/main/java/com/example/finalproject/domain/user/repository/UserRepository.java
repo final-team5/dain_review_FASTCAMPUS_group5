@@ -10,14 +10,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-	Optional<User> findByEmailAndType(String email, Integer type);
-	Optional<User> findByUsername(String username);
+	Optional<User> findByEmailAndLoginType(String email, Integer type);
 	boolean existsByEmail(String email);
 	boolean existsByPhone(String phone);
 
-	default User getByEmailAndType(String email, Integer type) {
-		return findByEmailAndType(email, type).orElseThrow(
+	default User getByEmailAndLoginType(String email, Integer type) {
+		return findByEmailAndLoginType(email, type).orElseThrow(
 			() -> new AuthException(AuthErrorCode.NOT_FOUND_USER)
 		);
 	}
+
+	Optional<User> findByName(String name);
 }
