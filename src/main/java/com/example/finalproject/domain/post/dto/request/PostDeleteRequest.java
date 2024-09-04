@@ -12,12 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostCommentUpdateRequest {
+public class PostDeleteRequest {
 
-    private Integer postSeq;
-
-    private Integer postCommentSeq;
-
-    private String comment;
+    private Integer seq;
 
 }

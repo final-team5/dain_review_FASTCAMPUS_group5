@@ -9,20 +9,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostFollowSaveRequest {
+public class PostUpdateRequest {
+
+    @NotNull
+    private Integer seq;
 
     @NotBlank
     private PostType category;
 
     @NotBlank
-    private String contents;
+    private String title;
 
     @NotBlank
-    private String title;
+    private String contents;
 }

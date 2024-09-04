@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostFollowResponse {
+public class PostResponse {
 
     private Integer postSeq;
     private Integer userSeq;
@@ -22,12 +22,12 @@ public class PostFollowResponse {
     private String title;
     private String contents;
 
-    public static PostFollowResponse of(Integer postSeq, Integer userSeq, String postCategory, String postType, String title, String contents) {
-        return new PostFollowResponse(postSeq, userSeq, postCategory, postType, title, contents);
+    public static PostResponse of(Integer postSeq, Integer userSeq, String postCategory, String postType, String title, String contents) {
+        return new PostResponse(postSeq, userSeq, postCategory, postType, title, contents);
     }
 
-    public static PostFollowResponse from(PostDto postDto) {
-        return PostFollowResponse.of(
+    public static PostResponse from(PostDto postDto) {
+        return PostResponse.of(
                 postDto.getSeq(),
                 postDto.getUserDto().getSeq(),
                 postDto.getPostCategory(),

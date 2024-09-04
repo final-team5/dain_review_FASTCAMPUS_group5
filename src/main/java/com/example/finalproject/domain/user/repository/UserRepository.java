@@ -4,9 +4,10 @@ import com.example.finalproject.domain.user.entity.User;
 
 import com.example.finalproject.global.exception.error.AuthErrorCode;
 import com.example.finalproject.global.exception.type.AuthException;
-import java.util.List;
-import java.util.Optional;
+import com.example.finalproject.global.exception.type.ValidException;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
@@ -21,4 +22,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	}
 
 	Optional<User> findByName(String name);
+
+	default User getUserBySeqOrException(Integer userSeq) {
+		return findById(userSeq).orElseThrow(
+				() -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
+		);
+	}
+
 }
