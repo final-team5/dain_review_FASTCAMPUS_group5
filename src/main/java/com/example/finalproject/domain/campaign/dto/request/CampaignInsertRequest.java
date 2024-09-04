@@ -23,28 +23,28 @@ public class CampaignInsertRequest {
     @ApiModelProperty(value = "상품 URL", required = true, example = "https://example.com/campaign")
     private String campaignLink;
 
-    @ApiModelProperty(value = "카테고리", required = true, example = "맛집")
+    @ApiModelProperty(value = "카테고리", required = true, example = "여행")
     private int category;
 
-    @ApiModelProperty(value = "도시 분류", required = true, example = "서울")
+    @ApiModelProperty(value = "도시 분류", required = true, example = "부산")
     private String city;
 
     @ApiModelProperty(value = "내용", required = true, example = "체험단에 대한 상세 내용입니다.")
     private String contents;
 
-    @ApiModelProperty(value = "구", required = true, example = "강남구")
+    @ApiModelProperty(value = "구", required = true, example = "사하구")
     private String district;
 
     @ApiModelProperty(value = "체험 마감일", required = true, example = "2024-10-15")
     private String experienceEndDate;
 
-    @ApiModelProperty(value = "체험 가능 마감 시간", required = false, example = "18:00")
+    @ApiModelProperty(value = "체험 가능 마감 시간", required = false, example = "11:00")
     private String experienceEndTime;
 
     @ApiModelProperty(value = "체험 시작일", required = true, example = "2024-10-01")
     private String experienceStartDate;
 
-    @ApiModelProperty(value = "체험 가능 시작 시간", required = false, example = "10:00")
+    @ApiModelProperty(value = "체험 가능 시작 시간", required = false, example = "15:00")
     private String experienceStartTime;
 
     @ApiModelProperty(value = "금요일 가능 여부", required = false, example = "true")
@@ -53,22 +53,22 @@ public class CampaignInsertRequest {
     @ApiModelProperty(value = "보여지는 이미지 URL", required = false, example = "https://example.com/image.png")
     private String image;
 
-    @ApiModelProperty(value = "추가할 키워드 1", required = false, example = "인천휴가")
+    @ApiModelProperty(value = "추가할 키워드 1", required = false, example = "부산휴가")
     private String keyword1;
 
-    @ApiModelProperty(value = "추가할 키워드 2", required = false, example = "인천행사")
+    @ApiModelProperty(value = "추가할 키워드 2", required = false, example = "부산호텔")
     private String keyword2;
 
-    @ApiModelProperty(value = "추가할 키워드 3", required = false, example = "인천이벤트")
+    @ApiModelProperty(value = "추가할 키워드 3", required = false, example = "부산숙소")
     private String keyword3;
 
-    @ApiModelProperty(value = "기본 주소", required = false, example = "인천광역시 연수구 센트럴로 313")
+    @ApiModelProperty(value = "기본 주소", required = false, example = "부산 사하구 낙동남로 2043")
     private String address;
 
     @ApiModelProperty(value = "상세 주소", required = false, example = "다인기획")
     private String addressDetail;
 
-    @ApiModelProperty(value = "미션", required = false, example = "리뷰 작성하기")
+    @ApiModelProperty(value = "미션", required = false, example = "네이버 예약 후 방문 필수, 네이버 예약 후 후기 필수로 작성부탁드립니다.")
     private String mission;
 
     @ApiModelProperty(value = "월요일 가능 여부", required = false, example = "true")
@@ -77,19 +77,19 @@ public class CampaignInsertRequest {
     @ApiModelProperty(value = "플랫폼", required = true, example = "블로그")
     private String platform;
 
-    @ApiModelProperty(value = "포인트", required = false, example = "5000")
+    @ApiModelProperty(value = "포인트", required = false, example = "100000")
     private int point;
 
-    @ApiModelProperty(value = "모집 인수", required = true, example = "10")
+    @ApiModelProperty(value = "모집 인수", required = true, example = "5")
     private int recruiter;
 
-    @ApiModelProperty(value = "토요일 가능 여부", required = false, example = "true")
+    @ApiModelProperty(value = "토요일 가능 여부", required = false, example = "false")
     private boolean saturday;
 
     @ApiModelProperty(value = "제공 서비스/물품", required = false, example = "당일 숙박권")
     private String service;
 
-    @ApiModelProperty(value = "일요일 가능 여부", required = false, example = "true")
+    @ApiModelProperty(value = "일요일 가능 여부", required = false, example = "false")
     private boolean sunday;
 
     @ApiModelProperty(value = "목요일 가능 여부", required = false, example = "true")

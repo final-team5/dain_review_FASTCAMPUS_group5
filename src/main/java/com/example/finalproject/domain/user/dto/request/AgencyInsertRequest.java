@@ -16,24 +16,24 @@ import lombok.NoArgsConstructor;
 @ApiModel(description = "대행사 신청에 필요한 요청 정보")
 public class AgencyInsertRequest {
 
-    @ApiModelProperty(value = "회사명", required = true, example = "패스트캠퍼스")
+    @ApiModelProperty(value = "회사명", required = true, example = "하이파이브 앰버서더 호텔")
     private String company;
 
     @ApiModelProperty(value = "사업자번호", required = true, example = "123-45-67890")
     private String businessNumber;
 
-    @ApiModelProperty(value = "대표자명", required = true, example = "김패캠")
+    @ApiModelProperty(value = "대표자명", required = true, example = "김대표")
     private String representative;
 
     @ApiModelProperty(value = "첨부파일 경로 또는 이름", required = false, example = "example.pdf")
     private String attachment;
 
-    @ApiModelProperty(value = "우편번호", required = true, example = "22006")
+    @ApiModelProperty(value = "우편번호", required = true, example = "45609")
     private String postalCode;
 
-    @ApiModelProperty(value = "주소", required = true, example = "인천광역시 연수구 센트럴로 313")
+    @ApiModelProperty(value = "주소", required = true, example = "부산 사하구 낙동남로 2043")
     private String address;
 
-    @ApiModelProperty(value = "상세주소", required = true, example = "다인기획")
+    @ApiModelProperty(value = "상세주소", required = true, example = "")
     private String addressDetail;
 }
