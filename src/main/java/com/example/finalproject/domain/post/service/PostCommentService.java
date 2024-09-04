@@ -27,17 +27,17 @@ public class PostCommentService {
     /**
      * 게시글에 댓글 저장
      *
-     * @param userSeq : 회원 ID
+     * @param userEmail : 회원 email ID
      * @param postSeq : 게시글 ID
      * @param postCommentSeq : 댓글 ID (답글인 경우 사용)
      * @param comment : 게시글 댓글
      * @return PostCommentDto
      */
     @Transactional
-    public PostCommentDto save(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
+    public PostCommentDto save(String userEmail, Integer postSeq, Integer postCommentSeq, String comment) {
         Post post = postRepository.getPostBySeqOrException(postSeq);
 
-        User user = userRepository.getUserBySeqOrException(userSeq);
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         PostComment postComment = PostComment.of(user, post, comment);
 
@@ -58,10 +58,10 @@ public class PostCommentService {
      * @return PostCommentDto
      */
     @Transactional
-    public PostCommentDto update(Integer userSeq, Integer postSeq, Integer postCommentSeq, String comment) {
+    public PostCommentDto update(String userEmail, Integer postSeq, Integer postCommentSeq, String comment) {
         Post post = postRepository.getPostBySeqOrException(postSeq);
 
-        User user = userRepository.getUserBySeqOrException(userSeq);
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         PostComment postComment = postCommentRepository.getPostCommentBySeqOrException(postCommentSeq);
 
@@ -78,11 +78,11 @@ public class PostCommentService {
      * 게시글에 댓글 삭제
      *
      * @param postCommentSeq : 삭제할 댓글 ID
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 email ID
      */
     @Transactional
-    public void delete(Integer postCommentSeq, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public void delete(Integer postCommentSeq, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         PostComment postComment = postCommentRepository.getPostCommentBySeqOrException(postCommentSeq);
 
