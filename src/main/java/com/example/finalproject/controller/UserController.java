@@ -21,15 +21,20 @@ import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 @Api(tags = "회원")
 @RequestMapping(path = "/user")
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class UserController {
@@ -138,8 +143,10 @@ public class UserController {
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
             // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+//            Integer userSeq
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
+        log.info("username : {}", userDetails.getUsername());
         Page<PostDto> listFollowPost = postService.findListFollowPost(searchType, searchWord, pageable);
         Page<PostListResponse> postFollowListResponses = listFollowPost.map(PostListResponse::from);
 
