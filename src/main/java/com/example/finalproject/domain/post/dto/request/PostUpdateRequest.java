@@ -21,7 +21,6 @@ public class PostUpdateRequest {
     @NotNull
     private Integer seq;
 
-    @NotBlank
     private PostType category;
 
     @NotBlank

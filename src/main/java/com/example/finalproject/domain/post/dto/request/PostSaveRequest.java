@@ -17,7 +17,6 @@ import javax.validation.constraints.NotBlank;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostSaveRequest {
 
-    @NotBlank
     private PostType category;
 
     @NotBlank
