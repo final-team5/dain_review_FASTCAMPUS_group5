@@ -2,6 +2,7 @@ package com.example.finalproject.domain.user.dto;
 
 import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
 import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
+import com.example.finalproject.domain.user.dto.request.InfluencerSocialSignup;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.IOException;
@@ -65,12 +66,12 @@ public class Register {
 		this.addressDetail = signup.getAddressDetail();
 		this.birthdate = signup.getBirthdate();
 		this.gender = signup.getGender();
-		try {
+		/*try {
 			this.profile = signup.getProfile().getBytes();
 			this.fileName = signup.getProfile().getOriginalFilename();
 		} catch (IOException e){
 			System.out.println(e);
-		}
+		}*/
 	}
 
 	public Register(BusinessesSignup signup){
@@ -91,30 +92,30 @@ public class Register {
 		}
 	}
 
-//	public Register(InfluencerSocialSignup signup){
-//		this.loginType = signup.getLoginType();
-//		this.name = signup.getName();
-//		this.phone = signup.getPhone();
-//		this.nickname = signup.getNickname();
-//		this.signupSource = signup.getSignupSource();
-//		this.blog = signup.getBlog();
-//		this.instagram = signup.getInstagram();
-//		this.youtube = signup.getYoutube();
-//		this.tiktok = signup.getTiktok();
-//		this.other = signup.getOther();
-//		this.postalCode = signup.getPostalCode();
-//		this.address = signup.getAddress();
-//		this.addressDetail = signup.getAddressDetail();
-//		this.birthdate = signup.getBirthdate();
-//		this.gender = signup.getGender();
-//
-//		try {
-//			this.profile = signup.getProfile().getBytes();
-//			this.fileName = signup.getProfile().getOriginalFilename();
-//		} catch (IOException e){
-//			System.out.println(e);
-//		}
-//	}
+	public Register(InfluencerSocialSignup signup){
+		this.loginType = signup.getLoginType();
+		this.name = signup.getName();
+		this.phone = signup.getPhone();
+		this.nickname = signup.getNickname();
+		this.signupSource = signup.getSignupSource();
+		this.blog = signup.getBlog();
+		this.instagram = signup.getInstagram();
+		this.youtube = signup.getYoutube();
+		this.tiktok = signup.getTiktok();
+		this.other = signup.getOther();
+		this.postalCode = signup.getPostalCode();
+		this.address = signup.getAddress();
+		this.addressDetail = signup.getAddressDetail();
+		this.birthdate = signup.getBirthdate();
+		this.gender = signup.getGender();
+
+		try {
+			this.profile = signup.getProfile().getBytes();
+			this.fileName = signup.getProfile().getOriginalFilename();
+		} catch (IOException e){
+			System.out.println(e);
+		}
+	}
 //
 //	public Register(BusinessesSocialSignup signup){
 //		this.loginType = signup.getLoginType();

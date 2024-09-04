@@ -1,19 +1,20 @@
 package com.example.finalproject.domain.user.entity;
 
 
+import com.example.finalproject.domain.user.dto.Register;
+import java.time.LocalDate;
+import java.util.Arrays;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor()
 @Table(name = "users")
-@Builder
 @Entity
 public class User {
 
@@ -46,7 +47,7 @@ public class User {
     private Integer loginType;
 
     @Column(name = "create_date")
-    private Date createDate;
+    private LocalDate createDate;
 
     @Column(name = "sign_up_source", length = 50)
     private String signupSource;
@@ -69,4 +70,37 @@ public class User {
     private Integer penalty;
 
     private Integer type;
+
+    public void userEntity(String id, Register register) {
+        this.email = register.getEmail();
+        this.id = id;
+        this.pw = register.getPw();
+        this.role = register.getRole();
+        this.name = register.getName();
+        this.phone = register.getPhone();
+        this.createDate = LocalDate.now();
+        this.loginType = register.getLoginType();
+        this.type = register.getType();
+
+        if (register.getProfile() != null) {
+            this.profile = Arrays.toString(register.getProfile());
+        } else {
+            this.profile = null;
+        }
+        if (register.getPostalCode() != null) {
+            this.postalCode = Integer.valueOf(register.getPostalCode());
+        } else {
+            this.postalCode = null;
+        }
+        if (register.getAddress() != null) {
+            this.address = register.getAddress();
+        } else {
+            this.address = null;
+        }
+        if (register.getAddressDetail() != null) {
+            this.addressDetail = register.getAddressDetail();
+        } else {
+            this.addressDetail = null;
+        }
+    }
 }
