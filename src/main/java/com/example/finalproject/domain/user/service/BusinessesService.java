@@ -21,6 +21,7 @@ import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.AgencyRepository;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
+import com.google.api.client.util.DateTime;
 import lombok.SneakyThrows;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -122,7 +123,27 @@ public class BusinessesService {
         campaign.setExperienceEndDate(parseDate(insert.getExperienceEndDate()));
         campaign.setRecruiter(userSeq);
         campaign.setStatus(CampaignStatus.DRAFT.getCode());
-        campaign.setType(String.valueOf(insert.getType()));
+        campaign.setType(insert.getType());
+
+        campaign.setCategory(String.valueOf(insert.getCategory()));
+        campaign.setPlatform(insert.getPlatform());
+        campaign.setImage(insert.getImage());
+        campaign.setKeyword1(insert.getKeyword1());
+        campaign.setKeyword2(insert.getKeyword2());
+        campaign.setKeyword3(insert.getKeyword3());
+        campaign.setMission(insert.getMission());
+        campaign.setMonday(insert.isMonday() ? 1 : 0);
+        campaign.setTuesday(insert.isTuesday() ? 1 : 0);
+        campaign.setWednesday(insert.isWednesday() ? 1 : 0);
+        campaign.setThursday(insert.isThursday() ? 1 : 0);
+        campaign.setFriday(insert.isFriday() ? 1 : 0);
+        campaign.setSaturday(insert.isSaturday() ? 1 : 0);
+        campaign.setSunday(insert.isSunday() ? 1 : 0);
+        campaign.setPoint(insert.getPoint());
+        campaign.setService(insert.getService());
+        campaign.setExperienceStartTime(insert.getExperienceStartTime() != null ? new DateTime(insert.getExperienceStartTime()) : null);
+        campaign.setExperienceEndTime(insert.getExperienceEndTime() != null ? new DateTime(insert.getExperienceEndTime()) : null);
+        campaign.setSegment(insert.getSegment());
 
         campaignRepository.save(campaign);
     }
