@@ -1,20 +1,19 @@
 package com.example.finalproject.domain.user.service;
 
 import com.example.finalproject.domain.user.dto.Register;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
-import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
-import com.example.finalproject.global.util.FileUtils;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class UserService {
 	private final BusinessesRepository businessesRepository;
 
 	public UserInfo getUser(String email, Integer loginType) {
-		User user = userRepository.getByEmailAndType(email, loginType);
+		User user = userRepository.getByEmailAndLoginType(email, loginType);
 
 		return UserInfo.builder()
 			.seq(user.getSeq())
@@ -35,7 +34,6 @@ public class UserService {
 			.role(user.getRole())
 			.name(user.getName())
 			.phone(user.getPhone())
-			.createDate(user.getCreateDate())
 			.signupSource(user.getSignupSource())
 			.postalCode(user.getPostalCode())
 			.address(user.getAddress())
@@ -47,6 +45,10 @@ public class UserService {
 			.type(user.getType())
 			.build()
 			;
+	}
+
+	public Optional<User> getU(String email, Integer loginType) {
+		return userRepository.findByEmailAndLoginType(email, loginType);
 	}
 
 	public UserInfo findByUsername(String username) {
@@ -61,7 +63,6 @@ public class UserService {
 				.role(user.getRole())
 				.name(user.getName())
 				.phone(user.getPhone())
-				.createDate(user.getCreateDate())
 				.signupSource(user.getSignupSource())
 				.postalCode(user.getPostalCode())
 				.address(user.getAddress())
@@ -90,51 +91,32 @@ public class UserService {
 		return userRepository.existsByPhone(phone);
 	}
 
+	@Transactional
 	public void signup(Register register) {
 		String id = UUID.randomUUID().toString();
-		User user = User.builder()
-			.id(id)
-			.pw(register.getPw())
-			.email(register.getEmail())
-			.name(register.getName())
-			.phone(register.getPhone())
-			.signupSource(register.getSignupSource())
-			.type(register.getType())
-			.postalCode(Integer.valueOf(register.getPostalCode()))
-			.address(register.getAddress())
-			.addressDetail(register.getAddressDetail())
-			.loginType(register.getLoginType())
-			.role(register.getRole())
-			.build()
-			;
-
-		if (register.getProfile() != null) {
+		User user = new User();
+		/*if (register.getProfile() != null) {
 			String fileName = FileUtils.setNewName(register.getFileName());
 			FileUtils.saveFile(register.getProfile(), id + "/" + fileName);
 			user.setProfile(fileName);
-		}
+		}*/
+		user.userEntity(id, register);
 
 		userRepository.save(user);
 
 		if (register.getRole().equals("ROLE_INFLUENCER")) {
-			influencerRepository.save(Influencer.builder()
-				.user(user)
-				.nickname(register.getNickname())
-				.gender(String.valueOf(register.getGender()))
-				.birthdate(LocalDate.parse(register.getBirthdate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-				.blogLink(register.getBlog())
-				.instagramLink(register.getInstagram())
-				.youtubeLink(register.getYoutube())
-				.tiktokLink(register.getTiktok())
-				.otherLink(register.getOther())
-				.build()
-			);
+			Influencer influencer = new Influencer();
+			influencer.influencerEntity(user, register);
+
+			influencerRepository.save(influencer);
 		} else if (register.getRole().equals("ROLE_BUSINESSES")) {
-			businessesRepository.save(Businesses.builder()
+			Businesses businesses = Businesses.builder()
 				.user(user)
 				.company(register.getCompany())
 				.build()
-		); }
+				;
+			businessesRepository.save(businesses);
+		}
 	}
 
 

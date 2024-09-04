@@ -11,9 +11,9 @@ import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowListResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowResponse;
+import com.example.finalproject.domain.post.dto.response.PostDetailResponse;
+import com.example.finalproject.domain.post.dto.response.PostListResponse;
+import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
@@ -21,15 +21,20 @@ import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 @Api(tags = "회원")
 @RequestMapping(path = "/user")
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class UserController {
@@ -77,28 +82,28 @@ public class UserController {
     }
 
 
-    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티")
+    @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티", notes = "category : BLOG, INSTAGRAM, TIKTOK, YOUTUBE, ETC 중")
     @PostMapping(path = "/community")
-    public ResponseApi<PostFollowResponse> saveFollowPost(
-            @RequestBody PostFollowSaveRequest postFollowSaveRequest,
+    public ResponseApi<PostResponse> saveFollowPost(
+            @RequestBody PostSaveRequest postSaveRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostDto postDto = postService.saveFollowPost(postFollowSaveRequest.getCategory(), postFollowSaveRequest.getContents(), postFollowSaveRequest.getTitle(), userSeq);
-        PostFollowResponse postFollowResponse = PostFollowResponse.from(postDto);
+        PostDto postDto = postService.saveFollowPost(postSaveRequest.getCategory(), postSaveRequest.getContents(), postSaveRequest.getTitle(), userSeq);
+        PostResponse postResponse = PostResponse.from(postDto);
 
-        return ResponseApi.success(HttpStatus.OK, postFollowResponse);
+        return ResponseApi.success(HttpStatus.OK, postResponse);
     }
 
     @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 커뮤니티")
     @PutMapping(path = "/community")
-    public ResponseApi<PostFollowResponse> updateFollowPost(
-            @RequestBody PostFollowUpdateRequest postFollowUpdateRequest,
+    public ResponseApi<PostResponse> updateFollowPost(
+            @RequestBody PostUpdateRequest postUpdateRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        PostDto postDto = postService.updateFollowPost(postFollowUpdateRequest.getSeq(), postFollowUpdateRequest.getCategory(), postFollowUpdateRequest.getContents(), postFollowUpdateRequest.getTitle(), userSeq);
-        PostFollowResponse postFollowUpdateResponse = PostFollowResponse.from(postDto);
+        PostDto postDto = postService.updateFollowPost(postUpdateRequest.getSeq(), postUpdateRequest.getCategory(), postUpdateRequest.getContents(), postUpdateRequest.getTitle(), userSeq);
+        PostResponse postFollowUpdateResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postFollowUpdateResponse);
     }
@@ -106,18 +111,18 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 삭제", tags = "사용자 - 커뮤니티")
     @DeleteMapping(path = "/communities")
     public ResponseApi<String> deleteFollowPost(
-            @RequestBody PostFollowDeleteRequest postFollowDeleteRequest,
+            @RequestBody PostDeleteRequest postDeleteRequest,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq
     ) {
-        postService.deleteFollowPost(postFollowDeleteRequest.getSeq(), userSeq);
+        postService.deletePost(postDeleteRequest.getSeq(), userSeq);
 
         return ResponseApi.success(HttpStatus.OK, "follow post delete success");
     }
 
     @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 커뮤니티")
     @GetMapping(path = "/community/{seq}")
-    public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
+    public ResponseApi<PostDetailResponse> findDetailFollowPost(
             @PathVariable Integer seq,
             // TODO : security 도입 후 user 인자로 변경 예정
             Integer userSeq,
@@ -126,22 +131,24 @@ public class UserController {
         PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq, pageable);
         postService.updateViewCounts(seq);
 
-        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
+        PostDetailResponse detailResponse = PostDetailResponse.from(postWithCommentsDto);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
 
     @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 커뮤니티")
     @GetMapping(path = "/communities")
-    public ResponseApi<Page<PostFollowListResponse>> findListFollowPost(
+    public ResponseApi<Page<PostListResponse>> findListFollowPost(
             @RequestParam(required = false) SearchType searchType,
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
             // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+//            Integer userSeq
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
+        log.info("username : {}", userDetails.getUsername());
         Page<PostDto> listFollowPost = postService.findListFollowPost(searchType, searchWord, pageable);
-        Page<PostFollowListResponse> postFollowListResponses = listFollowPost.map(PostFollowListResponse::from);
+        Page<PostListResponse> postFollowListResponses = listFollowPost.map(PostListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postFollowListResponses);
     }
