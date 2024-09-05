@@ -152,7 +152,7 @@ public class PublicController {
 		register.setRole("ROLE_BUSINESSES");
 		register.setType(1);
 
-		userService.getUser(register.getEmail(), 1);
+		userService.getU(register.getEmail(), 1);
 
 		if(userService.checkEmail(register.getEmail())){
 			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
