@@ -1,12 +1,16 @@
 package com.example.finalproject.domain.post.service;
 
 import com.example.finalproject.domain.post.dto.PostDto;
+import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
+import com.example.finalproject.domain.post.dto.request.InfCommunitySaveRequest;
 import com.example.finalproject.domain.post.entity.Post;
 import com.example.finalproject.domain.post.entity.PostCategories;
+import com.example.finalproject.domain.post.entity.PostComment;
 import com.example.finalproject.domain.post.entity.PostTypes;
 import com.example.finalproject.domain.post.entity.enums.PostCategory;
 import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
+import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.post.repository.PostTypesRepository;
 import com.example.finalproject.domain.user.entity.User;
@@ -14,16 +18,19 @@ import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostCommentRepository postCommentRepository;
     private final UserRepository userRepository;
     private final PostTypesRepository postTypesRepository;
 
@@ -104,12 +111,13 @@ public class PostService {
      * @param userSeq : 로그인한 사용자 ID
      * @return PostDto
      */
-    public PostDto findDetailFollowPost(Integer seq, Integer userSeq) {
+    public PostWithCommentsDto findDetailFollowPost(Integer seq, Integer userSeq, Pageable pageable) {
         User user = userRepository.getUserBySeqOrException(userSeq);
 
         Post post = postRepository.getPostBySeqOrException(seq);
+        Page<PostComment> postComments = postCommentRepository.findAllByPost(post, pageable);
 
-        return PostDto.from(post);
+        return PostWithCommentsDto.from(post, postComments);
     }
 
     /**
@@ -148,6 +156,28 @@ public class PostService {
             default:
                 throw new ValidException(ValidErrorCode.POST_SEARCH_TYPE_NOT_FOUND);
         }
+    }
+
+    /**
+     * 인플루언서 커뮤니티 게시글 등록 기능.
+     *
+     * @param infCommunitySaveRequest : 게시글 등록 요청 정보
+     * @param userSeq : 로그인한 사용자 ID 값
+     * @return PostDto
+     */
+    @Transactional
+    public PostDto saveInfCommunityPost(InfCommunitySaveRequest infCommunitySaveRequest, Integer userSeq) {
+        User user = userRepository.getUserBySeqOrException(userSeq);
+
+        PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(infCommunitySaveRequest.getCategory());
+
+        PostCategories postCategories = PostCategories.of(3, PostCategory.COMMUNITY_INFLUENCER);
+
+        Post post = Post.of(user, postCategories, postTypes, infCommunitySaveRequest.getTitle(), infCommunitySaveRequest.getContents(), 0);
+
+        Post savedPost = postRepository.save(post);
+
+        return PostDto.from(savedPost);
     }
 
 

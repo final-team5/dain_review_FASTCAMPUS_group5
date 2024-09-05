@@ -1,4 +1,4 @@
-package com.example.finalproject.domain.post.dto.request;
+package com.example.finalproject.domain.campaign.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -10,14 +10,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostCommentUpdateRequest {
-
-    private Integer postSeq;
-
-    private Integer postCommentSeq;
-
-    private String comment;
-
+public class CampaignWithApplicantCount {
+    private Campaign campaign;
+    private long applicantCount;
 }

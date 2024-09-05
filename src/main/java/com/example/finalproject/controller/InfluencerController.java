@@ -41,7 +41,6 @@ public class InfluencerController {
     )
     {
         PostDto postDto = influencerService.createInfluencerPost(influencerCreatePostRequest, details.getUsername());
-
         return ResponseApi.success(HttpStatus.CREATED, postDto);
     }
 
@@ -72,13 +71,15 @@ public class InfluencerController {
     // ResponseDto 필요
     @ApiOperation(value = "커뮤니티 글 상세 조회", tags = "인플루언서 - 커뮤니티")
     @GetMapping("/{seq}/")
-    public ResponseApi<?> getInfluencerDeteailPost(
+    public ResponseApi<?> getInfluencerDetailPost(
             @AuthenticationPrincipal UserDetails details,
             @PathVariable Integer seq
             )
     {
-        influencerService.getInfluencerDeteailPost(seq,details.getUsername());
+        influencerService.getInfluencerDetailPost(seq,details.getUsername());
         return ResponseApi.success(HttpStatus.OK,"Get influencer deteail post successfully");
     }
+
+    // 인플루언서 로그인
 
 }

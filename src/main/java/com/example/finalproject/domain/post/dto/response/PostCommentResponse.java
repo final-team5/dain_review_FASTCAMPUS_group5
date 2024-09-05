@@ -14,28 +14,22 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostCommentResponse {
 
-    private Integer postCommentSeq;
-
-    private Integer replyCommentSeq;
+    private Integer seq;
 
     private String comment;
 
-    private List<PostCommentDto> replyList;
-
-    public static PostCommentResponse of(Integer postCommentSeq, Integer replyCommentSeq, String comment, List<PostCommentDto> replyList) {
-        return new PostCommentResponse(postCommentSeq, replyCommentSeq, comment, replyList);
+    public static PostCommentResponse of(Integer seq, String comment) {
+        return new PostCommentResponse(seq, comment);
     }
 
     public static PostCommentResponse from(PostCommentDto postCommentDto) {
         return PostCommentResponse.of(
                 postCommentDto.getSeq(),
-                postCommentDto.getPostCommentSeq(),
-                postCommentDto.getComment(),
-                postCommentDto.getReplyComments().stream().map(PostCommentDto::from).collect(Collectors.toList())
+                postCommentDto.getComment()
         );
     }
 }

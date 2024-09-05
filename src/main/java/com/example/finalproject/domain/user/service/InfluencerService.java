@@ -97,7 +97,7 @@ public class InfluencerService {
     }
 
     // 게시글 상세 조회 기능
-    public void getInfluencerDeteailPost(Integer seq, String userId) {
+    public void getInfluencerDetailPost(Integer seq, String userId) {
         User user = userRepository.getByStringId(userId);
         Post post = postRepository.getPostBySeqOrException(seq);
 

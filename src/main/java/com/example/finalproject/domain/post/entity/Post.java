@@ -8,6 +8,8 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -56,6 +58,9 @@ public class Post {
 
     @Column(name = "deleted_at")
     private Timestamp deletedAt;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostComment> comments = new ArrayList<>();
 
     public Post(User user, PostCategories postCategories, PostTypes postTypes, String title, String contents, Integer viewCount) {
         this.user = user;
