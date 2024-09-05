@@ -1,6 +1,7 @@
 package com.example.finalproject.domain.user.repository;
 
 import com.example.finalproject.domain.user.entity.User;
+
 import com.example.finalproject.global.exception.error.AuthErrorCode;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.AuthException;
@@ -11,22 +12,20 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-	Optional<User> findByEmailAndType(String email, Integer type);
-
-	Optional<User> findByName(String username);
-
-	boolean existsByEmail(String email);
-	boolean existsByPhone(String phone);
-
-
-	default User getByEmailAndType(String email, Integer type) {
-		return findByEmailAndType(email, type).orElseThrow(
-				() -> new AuthException(AuthErrorCode.NOT_FOUND_USER)
+	Optional<User> findByEmailAndLoginType(String email, Integer type);
+	default User getByEmailAndLoginType(String email, Integer type) {
+		return findByEmailAndLoginType(email, type).orElseThrow(
+			() -> new AuthException(AuthErrorCode.NOT_FOUND_USER)
 		);
 	}
+	boolean existsByEmail(String email);
+	boolean existsByPhone(String phone);
+	Optional<User> findByName(String name);
 
-	default User getUserBySeqOrException(Integer userSeq) {
-		return findById(userSeq).orElseThrow(
+	Optional<User> findByEmail(String email);
+
+	default User getUserByEmailOrException(String email) {
+		return findByEmail(email).orElseThrow(
 				() -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
 		);
 	}

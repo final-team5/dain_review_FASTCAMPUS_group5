@@ -11,8 +11,8 @@ import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.*;
 import com.example.finalproject.domain.post.dto.response.PostCommentResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowDetailResponse;
-import com.example.finalproject.domain.post.dto.response.PostFollowListResponse;
+import com.example.finalproject.domain.post.dto.response.PostDetailResponse;
+import com.example.finalproject.domain.post.dto.response.PostListResponse;
 import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
@@ -21,15 +21,22 @@ import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
 
 @Api(tags = "회원")
 @RequestMapping(path = "/user")
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class UserController {
@@ -41,11 +48,10 @@ public class UserController {
     @ApiOperation(value = "커뮤니티 댓글 추가", tags = "사용자 - 커뮤니티")
     @PostMapping(path = "/community/comments")
     public ResponseApi<PostCommentResponse> savePostComment(
-            @RequestBody PostCommentSaveRequest postCommentSaveRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostCommentSaveRequest postCommentSaveRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        PostCommentDto postCommentDto = postCommentService.save(userSeq, postCommentSaveRequest.getPostSeq(), postCommentSaveRequest.getCommentSeq(), postCommentSaveRequest.getComment());
+        PostCommentDto postCommentDto = postCommentService.save(userDetails.getUsername(), postCommentSaveRequest.getPostSeq(), postCommentSaveRequest.getCommentSeq(), postCommentSaveRequest.getComment());
         PostCommentResponse postCommentResponse = PostCommentResponse.from(postCommentDto);
 
         return ResponseApi.success(HttpStatus.OK, postCommentResponse);
@@ -54,11 +60,10 @@ public class UserController {
     @ApiOperation(value = "커뮤니티 댓글 수정", tags = "사용자 - 커뮤니티")
     @PutMapping(path = "/community/comments")
     public ResponseApi<PostCommentResponse> updatePostComment(
-            @RequestBody PostCommentUpdateRequest postCommentUpdateRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostCommentUpdateRequest postCommentUpdateRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        PostCommentDto postCommentDto = postCommentService.update(userSeq, postCommentUpdateRequest.getPostSeq(), postCommentUpdateRequest.getPostCommentSeq(), postCommentUpdateRequest.getComment());
+        PostCommentDto postCommentDto = postCommentService.update(userDetails.getUsername(), postCommentUpdateRequest.getPostSeq(), postCommentUpdateRequest.getPostCommentSeq(), postCommentUpdateRequest.getComment());
         PostCommentResponse postCommentResponse = PostCommentResponse.from(postCommentDto);
 
         return ResponseApi.success(HttpStatus.OK, postCommentResponse);
@@ -67,11 +72,10 @@ public class UserController {
     @ApiOperation(value = "커뮤니티 댓글 삭제", tags = "사용자 - 커뮤니티")
     @DeleteMapping(path = "/community/comments")
     public ResponseApi<String> deletePostComment(
-            @RequestBody PostCommentDeleteRequest postCommentDeleteRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostCommentDeleteRequest postCommentDeleteRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        postCommentService.delete(postCommentDeleteRequest.getPostCommentSeq(), userSeq);
+        postCommentService.delete(postCommentDeleteRequest.getPostCommentSeq(), userDetails.getUsername());
 
         return ResponseApi.success(HttpStatus.OK, "comment delete success");
     }
@@ -80,11 +84,10 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 추가", tags = "사용자 - 커뮤니티", notes = "category : BLOG, INSTAGRAM, TIKTOK, YOUTUBE, ETC 중")
     @PostMapping(path = "/community")
     public ResponseApi<PostResponse> saveFollowPost(
-            @RequestBody PostSaveRequest postSaveRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostSaveRequest postSaveRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        PostDto postDto = postService.saveFollowPost(postSaveRequest.getCategory(), postSaveRequest.getContents(), postSaveRequest.getTitle(), userSeq);
+        PostDto postDto = postService.saveFollowPost(postSaveRequest.getCategory(), postSaveRequest.getContents(), postSaveRequest.getTitle(), userDetails.getUsername());
         PostResponse postResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postResponse);
@@ -93,11 +96,10 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 수정", tags = "사용자 - 커뮤니티")
     @PutMapping(path = "/community")
     public ResponseApi<PostResponse> updateFollowPost(
-            @RequestBody PostUpdateRequest postUpdateRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostUpdateRequest postUpdateRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        PostDto postDto = postService.updateFollowPost(postUpdateRequest.getSeq(), postUpdateRequest.getCategory(), postUpdateRequest.getContents(), postUpdateRequest.getTitle(), userSeq);
+        PostDto postDto = postService.updateFollowPost(postUpdateRequest.getSeq(), postUpdateRequest.getCategory(), postUpdateRequest.getContents(), postUpdateRequest.getTitle(), userDetails.getUsername());
         PostResponse postFollowUpdateResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postFollowUpdateResponse);
@@ -106,42 +108,42 @@ public class UserController {
     @ApiOperation(value = "서이추/맞팔 글 삭제", tags = "사용자 - 커뮤니티")
     @DeleteMapping(path = "/communities")
     public ResponseApi<String> deleteFollowPost(
-            @RequestBody PostDeleteRequest postDeleteRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostDeleteRequest postDeleteRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        postService.deletePost(postDeleteRequest.getSeq(), userSeq);
+        postService.deletePost(postDeleteRequest.getSeq(), userDetails.getUsername());
 
         return ResponseApi.success(HttpStatus.OK, "follow post delete success");
     }
 
     @ApiOperation(value = "서이추/맞팔 상세", tags = "사용자 - 커뮤니티")
     @GetMapping(path = "/community/{seq}")
-    public ResponseApi<PostFollowDetailResponse> findDetailFollowPost(
+    public ResponseApi<PostDetailResponse> findDetailFollowPost(
             @PathVariable Integer seq,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails,
             Pageable pageable
     ) {
-        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userSeq, pageable);
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailFollowPost(seq, userDetails.getUsername(), pageable);
         postService.updateViewCounts(seq);
 
-        PostFollowDetailResponse detailResponse = PostFollowDetailResponse.from(postWithCommentsDto);
+        PostDetailResponse detailResponse = PostDetailResponse.from(postWithCommentsDto);
+
+        String nicknameOrCompanyName = postService.getNicknameOrCompanyName(detailResponse.getPostAuthor());
+        detailResponse.setPostAuthor(nicknameOrCompanyName);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
 
     @ApiOperation(value = "서이추/맞팔 리스트", tags = "사용자 - 커뮤니티")
     @GetMapping(path = "/communities")
-    public ResponseApi<Page<PostFollowListResponse>> findListFollowPost(
+    public ResponseApi<Page<PostListResponse>> findListFollowPost(
             @RequestParam(required = false) SearchType searchType,
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
         Page<PostDto> listFollowPost = postService.findListFollowPost(searchType, searchWord, pageable);
-        Page<PostFollowListResponse> postFollowListResponses = listFollowPost.map(PostFollowListResponse::from);
+        Page<PostListResponse> postFollowListResponses = listFollowPost.map(PostListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postFollowListResponses);
     }
@@ -149,11 +151,10 @@ public class UserController {
     @ApiOperation(value = "찜 하기", tags = "사용자 - 체험단")
     @PostMapping(path = "/favorites")
     public ResponseApi<CampaignPreferenceSaveResponse> saveCampaignPreference(
-            @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        CampaignPreferenceDto campaignPreferenceDto = campaignService.saveCampaignPreference(campaignPreferenceRequest.getId(), userSeq);
+        CampaignPreferenceDto campaignPreferenceDto = campaignService.saveCampaignPreference(campaignPreferenceRequest.getId(), userDetails.getUsername());
         CampaignPreferenceSaveResponse campaignPreferenceSaveResponse = CampaignPreferenceSaveResponse.from(campaignPreferenceDto);
 
         return ResponseApi.success(HttpStatus.OK, campaignPreferenceSaveResponse);
@@ -162,11 +163,10 @@ public class UserController {
     @ApiOperation(value = "찜 제거", tags = "사용자 - 체험단")
     @DeleteMapping(path = "/favorites")
     public ResponseApi<String> deleteCampaignPreference(
-            @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody CampaignPreferenceRequest campaignPreferenceRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        campaignService.deleteCampaignPreference(campaignPreferenceRequest.getId(), userSeq);
+        campaignService.deleteCampaignPreference(campaignPreferenceRequest.getId(), userDetails.getUsername());
 
         return ResponseApi.success(HttpStatus.OK, "campaign preference delete success");
     }
@@ -174,11 +174,10 @@ public class UserController {
     @ApiOperation(value = "찜 목록", tags = "사용자 - 체험단")
     @GetMapping(path = "/favorites")
     public ResponseApi<Page<CampaignPreferenceListResponse>> getCampaignPreferenceList(
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails,
             Pageable pageable
     ) {
-        Page<CampaignWithApplicantCountDto> campaignDtoPage = campaignService.getCampaignPreferenceList(userSeq, pageable);
+        Page<CampaignWithApplicantCountDto> campaignDtoPage = campaignService.getCampaignPreferenceList(userDetails.getUsername(), pageable);
         Page<CampaignPreferenceListResponse> campaignPreferenceListResponses = campaignDtoPage.map(CampaignPreferenceListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, campaignPreferenceListResponses);

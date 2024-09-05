@@ -60,7 +60,8 @@ public class TokenProvider implements InitializingBean {
 		HashMap<String, Object> map = new HashMap<>();
 		map.put("seq", user.getSeq());
 		map.put("id", user.getId());
-		map.put("pw", user.getPw());
+		map.put("email", user.getEmail());
+//		map.put("pw", user.getPw());
 		map.put("name", user.getName());
 		map.put("type", user.getType());
 		map.put("role", user.getRole());
@@ -85,7 +86,7 @@ public class TokenProvider implements InitializingBean {
 				.map(SimpleGrantedAuthority::new)
 				.collect(Collectors.toList());
 		org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
-			claims.get("id").toString(), claims.get("pw").toString(), authorities);
+			claims.get("email").toString(), claims.get("email").toString(), authorities);
 
 		return new UsernamePasswordAuthenticationToken(principal, token, authorities);
 	}
