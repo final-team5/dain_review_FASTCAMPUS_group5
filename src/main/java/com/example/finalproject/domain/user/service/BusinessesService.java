@@ -21,12 +21,17 @@ import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.AgencyRepository;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.DateTime;
 import lombok.SneakyThrows;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.security.auth.message.AuthException;
 import javax.transaction.Transactional;
@@ -145,7 +150,37 @@ public class BusinessesService {
         campaign.setExperienceEndTime(insert.getExperienceEndTime() != null ? new DateTime(insert.getExperienceEndTime()) : null);
         campaign.setSegment(insert.getSegment());
 
+        String fullAddress = insert.getCity() + " " + insert.getDistrict();
+        setLatitudeAndLongitude(campaign, fullAddress);
+
         campaignRepository.save(campaign);
+
+        campaignRepository.save(campaign);
+    }
+
+    private void setLatitudeAndLongitude(Campaign campaign, String address) {
+        try {
+            String url = UriComponentsBuilder.fromHttpUrl("https://nominatim.openstreetmap.org/search")
+                    .queryParam("q", address)
+                    .queryParam("format", "json")
+                    .build()
+                    .toUriString();
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(response.getBody());
+            if (root.isArray() && root.size() > 0) {
+                JsonNode location = root.get(0);
+                campaign.setLatitude(location.get("lat").asDouble());
+                campaign.setLongitude(location.get("lon").asDouble());
+            } else {
+                System.out.println("주소로 위도/경도를 찾을 수 없습니다: " + address);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

@@ -143,6 +143,12 @@ public class Campaign {
     @Column(name = "deleted_at")
     private Timestamp deletedAt;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @PrePersist
     void registeredAt() {
         this.registeredAt = Timestamp.from(Instant.now());
