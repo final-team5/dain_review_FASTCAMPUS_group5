@@ -14,7 +14,11 @@ import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.post.repository.PostTypesRepository;
+import com.example.finalproject.domain.user.entity.Businesses;
+import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.repository.BusinessesRepository;
+import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
@@ -34,6 +38,8 @@ public class PostService {
     private final PostCommentRepository postCommentRepository;
     private final UserRepository userRepository;
     private final PostTypesRepository postTypesRepository;
+    private final InfluencerRepository influencerRepository;
+    private final BusinessesRepository businessesRepository;
 
     /**
      * 서이추/맞팔 게시판 게시글 등록
@@ -261,6 +267,30 @@ public class PostService {
         Page<PostComment> postComments = postCommentRepository.findAllByPost(post, pageable);
 
         return PostWithCommentsDto.from(post, postComments);
+    }
+
+    /**
+     * 게시글 조회 시 닉네임 또는 회사명 조회 기능
+     *
+     * @param userEmail : 회원 이메일 ID
+     * @return nickname or company name
+     */
+    public String getNicknameOrCompanyName(String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
+
+        if (user.getRole().equals("ROLE_INFLUENCER")) {
+            Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+
+            return influencer.getNickname();
+        }
+
+        if (user.getRole().equals("ROLE_BUSINESSES")) {
+            Businesses businesses = businessesRepository.getBusinessesByUserOrException(user);
+
+            return businesses.getCompany();
+        }
+
+        return user.getName();
     }
 
 
