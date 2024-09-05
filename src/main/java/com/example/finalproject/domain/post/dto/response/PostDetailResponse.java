@@ -18,15 +18,15 @@ import org.springframework.data.domain.Page;
 public class PostDetailResponse {
 
     private String category;
-    private String nickname;
+    private String postAuthor;
     private String title;
     private String contents;
     private Integer viewCount;
     private String registeredAt;
     private Page<PostCommentDetailResponse> comments;
 
-    public static PostDetailResponse of(String category, String nickname, String title, String contents, Integer viewCount, String registeredAt, Page<PostCommentDetailResponse> comments) {
-        return new PostDetailResponse(category, nickname, title, contents, viewCount, registeredAt, comments);
+    public static PostDetailResponse of(String category, String postAuthor, String title, String contents, Integer viewCount, String registeredAt, Page<PostCommentDetailResponse> comments) {
+        return new PostDetailResponse(category, postAuthor, title, contents, viewCount, registeredAt, comments);
     }
 
     public static PostDetailResponse from(PostWithCommentsDto postWithCommentsDto) {
@@ -36,7 +36,7 @@ public class PostDetailResponse {
 
         return PostDetailResponse.of(
                 postDto.getPostType(),
-                postDto.getUserDto().getId(),
+                postDto.getUserDto().getEmail(),
                 postDto.getTitle(),
                 postDto.getContents(),
                 postDto.getViewCount(),
