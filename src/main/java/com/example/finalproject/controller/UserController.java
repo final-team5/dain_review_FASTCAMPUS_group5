@@ -128,6 +128,9 @@ public class UserController {
 
         PostDetailResponse detailResponse = PostDetailResponse.from(postWithCommentsDto);
 
+        String nicknameOrCompanyName = postService.getNicknameOrCompanyName(detailResponse.getPostAuthor());
+        detailResponse.setPostAuthor(nicknameOrCompanyName);
+
         return ResponseApi.success(HttpStatus.OK, detailResponse);
     }
 
