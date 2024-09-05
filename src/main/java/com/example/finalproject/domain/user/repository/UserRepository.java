@@ -22,8 +22,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	boolean existsByPhone(String phone);
 	Optional<User> findByName(String name);
 
-	default User getUserBySeqOrException(Integer userSeq) {
-		return findById(userSeq).orElseThrow(
+	Optional<User> findByEmail(String email);
+
+	default User getUserByEmailOrException(String email) {
+		return findByEmail(email).orElseThrow(
 				() -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
 		);
 	}

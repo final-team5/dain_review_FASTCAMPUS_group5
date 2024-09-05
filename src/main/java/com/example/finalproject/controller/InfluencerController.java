@@ -19,7 +19,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
 
 @Api(tags = "인플루언서")
 @RequestMapping(path = "/inf")
@@ -32,11 +37,10 @@ public class InfluencerController {
     @ApiOperation(value = "커뮤니티 글 추가", tags = "인플루언서 - 커뮤니티", notes = "category : QUESTION, KNOW_HOW, ACCOMPANY, ETC 중")
     @PostMapping(path = "/communities")
     public ResponseApi<PostResponse> saveInfCommunityPost(
-            @RequestBody PostSaveRequest postSaveRequest,
-            // TODO : 인증 기능 추가 - 인플루언서인지 검증
-            Integer userSeq
-    ) {
-        PostDto postDto = postService.saveInfCommunityPost(postSaveRequest, userSeq);
+            @Valid @RequestBody PostSaveRequest postSaveRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
+            ) {
+        PostDto postDto = postService.saveInfCommunityPost(postSaveRequest, userDetails.getUsername());
         PostResponse postResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postResponse);
@@ -45,11 +49,10 @@ public class InfluencerController {
     @ApiOperation(value = "커뮤니티 글 수정", tags = "인플루언서 - 커뮤니티")
     @PutMapping(path = "/communities")
     public ResponseApi<PostResponse> updateInfCommunityPost(
-            @RequestBody PostUpdateRequest postUpdateRequest,
-            // TODO : 인증 기능 추가 - 인플루언서인지 검증
-            Integer userSeq
+            @Valid @RequestBody PostUpdateRequest postUpdateRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        PostDto postDto = postService.updateInfCommunityPost(postUpdateRequest, userSeq);
+        PostDto postDto = postService.updateInfCommunityPost(postUpdateRequest, userDetails.getUsername());
         PostResponse postResponse = PostResponse.from(postDto);
 
         return ResponseApi.success(HttpStatus.OK, postResponse);
@@ -58,11 +61,10 @@ public class InfluencerController {
     @ApiOperation(value = "커뮤니티 글 삭제", tags = "인플루언서 - 커뮤니티")
     @DeleteMapping(path = "/communities")
     public ResponseApi<String> deleteInfCommunityPost(
-            @RequestBody PostDeleteRequest postDeleteRequest,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @Valid @RequestBody PostDeleteRequest postDeleteRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        postService.deletePost(postDeleteRequest.getSeq(), userSeq);
+        postService.deletePost(postDeleteRequest.getSeq(), userDetails.getUsername());
 
         return ResponseApi.success(HttpStatus.OK, "influencer community post delete success");
     }
@@ -73,8 +75,7 @@ public class InfluencerController {
             @RequestParam(required = false) SearchType searchType,
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
         Page<PostDto> listInfCommunityPost = postService.findListInfCommunityPost(searchType, searchWord, pageable);
         Page<PostListResponse> postListResponses = listInfCommunityPost.map(PostListResponse::from);
@@ -86,11 +87,10 @@ public class InfluencerController {
     @GetMapping(path = "/communities/{seq}")
     public ResponseApi<PostDetailResponse> findDetailInfCommunityPost(
             @PathVariable Integer seq,
-            // TODO : security 도입 후 user 인자로 변경 예정
-            Integer userSeq,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails,
             Pageable pageable
     ) {
-        PostWithCommentsDto postWithCommentsDto = postService.findDetailInfCommunityPost(seq, userSeq, pageable);
+        PostWithCommentsDto postWithCommentsDto = postService.findDetailInfCommunityPost(seq, userDetails.getUsername(), pageable);
         postService.updateViewCounts(seq);
 
         PostDetailResponse detailResponse = PostDetailResponse.from(postWithCommentsDto);
