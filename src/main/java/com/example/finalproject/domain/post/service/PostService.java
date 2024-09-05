@@ -14,7 +14,11 @@ import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.post.repository.PostTypesRepository;
+import com.example.finalproject.domain.user.entity.Businesses;
+import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.repository.BusinessesRepository;
+import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
@@ -34,6 +38,8 @@ public class PostService {
     private final PostCommentRepository postCommentRepository;
     private final UserRepository userRepository;
     private final PostTypesRepository postTypesRepository;
+    private final InfluencerRepository influencerRepository;
+    private final BusinessesRepository businessesRepository;
 
     /**
      * 서이추/맞팔 게시판 게시글 등록
@@ -41,12 +47,12 @@ public class PostService {
      * @param category : sns 종류
      * @param contents : 게시글 본문 내용
      * @param title : 게시글 제목
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      * @return PostDto
      */
     @Transactional
-    public PostDto saveFollowPost(PostType category, String contents, String title, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public PostDto saveFollowPost(PostType category, String contents, String title, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         validatePostFollowCategory(category);
 
@@ -68,12 +74,12 @@ public class PostService {
      * @param category : sns 카테고리
      * @param contents : 게시글 본문
      * @param title : 게시글 제목
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      * @return PostDto
      */
     @Transactional
-    public PostDto updateFollowPost(Integer seq, PostType category, String contents, String title, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public PostDto updateFollowPost(Integer seq, PostType category, String contents, String title, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(category);
 
@@ -94,11 +100,11 @@ public class PostService {
      * 서이추/맞팔 게시글 삭제
      *
      * @param seq : 삭제할 게시글 ID
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      */
     @Transactional
-    public void deletePost(Integer seq, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public void deletePost(Integer seq, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         Post post = postRepository.getPostBySeqOrException(seq);
 
@@ -111,11 +117,11 @@ public class PostService {
      * 서이추/맞팔 게시글 상세 조회
      *
      * @param seq : 조회할 게시글 ID
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      * @return PostDto
      */
-    public PostWithCommentsDto findDetailFollowPost(Integer seq, Integer userSeq, Pageable pageable) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public PostWithCommentsDto findDetailFollowPost(Integer seq, String userEmail, Pageable pageable) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         Post post = postRepository.getPostBySeqOrException(seq);
         Page<PostComment> postComments = postCommentRepository.findAllByPost(post, pageable);
@@ -169,12 +175,12 @@ public class PostService {
      * 인플루언서 커뮤니티 게시글 등록 기능.
      *
      * @param postSaveRequest : 게시글 등록 요청 정보
-     * @param userSeq : 로그인한 사용자 ID 값
+     * @param userEmail : 로그인한 사용자 ID 값
      * @return PostDto
      */
     @Transactional
-    public PostDto saveInfCommunityPost(PostSaveRequest postSaveRequest, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public PostDto saveInfCommunityPost(PostSaveRequest postSaveRequest, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         validateInfluencerCommunityCategory(postSaveRequest);
 
@@ -193,12 +199,12 @@ public class PostService {
      * 인플루언서 커뮤니티 게시글 수정 기능.
      *
      * @param postUpdateRequest : 게시글 수정 정보
-     * @param userSeq : 로그인한 사용자 ID 값
+     * @param userEmail : 로그인한 사용자 ID 값
      * @return PostDto
      */
     @Transactional
-    public PostDto updateInfCommunityPost(PostUpdateRequest postUpdateRequest, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public PostDto updateInfCommunityPost(PostUpdateRequest postUpdateRequest, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(postUpdateRequest.getCategory());
 
@@ -251,16 +257,40 @@ public class PostService {
      * 인플루언서 커뮤니티 게시글 상세 조회
      *
      * @param seq : 조회할 게시글 ID
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      * @return PostDto
      */
-    public PostWithCommentsDto findDetailInfCommunityPost(Integer seq, Integer userSeq, Pageable pageable) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public PostWithCommentsDto findDetailInfCommunityPost(Integer seq, String userEmail, Pageable pageable) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         Post post = postRepository.getPostBySeqOrException(seq);
         Page<PostComment> postComments = postCommentRepository.findAllByPost(post, pageable);
 
         return PostWithCommentsDto.from(post, postComments);
+    }
+
+    /**
+     * 게시글 조회 시 닉네임 또는 회사명 조회 기능
+     *
+     * @param userEmail : 회원 이메일 ID
+     * @return nickname or company name
+     */
+    public String getNicknameOrCompanyName(String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
+
+        if (user.getRole().equals("ROLE_INFLUENCER")) {
+            Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+
+            return influencer.getNickname();
+        }
+
+        if (user.getRole().equals("ROLE_BUSINESSES")) {
+            Businesses businesses = businessesRepository.getBusinessesByUserOrException(user);
+
+            return businesses.getCompany();
+        }
+
+        return user.getName();
     }
 
 

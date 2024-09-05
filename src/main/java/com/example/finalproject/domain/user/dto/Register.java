@@ -84,12 +84,12 @@ public class Register {
 		this.postalCode = signup.getPostalCode();
 		this.address = signup.getAddress();
 		this.addressDetail = signup.getAddressDetail();
-		try {
-			this.profile = signup.getProfile().getBytes();
-			this.fileName = signup.getProfile().getOriginalFilename();
-		} catch (IOException e){
-			System.out.println(e);
-		}
+//		try {
+//			this.profile = signup.getProfile().getBytes();
+//			this.fileName = signup.getProfile().getOriginalFilename();
+//		} catch (IOException e){
+//			System.out.println(e);
+//		}
 	}
 
 	public Register(InfluencerSocialSignup signup){
