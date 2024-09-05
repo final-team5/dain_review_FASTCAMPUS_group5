@@ -34,21 +34,6 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-	private static final String[] LIMIT_URL_ADMIN = {
-		"/adm/**", "/ent/**", "/inf/**", "/user/**"
-	};
-	private static final String[] LIMIT_URL_BUSINESSES = {
-		"/bus/**", "/user/**"
-	};
-
-	private static final String[] LIMIT_URL_INFLUENCER = {
-		"/inf/**", "/user/**"
-	};
-
-	private static final String[] LIMIT_URL_AGENCY = {
-		"/inf/**", "/user/**"
-	};
-
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf().disable()
@@ -65,10 +50,10 @@ public class SecurityConfig {
 			.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
 			.authorizeHttpRequests()
-//                .antMatchers(LIMIT_URL_ADMIN).hasAuthority("ROLE_ADMIN")
-//                .antMatchers(LIMIT_URL_BUSINESSES).hasAuthority("ROLE_BUSINESSES")
-//                .antMatchers(LIMIT_URL_INFLUENCER).hasAuthority("ROLE_INFLUENCER")
-//                .antMatchers(LIMIT_URL_AGENCY).hasAuthority("ROLE_AGENCY")
+			.antMatchers("/user/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_BUSINESSES", "ROLE_INFLUENCER", "ROLE_AGENCY")
+			.antMatchers("/inf/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_INFLUENCER", "ROLE_AGENCY")
+			.antMatchers("/bus/**").hasAuthority("ROLE_BUSINESSES")
+			.antMatchers("/adm/**", "/ent/**").hasAuthority("ROLE_ADMIN")
 			.anyRequest().permitAll()
 			.and()
 			.addFilter(corsConfig.corsFilter())

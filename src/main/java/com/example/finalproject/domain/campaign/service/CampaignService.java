@@ -29,12 +29,12 @@ public class CampaignService {
      * 체험단 찜 하기 기능.
      *
      * @param campaignSeq : 찜 할 체험단 ID
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      * @return : CampaignPreferenceDto
      */
     @Transactional
-    public CampaignPreferenceDto saveCampaignPreference(Integer campaignSeq, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public CampaignPreferenceDto saveCampaignPreference(Integer campaignSeq, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         Campaign campaign = campaignRepository.getCampaignBySeqOrException(campaignSeq);
 
@@ -50,16 +50,16 @@ public class CampaignService {
      * 체험단 찜 제거 기능.
      *
      * @param campaignSeq : 찜을 취소할 체험단 ID
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      */
     @Transactional
-    public void deleteCampaignPreference(Integer campaignSeq, Integer userSeq) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public void deleteCampaignPreference(Integer campaignSeq, String userEmail) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
         Campaign campaign = campaignRepository.getCampaignBySeqOrException(campaignSeq);
 
         CampaignPreference campaignPreference = campaignPreferenceRepository.getCampaignPreferenceByCampaignOrException(campaign);
 
-        validateCampaignPreferenceUserMatch(userSeq, campaignPreference);
+        validateCampaignPreferenceUserMatch(user.getSeq(), campaignPreference);
 
         campaignPreferenceRepository.deleteById(campaignPreference.getSeq());
     }
@@ -91,12 +91,12 @@ public class CampaignService {
     /**
      * 찜 목록 전체 조회 리스트 기능.
      *
-     * @param userSeq : 로그인한 사용자 ID
+     * @param userEmail : 로그인한 사용자 ID
      * @param pageable : 페이징 인자
      * @return Page<CampaignWithApplicantCountDto>
      */
-    public Page<CampaignWithApplicantCountDto> getCampaignPreferenceList(Integer userSeq, Pageable pageable) {
-        User user = userRepository.getUserBySeqOrException(userSeq);
+    public Page<CampaignWithApplicantCountDto> getCampaignPreferenceList(String userEmail, Pageable pageable) {
+        User user = userRepository.getUserByEmailOrException(userEmail);
 
         Page<CampaignWithApplicantCount> campaignWithApplicantCounts = campaignRepository.findAllByUserAndStatus(user, 3, pageable);
 

@@ -57,7 +57,7 @@ public class ExceptionAdvice {
 	@ExceptionHandler(ValidException.class)
 	public ResponseEntity<ResponseApi<?>> authException(ValidException ex) {
 		log.warn(ex.getMessage());
-		return ResponseEntity.status(ex.getStatusCode()).body(ResponseApi.failed(ex));
+		return ResponseEntity.status(ex.getStatusCode()).body(ResponseApi.failed(ex, ex.getInfo()));
 	}
 
 }
