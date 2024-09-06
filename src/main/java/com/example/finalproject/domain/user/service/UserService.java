@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -137,7 +138,10 @@ public class UserService {
 		String uuid = UUID.randomUUID().toString();
 		String uniqueFileName = uuid + "_" + originalFilename.replaceAll("\\s", "_");
 
-		String fileName = dirName + "/" + uniqueFileName;
+		// 파일 이름을 URL 인코딩 처리
+		String encodedFileName = URLEncoder.encode(uniqueFileName, "UTF-8").replaceAll("\\+", "%20");
+
+		String fileName = dirName + "/" + encodedFileName;
 
 		File uploadFile = convert(multipartFile);
 
@@ -145,6 +149,24 @@ public class UserService {
 		removeNewFile(uploadFile);
 
 		return uploadImageUrl;
+	}
+
+	@Transactional
+	public String updateImage(String oldImageUrl, MultipartFile newImageFile, String dirName) throws IOException {
+		// 기존 파일 삭제
+		String[] split = oldImageUrl.split("user-profile-images/");
+
+		// 파일 이름을 URL 인코딩 처리
+		String encodedFileName = URLEncoder.encode(split[1], "UTF-8").replaceAll("\\+", "%20");
+
+		oldImageUrl = "user-profile-images/" + encodedFileName;
+
+		log.info("oldImageUrl : {}", oldImageUrl);
+
+		deleteImage(oldImageUrl);
+
+		// 새 파일 업로드
+		return uploadImage(newImageFile, dirName);
 	}
 
 	private File convert(MultipartFile file) throws IOException {
@@ -180,6 +202,11 @@ public class UserService {
 		} else {
 			log.info("파일이 삭제되지 않았습니다.");
 		}
+	}
+
+	public void deleteImage(String imageUrl) {
+
+		amazonS3.deleteObject(bucket, imageUrl);
 	}
 
 

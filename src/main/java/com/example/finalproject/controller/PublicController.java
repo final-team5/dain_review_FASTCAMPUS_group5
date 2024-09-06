@@ -227,9 +227,18 @@ public class PublicController {
 		String uploadImage = userService.uploadImage(imageFile, "user-profile-images");
 		ImageFileResponse imageFileResponse = ImageFileResponse.of(uploadImage);
 
-		log.info("uploaded url : {}", uploadImage.substring(61));
-		String[] split = uploadImage.split("user-profile-images");
-		log.info("split after url : {}", "user-profile-images" + split[1]);
+		return ResponseApi.success(HttpStatus.OK, imageFileResponse);
+	}
+
+	@ApiOperation(value = "이미지 파일 수정", tags = "공개 - 회원")
+	@PostMapping(path = "/image-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseApi<ImageFileResponse> updateImageFile(
+			@ApiParam(value = "Image file to update", required = true)
+			@RequestPart("imageFile") MultipartFile imageFile,
+			@RequestParam String oldImageUrl
+	) throws IOException {
+		String updatedImage = userService.updateImage(oldImageUrl, imageFile, "user-profile-images");
+		ImageFileResponse imageFileResponse = ImageFileResponse.of(updatedImage);
 
 		return ResponseApi.success(HttpStatus.OK, imageFileResponse);
 	}
