@@ -1,16 +1,11 @@
 package com.example.finalproject.controller;
 
-import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
-import com.example.finalproject.domain.user.dto.request.BusinessesSocialSignup;
-import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
-import com.example.finalproject.domain.user.dto.request.InfluencerSocialSignup;
-import com.example.finalproject.domain.user.dto.request.Login;
 import com.example.finalproject.domain.user.dto.LoginResponse;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.SocialInfo;
-import com.example.finalproject.domain.user.dto.request.SocialLogin;
 import com.example.finalproject.domain.user.dto.UserInfo;
-import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.user.dto.request.*;
+import com.example.finalproject.domain.user.dto.response.ImageFileResponse;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.exception.error.AuthErrorCode;
 import com.example.finalproject.global.exception.type.AuthException;
@@ -20,31 +15,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.http.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
-import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 @Api(tags = "공용")
 @RequestMapping("/api")
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class PublicController {
@@ -228,6 +217,32 @@ public class PublicController {
 		jo.put("message", "사용 가능한 회사명 입니다");
 		return new ResponseEntity<>(jo.toString(), HttpStatus.OK);
 	}
+
+	@ApiOperation(value = "이미지 파일 등록", tags = "공개 - 회원")
+	@PostMapping(path = "/image-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseApi<ImageFileResponse> uploadImageFile(
+			@ApiParam(value = "Image file to upload", required = true)
+			@RequestPart("imageFile") MultipartFile imageFile
+	) throws IOException {
+		String uploadImage = userService.uploadImage(imageFile, "user-profile-images");
+		ImageFileResponse imageFileResponse = ImageFileResponse.of(uploadImage);
+
+		return ResponseApi.success(HttpStatus.OK, imageFileResponse);
+	}
+
+	@ApiOperation(value = "이미지 파일 수정", tags = "공개 - 회원")
+	@PostMapping(path = "/image-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseApi<ImageFileResponse> updateImageFile(
+			@ApiParam(value = "Image file to update", required = true)
+			@RequestPart("imageFile") MultipartFile imageFile,
+			@RequestParam String oldImageUrl
+	) throws IOException {
+		String updatedImage = userService.updateImage(oldImageUrl, imageFile, "user-profile-images");
+		ImageFileResponse imageFileResponse = ImageFileResponse.of(updatedImage);
+
+		return ResponseApi.success(HttpStatus.OK, imageFileResponse);
+	}
+
 
 	public LoginResponse setReturnValue(UserInfo user) throws ParseException {
 		String new_token = tokenProvider.createToken(user);

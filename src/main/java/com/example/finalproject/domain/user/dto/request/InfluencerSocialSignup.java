@@ -27,7 +27,8 @@ public class InfluencerSocialSignup {
 	private String address;
 	private String addressDetail;
 
-	private MultipartFile profile;
 	private String birthdate;
 	private Integer gender;
+
+	private String profile;
 }
