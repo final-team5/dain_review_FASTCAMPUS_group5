@@ -190,6 +190,22 @@ public class UserService {
 		user.setPw(encodedPassword);
 	}
 
+	@Transactional
+	public void withdrawalUser(String userEmail) {
+		User user = userRepository.getUserByEmailOrException(userEmail);
+
+		String role = user.getRole();
+
+		if (role.equals("ROLE_INFLUENCER")) {
+			influencerRepository.deleteByUser(user);
+		}
+
+		if (role.equals("ROLE_BUSINESSES")) {
+			businessesRepository.deleteByUser(user);
+		}
+
+	}
+
 	private File convert(MultipartFile file) throws IOException {
 		String originalFileName = file.getOriginalFilename();
 		String uuid = UUID.randomUUID().toString();
