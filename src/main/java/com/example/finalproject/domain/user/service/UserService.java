@@ -1,19 +1,22 @@
 package com.example.finalproject.domain.user.service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
+import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
+import com.example.finalproject.global.exception.error.ValidErrorCode;
+import com.example.finalproject.global.exception.type.ValidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +36,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	private final AmazonS3 amazonS3;
 
@@ -167,6 +171,23 @@ public class UserService {
 
 		// 새 파일 업로드
 		return uploadImage(newImageFile, dirName);
+	}
+
+	@Transactional
+	public void changePassword(String userEmail, ChangePasswordRequest changePasswordRequest) {
+		User user = userRepository.getUserByEmailOrException(userEmail);
+
+		if (!changePasswordRequest.getNewPw().equals(changePasswordRequest.getPw())) {
+			throw new ValidException(ValidErrorCode.PASSWORD_MISMATCH);
+		}
+
+		if (passwordEncoder.matches(changePasswordRequest.getNewPw(), user.getPw())) {
+			throw new ValidException(ValidErrorCode.ALREADY_USED_PASSWORD_RECENTLY);
+		}
+
+		String encodedPassword = passwordEncoder.encode(changePasswordRequest.getNewPw());
+
+		user.setPw(encodedPassword);
 	}
 
 	private File convert(MultipartFile file) throws IOException {
