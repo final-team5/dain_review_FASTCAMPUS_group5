@@ -26,6 +26,8 @@ public enum ValidErrorCode implements ErrorCode {
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
+    ALREADY_USED_PASSWORD_RECENTLY(HttpStatus.BAD_REQUEST, "최근에 사용한 이력이 있는 비밀번호 입니다."),
 
     // PostComment
     POST_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "작성된 댓글 정보가 존재하지 않습니다."),
