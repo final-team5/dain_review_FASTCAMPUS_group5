@@ -196,4 +196,14 @@ public class UserController {
 
         return ResponseApi.success(HttpStatus.OK, "password change success");
     }
+
+    @ApiOperation(value = "회원 탈퇴", tags = "사용자 - 회원")
+    @DeleteMapping(path = "/withdrawal")
+    public ResponseApi<String> withdrawalUser(
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        userService.withdrawalUser(userDetails.getUsername());
+
+        return ResponseApi.success(HttpStatus.OK, "user withdrawal success");
+    }
 }
