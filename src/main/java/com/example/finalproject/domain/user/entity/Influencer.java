@@ -21,7 +21,7 @@ public class Influencer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long seq;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "user_seq")
     private User user;
 
