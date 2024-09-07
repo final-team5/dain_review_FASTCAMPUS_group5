@@ -231,7 +231,7 @@ public class PublicController {
 	}
 
 	@ApiOperation(value = "이미지 파일 수정", tags = "공개 - 회원")
-	@PostMapping(path = "/image-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PutMapping(path = "/image-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseApi<ImageFileResponse> updateImageFile(
 			@ApiParam(value = "Image file to update", required = true)
 			@RequestPart("imageFile") MultipartFile imageFile,
