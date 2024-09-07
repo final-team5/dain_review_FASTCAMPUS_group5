@@ -17,6 +17,8 @@ import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
+import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
+import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -44,6 +46,7 @@ public class UserController {
     private final PostCommentService postCommentService;
     private final PostService postService;
     private final CampaignService campaignService;
+    private final UserService userService;
 
     @ApiOperation(value = "커뮤니티 댓글 추가", tags = "사용자 - 커뮤니티")
     @PostMapping(path = "/community/comments")
@@ -181,5 +184,16 @@ public class UserController {
         Page<CampaignPreferenceListResponse> campaignPreferenceListResponses = campaignDtoPage.map(CampaignPreferenceListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, campaignPreferenceListResponses);
+    }
+
+    @ApiOperation(value = "비밀번호 변경", tags = "사용자 - 회원")
+    @PutMapping(path = "/change-password")
+    public ResponseApi<String> changePassword(
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest changePasswordRequest
+    ) {
+        userService.changePassword(userDetails.getUsername(), changePasswordRequest);
+
+        return ResponseApi.success(HttpStatus.OK, "password change success");
     }
 }
