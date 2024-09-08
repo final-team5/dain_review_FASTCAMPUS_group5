@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface InfluencerRepository extends JpaRepository<Influencer, Integer> {
 	boolean existsByNickname(String nickname);
 
+	void deleteByUser(User user);
+
 	Optional<Influencer> findByUser(User user);
 
 	default Influencer getInfluencerByUserOrException(User user) {
