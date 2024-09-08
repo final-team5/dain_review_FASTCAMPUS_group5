@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.DateTime;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,21 +41,27 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BusinessesService {
 
-    private final ResultReportRepository resultReportRepository;
-    private CampaignRepository campaignRepository;
-    private UserService userService;
-    private UserRepository userRepository;
-    private BusinessesRepository businessesRepository;
-    private AgencyRepository agencyRepository;
+    @Autowired
+    private ResultReportRepository resultReportRepository;
 
-    public BusinessesService(ResultReportRepository resultReportRepository) {
-        this.resultReportRepository = resultReportRepository;
-    }
+    @Autowired
+    private CampaignRepository campaignRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BusinessesRepository businessesRepository;
+
+    @Autowired
+    private AgencyRepository agencyRepository;
 
     /**
      * 현재 인증된 사용자의 식별자를 가져오는 메서드
@@ -68,7 +75,7 @@ public class BusinessesService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AuthException();
         }
-        UserInfo userInfo = userService.findByUsername(authentication.getName());
+        UserInfo userInfo = userService.findByEmail(authentication.getName());
         return userInfo.getSeq();
     }
 
@@ -146,8 +153,9 @@ public class BusinessesService {
         campaign.setSunday(insert.isSunday() ? 1 : 0);
         campaign.setPoint(insert.getPoint());
         campaign.setService(insert.getService());
-        campaign.setExperienceStartTime(insert.getExperienceStartTime() != null ? new DateTime(insert.getExperienceStartTime()) : null);
-        campaign.setExperienceEndTime(insert.getExperienceEndTime() != null ? new DateTime(insert.getExperienceEndTime()) : null);
+
+        campaign.setExperienceStartTime(formatTime(insert.getExperienceStartDate(), insert.getExperienceStartTime()));
+        campaign.setExperienceEndTime(formatTime(insert.getExperienceEndDate(), insert.getExperienceEndTime()));
         campaign.setSegment(insert.getSegment());
 
         String fullAddress = insert.getCity() + " " + insert.getDistrict();
@@ -158,6 +166,27 @@ public class BusinessesService {
         campaignRepository.save(campaign);
     }
 
+    /**
+     * 문자열 형식의 날짜와 시간을 RFC3339 형식의 DateTime 객체로 변환하는 메서드
+     *
+     * @param date 날짜 문자열 (yyyy-MM-dd 형식)
+     * @param time 시간 문자열 (HH:mm 형식)
+     * @return RFC3339 형식의 DateTime 객체
+     */
+    private DateTime formatTime(String date, String time) {
+        if (date == null || time == null) {
+            return null;
+        }
+        String dateTimeString = date + "T" + time + ":00Z";
+        return new DateTime(dateTimeString);
+    }
+
+    /**
+     * 주소를 기반으로 위도와 경도를 설정하는 메서드
+     *
+     * @param campaign 체험단 엔티티
+     * @param address  주소 문자열
+     */
     private void setLatitudeAndLongitude(Campaign campaign, String address) {
         try {
             String url = UriComponentsBuilder.fromHttpUrl("https://nominatim.openstreetmap.org/search")
