@@ -71,7 +71,7 @@ public class Campaign {
 
     private Integer recruiter;
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String image;
 
     @Column(length = 50)
