@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.DateTime;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BusinessesService {
@@ -110,6 +112,7 @@ public class BusinessesService {
         Agency agency = new Agency();
         agency.setReason("신청 사유");
         agency.setStatus(1);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
+        agency.setCreateDate(new Date());
         agencyRepository.save(agency);
     }
 
@@ -134,6 +137,7 @@ public class BusinessesService {
         campaign.setExperienceStartDate(parseDate(insert.getExperienceStartDate()));
         campaign.setExperienceEndDate(parseDate(insert.getExperienceEndDate()));
         campaign.setRecruiter(userSeq);
+        // TODO: 관리자 기능 구현
         campaign.setStatus(CampaignStatus.DRAFT.getCode());
         campaign.setType(insert.getType());
 
@@ -232,7 +236,7 @@ public class BusinessesService {
             throw new IllegalArgumentException("체험 기간은 필수입니다.");
         }
         if (insert.getCampaignLink() == null || insert.getCampaignLink().isEmpty()) {
-            throw new IllegalArgumentException("캠페인 링크는 필수입니다.");
+            throw new IllegalArgumentException("체험단 링크는 필수입니다.");
         }
         // 날짜 검증
         Date applicationStartDate = parseDate(insert.getApplicationStartDate());
@@ -257,14 +261,14 @@ public class BusinessesService {
     public void cancelCampaign(String campaignId) {
         Integer userSeq = getCurrentUserSeq();
         Campaign campaign = campaignRepository.findById(Integer.parseInt(campaignId))
-                .orElseThrow(() -> new IllegalArgumentException("해당 캠페인이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
 
         if (!campaign.getRecruiter().equals(userSeq)) {
-            throw new IllegalStateException("해당 캠페인을 취소할 권한이 없습니다.");
+            throw new IllegalStateException("해당 체험단을 취소할 권한이 없습니다.");
         }
 
         if (campaign.getStatus() == CampaignStatus.COMPLETE.getCode()) {
-            throw new IllegalStateException("완료된 캠페인은 취소할 수 없습니다.");
+            throw new IllegalStateException("완료된 체험단은 취소할 수 없습니다.");
         }
 
         if (campaign.getStatus() == CampaignStatus.DRAFT.getCode() ||
@@ -272,7 +276,7 @@ public class BusinessesService {
             campaign.setStatus(CampaignStatus.CANCELED.getCode());
             campaignRepository.save(campaign);
         } else {
-            throw new IllegalStateException("현재 상태에서 캠페인을 취소할 수 없습니다.");
+            throw new IllegalStateException("현재 상태에서 체험단을 취소할 수 없습니다.");
         }
     }
 
@@ -285,14 +289,26 @@ public class BusinessesService {
      */
     public Object getCampaignDetail(String id) {
         Integer userSeq = getCurrentUserSeq();
-        Campaign campaign = campaignRepository.findById(Integer.parseInt(id))
-                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
 
-        if (!campaign.getRecruiter().equals(userSeq)) {
-            throw new IllegalStateException("해당 체험단에 접근할 권한이 없습니다.");
+        Campaign campaign = campaignRepository.findById(Integer.parseInt(id))
+                .orElse(null);
+
+        if (campaign == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDto());
         }
 
-        return CampaignDto.from(campaign);
+        Optional<User> optionalUser = userRepository.findById(campaign.getRecruiter());
+        User user = optionalUser.orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDto());
+        }
+
+        if (!user.getSeq().equals(userSeq)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("해당 체험단에 접근할 권한이 없습니다.");
+        }
+
+        return ResponseEntity.ok(CampaignDto.from(campaign));
     }
 
     /**
@@ -453,7 +469,7 @@ public class BusinessesService {
     /**
      * 결과보고서를 조회하는 메서드
      *
-     * @param campaignSeq 결과보고서의 캠페인 식별자
+     * @param campaignSeq 결과보고서의 체험단 식별자
      * @return 결과보고서 객체
      * @throws IllegalArgumentException 결과보고서가 존재하지 않거나 권한이 없을 때 발생
      */
@@ -461,7 +477,7 @@ public class BusinessesService {
     public ResultReportResponse getResultReport(Integer campaignSeq) {
         // TODO: 결과보고서 생성 및 업데이트 기능 추가
         if (campaignSeq == null) {
-            throw new IllegalArgumentException("캠페인 식별자는 필수입니다.");
+            throw new IllegalArgumentException("체험단 식별자는 필수입니다.");
         }
 
         Integer userSeq = getCurrentUserSeq();

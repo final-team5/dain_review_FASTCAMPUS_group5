@@ -117,6 +117,10 @@ public class CampaignDto {
     }
 
     public static CampaignDto from(Campaign campaign) {
+        if (campaign == null) {
+            return new CampaignDto();
+        }
+
         return CampaignDto.of(
                 campaign.getSeq(),
                 UserDto.from(campaign.getUser()),
