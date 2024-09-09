@@ -140,6 +140,13 @@ public class UserService {
 		}
 	}
 
+	/**
+	 * 이미지 파일 등록 기능
+	 *
+	 * @param multipartFile : 등록할 이미지 파일
+	 * @param dirName : S3 저장소 디렉토리 명
+	 * @return : 저장한 이미지 파일 url
+	 */
 	public String uploadImage(MultipartFile multipartFile, String dirName) throws IOException {
 		// 파일 이름에서 공백을 제거한 새로운 파일 이름 생성
 		String originalFilename = multipartFile.getOriginalFilename();
@@ -161,6 +168,14 @@ public class UserService {
 		return uploadImageUrl;
 	}
 
+	/**
+	 * 이미지 파일 수정 기능
+	 *
+	 * @param oldImageUrl : 기존 저장했던 이미지 파일의 url
+	 * @param newImageFile : 새로 업데이트 할 이미지 파일
+	 * @param dirName : S3 에 저장할 디렉토리명
+	 * @return : 새로 업데이트한 이미지 url
+	 */
 	@Transactional
 	public String updateImage(String oldImageUrl, MultipartFile newImageFile, String dirName) throws IOException {
 		// 기존 파일 삭제
@@ -179,6 +194,12 @@ public class UserService {
 		return uploadImage(newImageFile, dirName);
 	}
 
+	/**
+	 * 비밀번호 변경 기능
+	 *
+	 * @param userEmail : 회원 email ID
+	 * @param changePasswordRequest : 변경할 비밀번호와 확인용 비밀번호 정보
+	 */
 	@Transactional
 	public void changePassword(String userEmail, ChangePasswordRequest changePasswordRequest) {
 		User user = userRepository.getUserByEmailOrException(userEmail);
@@ -196,6 +217,11 @@ public class UserService {
 		user.setPw(encodedPassword);
 	}
 
+	/**
+	 * 회원 탈퇴 기능
+	 *
+	 * @param userEmail : 회원 email ID
+	 */
 	@Transactional
 	public void withdrawalUser(String userEmail) {
 		User user = userRepository.getUserByEmailOrException(userEmail);
