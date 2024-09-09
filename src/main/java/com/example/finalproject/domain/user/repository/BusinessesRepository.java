@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface BusinessesRepository extends JpaRepository<Businesses, Integer> {
 	boolean existsByCompany(String company);
 
+	void deleteByUser(User user);
+
 	Optional<Businesses> findByUser(User user);
 
 	default Businesses getBusinessesByUserOrException(User user) {

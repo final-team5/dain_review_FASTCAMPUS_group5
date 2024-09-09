@@ -2,6 +2,12 @@ package com.example.finalproject.domain.campaign.service;
 
 import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
 import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
+import com.example.finalproject.domain.campaign.dto.Category;
+import com.example.finalproject.domain.campaign.dto.City;
+import com.example.finalproject.domain.campaign.dto.District;
+import com.example.finalproject.domain.campaign.dto.Sns;
+import com.example.finalproject.domain.campaign.dto.Type;
+import com.example.finalproject.domain.campaign.dto.request.CampaignSearch;
 import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.campaign.entity.CampaignPreference;
 import com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount;
@@ -11,11 +17,22 @@ import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import io.swagger.models.auth.In;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import org.springframework.data.jpa.domain.Specification;
 
 @RequiredArgsConstructor
 @Service
@@ -102,4 +119,75 @@ public class CampaignService {
 
         return campaignWithApplicantCounts.map(CampaignWithApplicantCountDto::from);
     }
+
+    public List<Campaign> getCampaignList(CampaignSearch search) {
+        return campaignRepository.findAll(getCampaignSpecification(search));
+    }
+
+    public long getCampaignListCount(CampaignSearch search) {
+        return campaignRepository.count(getCampaignSpecification(search));
+    }
+
+    private Specification<Campaign> getCampaignSpecification(CampaignSearch search) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 상태가 3일 때만 모든 필터 적용
+            if (search.getStatus() != null && search.getStatus() == 3) {
+
+                // 검색어 필터
+                if (search.getSearchWord() != null && !search.getSearchWord().isEmpty()) {
+                    predicates.add(criteriaBuilder.like(root.get("title"), search.getSearchWord()));
+                }
+
+                // 도시 필터
+                if (search.getCity() != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("city"), City.fromValue(search.getCity()).name()));
+                }
+
+                // 구 필터
+                if (search.getDistricts() != null && !search.getDistricts().isEmpty()) {
+                    predicates.add(root.get("district").in(
+                        search.getDistricts().stream()
+                            .map(districtValue -> District.fromValue(districtValue, City.fromValue(search.getCity()).name())) // 도시와 구 번호로 District를 가져옴
+                            .map(District::getDistrictName) // 구 이름만 추출
+                            .collect(Collectors.toList())
+                    ));
+                }
+
+                // 카테고리 필터
+                if (search.getCategorySeq() != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("category"), Category.fromValue(search.getCategorySeq()).name()));
+                }
+
+                // 유형 필터
+                if (search.getTypeSeq() != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("type"), Type.fromValue(search.getTypeSeq()).name()));
+                }
+
+                // SNS 플랫폼 필터
+                if (search.getPlatformSeq() != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("platform"), Sns.fromValue(search.getPlatformSeq()).name()));
+                }
+
+                // 프리미엄 여부 필터
+                if (search.isPremium()) {
+                    // tag가 null이 아니고, 현재 날짜가 신청 기간 내에 있는 경우
+                    predicates.add(criteriaBuilder.isNotNull(root.get("tag")));
+                    predicates.add(criteriaBuilder.between(
+                        criteriaBuilder.currentDate(),
+                        root.get("applicationStartDate"),
+                        root.get("applicationEndDate")
+                    ));
+                }
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    public Campaign getDetail(Integer id) {
+        return campaignRepository.findById(id).orElse(null);
+    }
+
 }

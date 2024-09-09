@@ -21,7 +21,7 @@ public class Businesses {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "user_seq")
     private User user;
 
