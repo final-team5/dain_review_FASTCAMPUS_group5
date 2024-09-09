@@ -2,15 +2,11 @@ package com.example.finalproject.domain.user.entity;
 
 
 import com.example.finalproject.domain.user.dto.Register;
-import java.time.LocalDate;
-import java.util.Arrays;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor()
@@ -40,7 +36,7 @@ public class User {
     @Column(length = 50)
     private String phone;
 
-    @Column(length = 50)
+    @Column(length = 255)
     private String profile;
 
     @Column(length = 50)
@@ -83,7 +79,7 @@ public class User {
         this.type = register.getType();
 
         if (register.getProfile() != null) {
-            this.profile = Arrays.toString(register.getProfile());
+            this.profile = register.getProfile();
         } else {
             this.profile = null;
         }

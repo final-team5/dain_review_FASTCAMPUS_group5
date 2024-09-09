@@ -24,7 +24,8 @@ public class Register {
 	private String address;
 	private String addressDetail;
 
-	private byte[] profile;
+	private String profile;
+
 	private String fileName;
 
 	//소셜 가입
@@ -66,12 +67,7 @@ public class Register {
 		this.addressDetail = signup.getAddressDetail();
 		this.birthdate = signup.getBirthdate();
 		this.gender = signup.getGender();
-		/*try {
-			this.profile = signup.getProfile().getBytes();
-			this.fileName = signup.getProfile().getOriginalFilename();
-		} catch (IOException e){
-			System.out.println(e);
-		}*/
+		this.profile = signup.getProfile();
 	}
 
 	public Register(BusinessesSignup signup){
@@ -84,12 +80,7 @@ public class Register {
 		this.postalCode = signup.getPostalCode();
 		this.address = signup.getAddress();
 		this.addressDetail = signup.getAddressDetail();
-		try {
-			this.profile = signup.getProfile().getBytes();
-			this.fileName = signup.getProfile().getOriginalFilename();
-		} catch (IOException e){
-			System.out.println(e);
-		}
+		this.profile = signup.getProfile();
 	}
 
 	public Register(InfluencerSocialSignup signup){
@@ -108,13 +99,8 @@ public class Register {
 		this.addressDetail = signup.getAddressDetail();
 		this.birthdate = signup.getBirthdate();
 		this.gender = signup.getGender();
+		this.profile = signup.getProfile();
 
-		try {
-			this.profile = signup.getProfile().getBytes();
-			this.fileName = signup.getProfile().getOriginalFilename();
-		} catch (IOException e){
-			System.out.println(e);
-		}
 	}
 //
 //	public Register(BusinessesSocialSignup signup){

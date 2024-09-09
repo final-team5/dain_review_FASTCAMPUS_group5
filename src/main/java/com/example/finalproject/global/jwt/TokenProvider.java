@@ -86,7 +86,7 @@ public class TokenProvider implements InitializingBean {
 				.map(SimpleGrantedAuthority::new)
 				.collect(Collectors.toList());
 		org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
-			claims.get("email").toString(), claims.get("pw").toString(), authorities);
+			claims.get("email").toString(), claims.get("email").toString(), authorities);
 
 		return new UsernamePasswordAuthenticationToken(principal, token, authorities);
 	}

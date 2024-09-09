@@ -21,19 +21,19 @@ public class Businesses {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "user_seq")
     private User user;
 
     @Column(length = 50)
-    private String company;
+    private String company; // 회사명
 
     @Column(name = "business_number", length = 50)
-    private String businessNumber;
+    private String businessNumber;  // 사업자번호
 
     @Column(length = 50)
-    private String representative;
+    private String representative;  // 대표자명
 
     @Column(name = "attached_file", length = 50)
-    private String attachedFile;
+    private String attachedFile;    // 참고자료
 }

@@ -2,17 +2,21 @@ package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.campaign.dto.request.CampaignInsertRequest;
 import com.example.finalproject.domain.campaign.dto.request.ReviewerSelectRequest;
+import com.example.finalproject.domain.campaign.dto.response.CampaignDetailResponse;
 import com.example.finalproject.domain.campaign.dto.response.ResultReportResponse;
 import com.example.finalproject.domain.payment.dto.request.PaymentRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostDeleteRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostUpdateRequest;
 import com.example.finalproject.domain.user.dto.request.AgencyInsertRequest;
+import com.example.finalproject.domain.user.dto.response.InfluencerDetailResponse;
 import com.example.finalproject.domain.user.service.BusinessesService;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +40,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "대행사 신청", tags = "사업자 - 대행사")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "대행사 신청이 성공적으로 처리되었습니다.")
+    })
     @PostMapping("/agency")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> applyAgency(@RequestBody AgencyInsertRequest insert) {
@@ -44,6 +51,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "체험단 신규 모집", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "체험단 모집이 시작되었습니다.")
+    })
     @PostMapping("/campaign")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<String> createCampaign(@RequestBody CampaignInsertRequest insert) {
@@ -52,6 +62,10 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "검수 중인 체험단 취소", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "체험단 취소 요청이 처리되었습니다."),
+            @ApiResponse(code = 404, message = "해당 체험단을 찾을 수 없습니다.")
+    })
     @DeleteMapping("/campaign/{id}")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> cancelCampaign(@PathVariable String id) {
@@ -60,6 +74,10 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "체험단 진행 상세 조회", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = CampaignDetailResponse.class),
+            @ApiResponse(code = 404, message = "해당 체험단을 찾을 수 없습니다.")
+    })
     @GetMapping("/campaign/{id}")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> getCampaignDetail(@PathVariable String id) {
@@ -68,6 +86,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "체험 진행하기", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "체험단 진행이 시작되었습니다.")
+    })
     @PostMapping("/campaign/{seq}/start")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<?> startCampaign(@PathVariable Integer seq) {
@@ -76,6 +97,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "신청한 인플루언서 리스트(준비 중)", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = InfluencerDetailResponse.class, responseContainer = "List")
+    })
     @GetMapping("/campaign/{seq}/application")
     public ResponseApi<?> getApplicationInfluencerList(@PathVariable Integer seq) {
         // TODO: 사용자 인증 추가
@@ -85,6 +109,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "신청 인플루언서 목록 다운로드(준비 중)", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = String.class)
+    })
     @PostMapping("/campaign/{seq}/download")
     public ResponseApi<?> downloadInfluencerList(@PathVariable Integer seq) {
         // TODO: 사용자 인증 추가
@@ -94,6 +121,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "선정한 체험단 리스트(준비 중)", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = InfluencerDetailResponse.class, responseContainer = "List")
+    })
     @GetMapping("/campaign/{seq}/selection")
     public ResponseApi<?> getSelectedInfluencerList(@PathVariable Integer seq) {
         // TODO: 사용자 인증 추가
@@ -103,6 +133,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "커뮤니티 리스트(준비 중)", tags = "사업자 - 커뮤니티")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = Object.class, responseContainer = "List")
+    })
     @GetMapping("/communities")
     public ResponseApi<?> getCommunityList(
             @RequestParam(value = "page", required = false) Integer page,
@@ -115,6 +148,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "커뮤니티 글 추가(준비 중)", tags = "사업자 - 커뮤니티")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "커뮤니티 글이 추가되었습니다.")
+    })
     @PostMapping("/communities")
     public ResponseApi<?> addCommunityPost(@RequestBody CommunityPostRequest postRequest) {
         // TODO: 사용자 인증 추가
@@ -124,6 +160,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "커뮤니티 글 수정(준비 중)", tags = "사업자 - 커뮤니티")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "커뮤니티 글이 성공적으로 수정되었습니다.")
+    })
     @PutMapping("/communities")
     public ResponseApi<?> updateCommunityPost(@RequestBody CommunityPostUpdateRequest updateRequest) {
         // TODO: 사용자 인증 추가
@@ -133,6 +172,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "커뮤니티 글 삭제(준비 중)", tags = "사업자 - 커뮤니티")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "커뮤니티 글이 성공적으로 삭제되었습니다.")
+    })
     @DeleteMapping("/communities")
     public ResponseApi<?> deleteCommunityPosts(@RequestBody CommunityPostDeleteRequest deleteRequest) {
         // TODO: 사용자 인증 추가
@@ -142,6 +184,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "커뮤니티 상세(준비 중)", tags = "사업자 - 커뮤니티")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = Object.class)
+    })
     @GetMapping("/communities/{seq}")
     public ResponseApi<?> getCommunityDetail(@PathVariable Integer seq) {
         // TODO: 사용자 인증 추가
@@ -151,7 +196,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "포인트 충전(준비 중)", tags = "사업자 - 결제")
-    @PostMapping("/deposits")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "포인트가 충전되었습니다.")
+    })
     public ResponseApi<?> deposits(@RequestBody PaymentRequest paymentRequest) {
         // TODO: 사용자 인증 추가
         Integer userSeq = null;
@@ -160,8 +207,12 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "프로필 수정(준비 중)", tags = "사업자 - 프로필")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "프로필이 수정되었습니다.")
+    })
     @PutMapping("/profile")
     public ResponseApi<?> updateProfile(
+            // TODO: 멘토님 피드백 적용
             @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "addressDetail", required = false) String addressDetail,
             @RequestParam(value = "attachment", required = false) MultipartFile attachment,
@@ -182,6 +233,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "결과보고서 확인", tags = "사업자 - 결과보고서")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "성공", response = ResultReportResponse.class)
+    })
     @GetMapping("/result")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseApi<ResultReportResponse> getResultReport(@RequestParam Integer campaignSeq) {
@@ -190,6 +244,9 @@ public class BusinessesController {
     }
 
     @ApiOperation(value = "리뷰어 선정(준비 중)", tags = "사업자 - 체험단")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "리뷰어가 성공적으로 선정되었습니다.")
+    })
     @PostMapping("/select")
     public ResponseApi<?> selectReviewer(@RequestBody ReviewerSelectRequest selectRequest) {
         // TODO: 사용자 인증 추가

@@ -18,5 +18,5 @@ public class BusinessesSignup {
 	private String postalCode;
 	private String address;
 	private String addressDetail;
-	private MultipartFile profile;
+	private String profile;
 }

@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,10 +17,12 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostCommentSaveRequest {
 
+    @NotNull
     private Integer postSeq;
 
     private Integer commentSeq;
 
+    @NotBlank
     private String comment;
 
     public static PostCommentSaveRequest of(Integer postSeq, Integer commentSeq, String comment) {

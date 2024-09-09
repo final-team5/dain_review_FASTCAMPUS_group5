@@ -1,6 +1,5 @@
-package com.example.finalproject.domain.post.dto.request;
+package com.example.finalproject.domain.user.dto.request;
 
-import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -13,15 +12,13 @@ import javax.validation.constraints.NotBlank;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostSaveRequest {
-
-    private PostType category;
+public class ChangePasswordRequest {
 
     @NotBlank
-    private String contents;
+    private String newPw;
 
     @NotBlank
-    private String title;
+    private String pw;
 }
