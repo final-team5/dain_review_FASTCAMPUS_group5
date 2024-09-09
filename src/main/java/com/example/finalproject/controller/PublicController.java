@@ -1,5 +1,7 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.campaign.dto.request.CampaignSearch;
+import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.user.dto.LoginResponse;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.SocialInfo;
@@ -83,7 +85,7 @@ public class PublicController {
 		register.setRole("ROLE_INFLUENCER");
 		register.setType(2);
 
-		userService.getU(register.getEmail(), 1);
+		userService.getUser(register.getEmail(), 1);
 
 		if(userService.checkEmail(register.getEmail())){
 			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
@@ -142,7 +144,7 @@ public class PublicController {
 		register.setRole("ROLE_BUSINESSES");
 		register.setType(1);
 
-		userService.getU(register.getEmail(), 1);
+		userService.getUser(register.getEmail(), 1);
 
 		if(userService.checkEmail(register.getEmail())){
 			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
