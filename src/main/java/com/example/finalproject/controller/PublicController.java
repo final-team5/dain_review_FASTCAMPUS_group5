@@ -1,5 +1,7 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.campaign.dto.request.CampaignSearch;
+import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.user.dto.request.BusinessesSignup;
 import com.example.finalproject.domain.user.dto.request.BusinessesSocialSignup;
 import com.example.finalproject.domain.user.dto.request.InfluencerSignup;
@@ -37,6 +39,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,6 +55,7 @@ public class PublicController {
 	private final UserService userService;
 	private final TokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
+	private final CampaignService campaignService;
 
 	@ApiOperation(value = "로그인", tags = "공개 - 회원")
 	@PostMapping("/login")
@@ -93,7 +97,7 @@ public class PublicController {
 		register.setRole("ROLE_INFLUENCER");
 		register.setType(2);
 
-		userService.getU(register.getEmail(), 1);
+		userService.findByUser(register.getEmail(), 1);
 
 		if(userService.checkEmail(register.getEmail())){
 			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
@@ -152,7 +156,7 @@ public class PublicController {
 		register.setRole("ROLE_BUSINESSES");
 		register.setType(1);
 
-		userService.getUser(register.getEmail(), 1);
+		userService.findByUser(register.getEmail(), 1);
 
 		if(userService.checkEmail(register.getEmail())){
 			throw new AuthException(AuthErrorCode.EMAIL_ALREADY_IN_USE);
@@ -294,6 +298,21 @@ public class PublicController {
 			e.printStackTrace();  // 예외를 콘솔에 출력
 			return null;
 		}
+	}
+
+	@ApiOperation(value = "체험단 리스트", tags = "공개 - 체험단")
+	@GetMapping("/campaign")
+	public ResponseEntity<?> campaign(CampaignSearch search){
+		JSONObject json = new JSONObject();
+		json.put("list", campaignService.getCampaignList(search));
+		json.put("count", campaignService.getCampaignListCount(search));
+		return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "체험단 상세", tags = "공개 - 체험단")
+	@GetMapping("/campaign/{id}")
+	public ResponseEntity<?> campaign(@PathVariable String id){
+		return new ResponseEntity<>(campaignService.getDetail(Integer.valueOf(id)), HttpStatus.OK);
 	}
 
 }
