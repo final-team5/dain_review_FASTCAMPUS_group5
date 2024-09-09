@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
+import com.example.finalproject.domain.user.dto.response.TokenRefreshResponse;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
@@ -13,6 +14,7 @@ import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import com.example.finalproject.global.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +27,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,6 +42,7 @@ public class UserService {
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final TokenProvider tokenProvider;
 
 	private final AmazonS3 amazonS3;
 
@@ -204,6 +210,19 @@ public class UserService {
 			businessesRepository.deleteByUser(user);
 		}
 
+	}
+
+	public TokenRefreshResponse refreshToken(String userEmail) throws ParseException {
+		User user = userRepository.getUserByEmailOrException(userEmail);
+		UserInfo userInfo = UserInfo.from(user);
+
+		String token = tokenProvider.createToken(userInfo);
+		String email = user.getEmail();
+		Date expireDate = tokenProvider.getExpireDate(token);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String strNowDate = simpleDateFormat.format(expireDate);
+
+		return TokenRefreshResponse.of(token, email, strNowDate);
 	}
 
 	private File convert(MultipartFile file) throws IOException {
