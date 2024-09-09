@@ -1,4 +1,4 @@
-package com.example.finalproject.domain.campaign.dto.request;
+package com.example.finalproject.domain.campaign.dto;
 
 
 import com.example.finalproject.domain.campaign.dto.City;

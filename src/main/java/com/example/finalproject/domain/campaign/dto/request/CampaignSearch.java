@@ -1,7 +1,7 @@
 package com.example.finalproject.domain.campaign.dto.request;
 
 import com.example.finalproject.domain.campaign.dto.Category;
-import com.example.finalproject.domain.campaign.dto.City;
+import com.example.finalproject.domain.campaign.dto.Location;
 import com.example.finalproject.domain.campaign.dto.Sns;
 import com.example.finalproject.domain.campaign.dto.Type;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
