@@ -212,6 +212,12 @@ public class UserService {
 
 	}
 
+	/**
+	 * 토큰 갱신 기능
+	 *
+	 * @param userEmail : 회원 email ID
+	 * @return : TokenRefreshResponse
+	 */
 	public TokenRefreshResponse refreshToken(String userEmail) throws ParseException {
 		User user = userRepository.getUserByEmailOrException(userEmail);
 		UserInfo userInfo = UserInfo.from(user);
