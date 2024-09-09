@@ -1,13 +1,17 @@
 package com.example.finalproject.domain.campaign.repository;
 
+import com.example.finalproject.domain.campaign.dto.City;
+import com.example.finalproject.domain.campaign.dto.District;
 import com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount;
 import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +19,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CampaignRepository extends JpaRepository<Campaign, Integer> {
+public interface CampaignRepository extends JpaRepository<Campaign, Integer>,
+    JpaSpecificationExecutor<Campaign> {
     Optional<Campaign> findByIdAndUserSeq(String id, Integer userSeq);
     Optional<Campaign> findById(String id);
 
