@@ -67,7 +67,7 @@ public class UserService {
 			;
 	}
 
-	public Optional<User> getU(String email, Integer loginType) {
+	public Optional<User> findByUser(String email, Integer loginType) {
 		return userRepository.findByEmailAndLoginType(email, loginType);
 	}
 
