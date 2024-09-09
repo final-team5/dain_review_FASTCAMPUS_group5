@@ -18,6 +18,7 @@ import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
+import com.example.finalproject.domain.user.dto.response.TokenRefreshResponse;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 
 @Api(tags = "회원")
 @RequestMapping(path = "/user")
@@ -205,5 +207,15 @@ public class UserController {
         userService.withdrawalUser(userDetails.getUsername());
 
         return ResponseApi.success(HttpStatus.OK, "user withdrawal success");
+    }
+
+    @ApiOperation(value = "토큰 갱신", tags = "사용자 - 회원")
+    @PostMapping(path = "/refresh")
+    public ResponseApi<TokenRefreshResponse> refreshToken(
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
+    ) throws ParseException {
+        TokenRefreshResponse tokenRefreshResponse = userService.refreshToken(userDetails.getUsername());
+
+        return ResponseApi.success(HttpStatus.OK, tokenRefreshResponse);
     }
 }

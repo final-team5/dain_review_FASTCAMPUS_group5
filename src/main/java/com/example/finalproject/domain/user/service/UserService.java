@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
+import com.example.finalproject.domain.user.dto.response.TokenRefreshResponse;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
@@ -13,6 +14,7 @@ import com.example.finalproject.domain.user.repository.InfluencerRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import com.example.finalproject.global.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +27,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,6 +42,7 @@ public class UserService {
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final TokenProvider tokenProvider;
 
 	private final AmazonS3 amazonS3;
 
@@ -134,6 +140,13 @@ public class UserService {
 		}
 	}
 
+	/**
+	 * 이미지 파일 등록 기능
+	 *
+	 * @param multipartFile : 등록할 이미지 파일
+	 * @param dirName : S3 저장소 디렉토리 명
+	 * @return : 저장한 이미지 파일 url
+	 */
 	public String uploadImage(MultipartFile multipartFile, String dirName) throws IOException {
 		// 파일 이름에서 공백을 제거한 새로운 파일 이름 생성
 		String originalFilename = multipartFile.getOriginalFilename();
@@ -155,6 +168,14 @@ public class UserService {
 		return uploadImageUrl;
 	}
 
+	/**
+	 * 이미지 파일 수정 기능
+	 *
+	 * @param oldImageUrl : 기존 저장했던 이미지 파일의 url
+	 * @param newImageFile : 새로 업데이트 할 이미지 파일
+	 * @param dirName : S3 에 저장할 디렉토리명
+	 * @return : 새로 업데이트한 이미지 url
+	 */
 	@Transactional
 	public String updateImage(String oldImageUrl, MultipartFile newImageFile, String dirName) throws IOException {
 		// 기존 파일 삭제
@@ -173,6 +194,12 @@ public class UserService {
 		return uploadImage(newImageFile, dirName);
 	}
 
+	/**
+	 * 비밀번호 변경 기능
+	 *
+	 * @param userEmail : 회원 email ID
+	 * @param changePasswordRequest : 변경할 비밀번호와 확인용 비밀번호 정보
+	 */
 	@Transactional
 	public void changePassword(String userEmail, ChangePasswordRequest changePasswordRequest) {
 		User user = userRepository.getUserByEmailOrException(userEmail);
@@ -190,6 +217,11 @@ public class UserService {
 		user.setPw(encodedPassword);
 	}
 
+	/**
+	 * 회원 탈퇴 기능
+	 *
+	 * @param userEmail : 회원 email ID
+	 */
 	@Transactional
 	public void withdrawalUser(String userEmail) {
 		User user = userRepository.getUserByEmailOrException(userEmail);
@@ -204,6 +236,25 @@ public class UserService {
 			businessesRepository.deleteByUser(user);
 		}
 
+	}
+
+	/**
+	 * 토큰 갱신 기능
+	 *
+	 * @param userEmail : 회원 email ID
+	 * @return : TokenRefreshResponse
+	 */
+	public TokenRefreshResponse refreshToken(String userEmail) throws ParseException {
+		User user = userRepository.getUserByEmailOrException(userEmail);
+		UserInfo userInfo = UserInfo.from(user);
+
+		String token = tokenProvider.createToken(userInfo);
+		String email = user.getEmail();
+		Date expireDate = tokenProvider.getExpireDate(token);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String strNowDate = simpleDateFormat.format(expireDate);
+
+		return TokenRefreshResponse.of(token, email, strNowDate);
 	}
 
 	private File convert(MultipartFile file) throws IOException {
