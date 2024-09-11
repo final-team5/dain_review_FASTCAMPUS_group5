@@ -226,15 +226,7 @@ public class UserService {
 	public void withdrawalUser(String userEmail) {
 		User user = userRepository.getUserByEmailOrException(userEmail);
 
-		String role = user.getRole();
-
-		if (role.equals("ROLE_INFLUENCER")) {
-			influencerRepository.deleteByUser(user);
-		}
-
-		if (role.equals("ROLE_BUSINESSES")) {
-			businessesRepository.deleteByUser(user);
-		}
+		userRepository.delete(user);
 
 	}
 
