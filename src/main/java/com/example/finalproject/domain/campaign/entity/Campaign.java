@@ -71,7 +71,7 @@ public class Campaign {
 
     private Integer recruiter;
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String image;
 
     @Column(length = 50)
@@ -104,6 +104,12 @@ public class Campaign {
 
     @Column(name = "experience_end_time")
     private DateTime experienceEndTime;
+
+    @Column(name = "application_participants_date")
+    private Date applicationParticipantsDate;   // 선정자 발표
+
+    @Column(name = "review_end_date")
+    private Date reviewEndDate;     // 리뷰 마감
 
     private Integer monday;
     private Integer tuesday;
@@ -142,6 +148,12 @@ public class Campaign {
 
     @Column(name = "deleted_at")
     private Timestamp deletedAt;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
 
     @PrePersist
     void registeredAt() {

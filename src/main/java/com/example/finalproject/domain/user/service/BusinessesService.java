@@ -21,12 +21,19 @@ import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.AgencyRepository;
 import com.example.finalproject.domain.user.repository.BusinessesRepository;
 import com.example.finalproject.domain.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.DateTime;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.security.auth.message.AuthException;
 import javax.transaction.Transactional;
@@ -40,16 +47,23 @@ import java.util.Optional;
 @Service
 public class BusinessesService {
 
-    private final ResultReportRepository resultReportRepository;
-    private CampaignRepository campaignRepository;
-    private UserService userService;
-    private UserRepository userRepository;
-    private BusinessesRepository businessesRepository;
-    private AgencyRepository agencyRepository;
+    @Autowired
+    private ResultReportRepository resultReportRepository;
 
-    public BusinessesService(ResultReportRepository resultReportRepository) {
-        this.resultReportRepository = resultReportRepository;
-    }
+    @Autowired
+    private CampaignRepository campaignRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BusinessesRepository businessesRepository;
+
+    @Autowired
+    private AgencyRepository agencyRepository;
 
     /**
      * 현재 인증된 사용자의 식별자를 가져오는 메서드
@@ -63,7 +77,7 @@ public class BusinessesService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AuthException();
         }
-        UserInfo userInfo = userService.findByUsername(authentication.getName());
+        UserInfo userInfo = userService.findByEmail(authentication.getName());
         return userInfo.getSeq();
     }
 
@@ -98,6 +112,7 @@ public class BusinessesService {
         Agency agency = new Agency();
         agency.setReason("신청 사유");
         agency.setStatus(1);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
+        agency.setCreateDate(new Date());
         agencyRepository.save(agency);
     }
 
@@ -122,6 +137,7 @@ public class BusinessesService {
         campaign.setExperienceStartDate(parseDate(insert.getExperienceStartDate()));
         campaign.setExperienceEndDate(parseDate(insert.getExperienceEndDate()));
         campaign.setRecruiter(userSeq);
+        // TODO: 관리자 기능 구현
         campaign.setStatus(CampaignStatus.DRAFT.getCode());
         campaign.setType(insert.getType());
 
@@ -141,11 +157,63 @@ public class BusinessesService {
         campaign.setSunday(insert.isSunday() ? 1 : 0);
         campaign.setPoint(insert.getPoint());
         campaign.setService(insert.getService());
-        campaign.setExperienceStartTime(insert.getExperienceStartTime() != null ? new DateTime(insert.getExperienceStartTime()) : null);
-        campaign.setExperienceEndTime(insert.getExperienceEndTime() != null ? new DateTime(insert.getExperienceEndTime()) : null);
+
+        campaign.setExperienceStartTime(formatTime(insert.getExperienceStartDate(), insert.getExperienceStartTime()));
+        campaign.setExperienceEndTime(formatTime(insert.getExperienceEndDate(), insert.getExperienceEndTime()));
         campaign.setSegment(insert.getSegment());
 
+        String fullAddress = insert.getCity() + " " + insert.getDistrict();
+        setLatitudeAndLongitude(campaign, fullAddress);
+
         campaignRepository.save(campaign);
+
+        campaignRepository.save(campaign);
+    }
+
+    /**
+     * 문자열 형식의 날짜와 시간을 RFC3339 형식의 DateTime 객체로 변환하는 메서드
+     *
+     * @param date 날짜 문자열 (yyyy-MM-dd 형식)
+     * @param time 시간 문자열 (HH:mm 형식)
+     * @return RFC3339 형식의 DateTime 객체
+     */
+    private DateTime formatTime(String date, String time) {
+        if (date == null || time == null) {
+            return null;
+        }
+        String dateTimeString = date + "T" + time + ":00Z";
+        return new DateTime(dateTimeString);
+    }
+
+    /**
+     * 주소를 기반으로 위도와 경도를 설정하는 메서드
+     *
+     * @param campaign 체험단 엔티티
+     * @param address  주소 문자열
+     */
+    private void setLatitudeAndLongitude(Campaign campaign, String address) {
+        try {
+            String url = UriComponentsBuilder.fromHttpUrl("https://nominatim.openstreetmap.org/search")
+                    .queryParam("q", address)
+                    .queryParam("format", "json")
+                    .build()
+                    .toUriString();
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(response.getBody());
+            if (root.isArray() && root.size() > 0) {
+                JsonNode location = root.get(0);
+                campaign.setLatitude(location.get("lat").asDouble());
+                campaign.setLongitude(location.get("lon").asDouble());
+            } else {
+                System.out.println("주소로 위도/경도를 찾을 수 없습니다: " + address);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -168,7 +236,7 @@ public class BusinessesService {
             throw new IllegalArgumentException("체험 기간은 필수입니다.");
         }
         if (insert.getCampaignLink() == null || insert.getCampaignLink().isEmpty()) {
-            throw new IllegalArgumentException("캠페인 링크는 필수입니다.");
+            throw new IllegalArgumentException("체험단 링크는 필수입니다.");
         }
         // 날짜 검증
         Date applicationStartDate = parseDate(insert.getApplicationStartDate());
@@ -193,14 +261,14 @@ public class BusinessesService {
     public void cancelCampaign(String campaignId) {
         Integer userSeq = getCurrentUserSeq();
         Campaign campaign = campaignRepository.findById(Integer.parseInt(campaignId))
-                .orElseThrow(() -> new IllegalArgumentException("해당 캠페인이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
 
         if (!campaign.getRecruiter().equals(userSeq)) {
-            throw new IllegalStateException("해당 캠페인을 취소할 권한이 없습니다.");
+            throw new IllegalStateException("해당 체험단을 취소할 권한이 없습니다.");
         }
 
         if (campaign.getStatus() == CampaignStatus.COMPLETE.getCode()) {
-            throw new IllegalStateException("완료된 캠페인은 취소할 수 없습니다.");
+            throw new IllegalStateException("완료된 체험단은 취소할 수 없습니다.");
         }
 
         if (campaign.getStatus() == CampaignStatus.DRAFT.getCode() ||
@@ -208,7 +276,7 @@ public class BusinessesService {
             campaign.setStatus(CampaignStatus.CANCELED.getCode());
             campaignRepository.save(campaign);
         } else {
-            throw new IllegalStateException("현재 상태에서 캠페인을 취소할 수 없습니다.");
+            throw new IllegalStateException("현재 상태에서 체험단을 취소할 수 없습니다.");
         }
     }
 
@@ -221,14 +289,26 @@ public class BusinessesService {
      */
     public Object getCampaignDetail(String id) {
         Integer userSeq = getCurrentUserSeq();
-        Campaign campaign = campaignRepository.findById(Integer.parseInt(id))
-                .orElseThrow(() -> new IllegalArgumentException("해당 체험단이 존재하지 않습니다."));
 
-        if (!campaign.getRecruiter().equals(userSeq)) {
-            throw new IllegalStateException("해당 체험단에 접근할 권한이 없습니다.");
+        Campaign campaign = campaignRepository.findById(Integer.parseInt(id))
+                .orElse(null);
+
+        if (campaign == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDto());
         }
 
-        return CampaignDto.from(campaign);
+        Optional<User> optionalUser = userRepository.findById(campaign.getRecruiter());
+        User user = optionalUser.orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDto());
+        }
+
+        if (!user.getSeq().equals(userSeq)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("해당 체험단에 접근할 권한이 없습니다.");
+        }
+
+        return ResponseEntity.ok(CampaignDto.from(campaign));
     }
 
     /**
@@ -389,7 +469,7 @@ public class BusinessesService {
     /**
      * 결과보고서를 조회하는 메서드
      *
-     * @param campaignSeq 결과보고서의 캠페인 식별자
+     * @param campaignSeq 결과보고서의 체험단 식별자
      * @return 결과보고서 객체
      * @throws IllegalArgumentException 결과보고서가 존재하지 않거나 권한이 없을 때 발생
      */
@@ -397,7 +477,7 @@ public class BusinessesService {
     public ResultReportResponse getResultReport(Integer campaignSeq) {
         // TODO: 결과보고서 생성 및 업데이트 기능 추가
         if (campaignSeq == null) {
-            throw new IllegalArgumentException("캠페인 식별자는 필수입니다.");
+            throw new IllegalArgumentException("체험단 식별자는 필수입니다.");
         }
 
         Integer userSeq = getCurrentUserSeq();
