@@ -63,6 +63,10 @@ public class UserDto {
     }
 
     public static UserDto from(User user) {
+        if (user == null) {
+            return new UserDto();
+        }
+
         return UserDto.of(
                 user.getSeq(),
                 user.getEmail(),

@@ -85,9 +85,9 @@ public class BusinessesController {
         return ResponseApi.success(HttpStatus.OK, campaignDetail);
     }
 
-    @ApiOperation(value = "체험 진행하기", tags = "사업자 - 체험단")
+    @ApiOperation(value = "체험단 선정하기(준비 중)", tags = "사업자 - 체험단")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "체험단 진행이 시작되었습니다.")
+            @ApiResponse(code = 200, message = "체험단을 선정했습니다.")
     })
     @PostMapping("/campaign/{seq}/start")
     @PreAuthorize("hasRole('ROLE_BUSINESS')")

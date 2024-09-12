@@ -77,8 +77,8 @@ public class UserService {
 		return userRepository.findByEmailAndLoginType(email, loginType);
 	}
 
-	public UserInfo findByUsername(String username) {
-		User user = userRepository.findByName(username)
+	public UserInfo findByEmail(String email) {
+		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
 		return UserInfo.builder()
