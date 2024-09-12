@@ -1,8 +1,8 @@
 package com.example.finalproject.domain.user.service;
 
-import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.campaign.dto.request.CampaignInsertRequest;
 import com.example.finalproject.domain.campaign.dto.request.ReviewerSelectRequest;
+import com.example.finalproject.domain.campaign.dto.response.CampaignDetailResponse;
 import com.example.finalproject.domain.campaign.dto.response.ResultReportResponse;
 import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.campaign.entity.CampaignStatus;
@@ -15,6 +15,7 @@ import com.example.finalproject.domain.post.dto.request.CommunityPostRequest;
 import com.example.finalproject.domain.post.dto.request.CommunityPostUpdateRequest;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.AgencyInsertRequest;
+import com.example.finalproject.domain.user.dto.response.InfluencerDetailResponse;
 import com.example.finalproject.domain.user.entity.Agency;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.User;
@@ -64,6 +65,8 @@ public class BusinessesService {
 
     @Autowired
     private AgencyRepository agencyRepository;
+    @Autowired
+    private InfluencerService influencerService;
 
     /**
      * 현재 인증된 사용자의 식별자를 가져오는 메서드
@@ -284,31 +287,79 @@ public class BusinessesService {
      * 체험단의 상세 정보를 조회하는 메서드
      *
      * @param id 조회할 체험단의 식별자 (ID)
-     * @return 조회한 체험단의 상세 정보 (CampaignDto)
+     * @return 조회한 체험단의 상세 정보 (CampaignDetailResponse)
      * @throws IllegalArgumentException 해당 체험단이 존재하지 않을 때 발생
      */
-    public Object getCampaignDetail(String id) {
+    public ResponseEntity<Object> getCampaignDetail(String id) {
         Integer userSeq = getCurrentUserSeq();
-
-        Campaign campaign = campaignRepository.findById(Integer.parseInt(id))
-                .orElse(null);
+        Campaign campaign = campaignRepository.findById(Integer.parseInt(id)).orElse(null);
 
         if (campaign == null) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDto());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDetailResponse());
         }
 
         Optional<User> optionalUser = userRepository.findById(campaign.getRecruiter());
         User user = optionalUser.orElse(null);
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDto());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new CampaignDetailResponse());
         }
 
         if (!user.getSeq().equals(userSeq)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("해당 체험단에 접근할 권한이 없습니다.");
         }
 
-        return ResponseEntity.ok(CampaignDto.from(campaign));
+        List<InfluencerDetailResponse> influencerList = influencerService.getInfluencersForCampaign(Long.valueOf(campaign.getSeq()));
+
+        CampaignDetailResponse response = convertCampaignToCampaignDetailResponse(campaign, influencerList);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Campaign 엔티티를 CampaignDetailResponse DTO로 변환하는 메서드
+     *
+     * @param campaign 변환할 Campaign 엔티티
+     * @return 변환된 CampaignDetailResponse 객체
+     */
+    private CampaignDetailResponse convertCampaignToCampaignDetailResponse(Campaign campaign, List<InfluencerDetailResponse> influencerList) {
+        User user = campaign.getUser();
+        Businesses business = businessesRepository.findByUser(user).orElse(null);
+
+        return new CampaignDetailResponse(
+                campaign.getSeq(),
+                campaign.getTitle(),
+                campaign.getContents(),
+                business != null ? business.getCompany() : null,
+                user != null ? user.getAddress() : null,
+                user != null ? user.getPhone() : null,
+                campaign.getStatus(),
+                campaign.getApplicationStartDate(),
+                campaign.getApplicationEndDate(),
+                campaign.getExperienceStartDate(),
+                campaign.getExperienceEndDate(),
+                campaign.getCity(),
+                campaign.getDistrict(),
+                campaign.getRecruiter(),
+                campaign.getPlatform(),
+                campaign.getCategory(),
+                campaign.getType(),
+                campaign.getSegment(),
+                campaign.getCampaignLink(),
+                campaign.getImage(),
+                campaign.getKeyword1(),
+                campaign.getKeyword2(),
+                campaign.getKeyword3(),
+                campaign.getMission(),
+                campaign.getService(),
+                campaign.getPoint(),
+                influencerList,
+                campaign.getApplicationParticipantsDate(),
+                campaign.getReviewEndDate(),
+                campaign.getLatitude(),
+                campaign.getLongitude(),
+                campaign.getRegisteredAt(),
+                campaign.getUpdatedAt()
+        );
     }
 
     /**
