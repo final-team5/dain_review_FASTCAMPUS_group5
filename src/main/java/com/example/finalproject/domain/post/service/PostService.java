@@ -14,6 +14,7 @@ import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.repository.PostCommentRepository;
 import com.example.finalproject.domain.post.repository.PostRepository;
 import com.example.finalproject.domain.post.repository.PostTypesRepository;
+import com.example.finalproject.domain.post.specification.PostSpecification;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
 import com.example.finalproject.domain.user.entity.User;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -182,7 +184,7 @@ public class PostService {
     public PostDto saveInfCommunityPost(PostSaveRequest postSaveRequest, String userEmail) {
         User user = userRepository.getUserByEmailOrException(userEmail);
 
-        validateInfluencerCommunityCategory(postSaveRequest);
+        validateInfluencerCommunityCategory(postSaveRequest.getCategory());
 
         PostTypes postTypes = postTypesRepository.getPostTypesByTypeOrException(postSaveRequest.getCategory());
 
@@ -230,27 +232,39 @@ public class PostService {
      * @return Page<PostDto>
      */
     // TODO : 추후 인플루언서, 사업주 엔티티 설계 완료 시, 반환 내용 닉네임 및 업체명으로 수정해야함.
-    public Page<PostDto> findListInfCommunityPost(SearchType searchType, String searchWord, Pageable pageable) {
-        if (searchWord == null || searchWord.isEmpty()) {
-            return postRepository.findAllByCategorySeq(3, pageable).map(PostDto::from);
+    public Page<PostDto> findListInfCommunityPost(SearchType searchType, PostType influencerSearchPostType,  String searchWord, Pageable pageable) {
+
+        Specification<Post> postSpecification = PostSpecification.findByPostCategory(3);
+
+        if (influencerSearchPostType != null) {
+            validateInfluencerCommunityCategory(influencerSearchPostType);
+            postSpecification = postSpecification.and(PostSpecification.findByPostType(influencerSearchPostType));
         }
 
-        if (searchType == null) {
-            return postRepository.findByContaining(3, searchWord, pageable).map(PostDto::from);
+        if (searchWord != null && !searchWord.isEmpty()) {
+            if (searchType == null) {
+                postSpecification = postSpecification.and(PostSpecification.findByKeywordInAll(searchWord));
+            } else {
+                switch (searchType) {
+                    case ALL:
+                        postSpecification = postSpecification.and(PostSpecification.findByKeywordInAll(searchWord));
+                        break;
+                    case USER:
+                        postSpecification = postSpecification.and(PostSpecification.findByKeywordInUsername(searchWord));
+                        break;
+                    case TITLE:
+                        postSpecification = postSpecification.and(PostSpecification.findByKeywordInTitle(searchWord));
+                        break;
+                    case CONTENTS:
+                        postSpecification = postSpecification.and(PostSpecification.findByKeywordInContents(searchWord));
+                        break;
+                    default:
+                        throw new ValidException(ValidErrorCode.POST_SEARCH_TYPE_NOT_FOUND);
+                }
+            }
         }
 
-        switch (searchType) {
-            case ALL:
-                return postRepository.findByContaining(3, searchWord, pageable).map(PostDto::from);
-            case USER:
-                return postRepository.findByUsernameContaining(3, searchWord, pageable).map(PostDto::from);
-            case TITLE:
-                return postRepository.findByTitleContaining(3, searchWord, pageable).map(PostDto::from);
-            case CONTENTS:
-                return postRepository.findByContentsContaining(3, searchWord, pageable).map(PostDto::from);
-            default:
-                throw new ValidException(ValidErrorCode.POST_SEARCH_TYPE_NOT_FOUND);
-        }
+        return postRepository.findAll(postSpecification, pageable).map(PostDto::from);
     }
 
     /**
@@ -320,10 +334,10 @@ public class PostService {
     /**
      * 인플루언서 커뮤니티 게시글 카테고리 검증
      *
-     * @param postSaveRequest : 게시글 등록 정보
+     * @param category : 게시글 카테고리
      */
-    private static void validateInfluencerCommunityCategory(PostSaveRequest postSaveRequest) {
-        if (!postSaveRequest.getCategory().equals(PostType.QUESTION) && !postSaveRequest.getCategory().equals(PostType.KNOW_HOW) && !postSaveRequest.getCategory().equals(PostType.ACCOMPANY) && !postSaveRequest.getCategory().equals(PostType.ETC)) {
+    private static void validateInfluencerCommunityCategory(PostType category) {
+        if (!category.equals(PostType.QUESTION) && !category.equals(PostType.KNOW_HOW) && !category.equals(PostType.ACCOMPANY) && !category.equals(PostType.ETC)) {
             throw new ValidException(ValidErrorCode.IS_NOT_INFLUENCER_COMMUNITY_CATEGORY);
         }
     }
