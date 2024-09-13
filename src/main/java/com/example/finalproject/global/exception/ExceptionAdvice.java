@@ -60,4 +60,17 @@ public class ExceptionAdvice {
 		return ResponseEntity.status(ex.getStatusCode()).body(ResponseApi.failed(ex, ex.getInfo()));
 	}
 
+	@ExceptionHandler(NumberFormatException.class)
+	public ResponseEntity<ResponseApi<?>> numberFormatException(NumberFormatException ex) {
+		log.warn(ex.getMessage());
+
+		Map<String, String> errorMessages = new HashMap<>();
+		errorMessages.put("NumberFormatException", "올바르지 않은 형식입니다.");
+		ValidException validException = new ValidException(HttpStatus.BAD_REQUEST, errorMessages);
+
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(ResponseApi.failed(validException, errorMessages));
+	}
+
 }

@@ -8,11 +8,13 @@ import com.example.finalproject.domain.post.dto.request.PostUpdateRequest;
 import com.example.finalproject.domain.post.dto.response.PostDetailResponse;
 import com.example.finalproject.domain.post.dto.response.PostListResponse;
 import com.example.finalproject.domain.post.dto.response.PostResponse;
+import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,11 +75,13 @@ public class InfluencerController {
     @GetMapping(path = "/communities")
     public ResponseApi<Page<PostListResponse>> findListInfCommunityPost(
             @RequestParam(required = false) SearchType searchType,
+            @ApiParam(value = "QUESTION, KNOW_HOW, ACCOMPANY, ETC 중 선택")
+            @RequestParam(required = false) PostType influencerSearchPostType,
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
             @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
     ) {
-        Page<PostDto> listInfCommunityPost = postService.findListInfCommunityPost(searchType, searchWord, pageable);
+        Page<PostDto> listInfCommunityPost = postService.findListInfCommunityPost(searchType, influencerSearchPostType, searchWord, pageable);
         Page<PostListResponse> postListResponses = listInfCommunityPost.map(PostListResponse::from);
 
         return ResponseApi.success(HttpStatus.OK, postListResponses);
