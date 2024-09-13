@@ -75,7 +75,6 @@ public class InfluencerController {
     @GetMapping(path = "/communities")
     public ResponseApi<Page<PostListResponse>> findListInfCommunityPost(
             @RequestParam(required = false) SearchType searchType,
-            @ApiParam(value = "QUESTION, KNOW_HOW, ACCOMPANY, ETC 중 선택")
             @RequestParam(required = false) PostType influencerSearchPostType,
             @RequestParam(required = false) String searchWord,
             @PageableDefault(sort = "registeredAt", direction = Sort.Direction.DESC) Pageable pageable,
