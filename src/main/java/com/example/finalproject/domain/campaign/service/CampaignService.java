@@ -9,6 +9,7 @@ import com.example.finalproject.domain.campaign.entity.enums.FirstCampaignSearch
 import com.example.finalproject.domain.campaign.entity.enums.SecondCampaignSearchType;
 import com.example.finalproject.domain.campaign.repository.CampaignPreferenceRepository;
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
+import com.example.finalproject.domain.campaign.specification.CampaignSpecification;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
@@ -182,7 +183,39 @@ public class CampaignService {
     }
 
     public Page<CampaignDto> findCampaignPage(FirstCampaignSearchType searchType1, SecondCampaignSearchType searchType2, String searchWord, Pageable pageable) {
-        return null;
+
+        Specification<Campaign> campaignSpecification = (root, query, criteriaBuilder) -> null;
+
+        if (searchType2 != null) {
+            campaignSpecification = campaignSpecification.and(CampaignSpecification.findByCampaignStatus(searchType2.getCode()));
+        }
+
+        if (searchWord != null && !searchWord.isEmpty()) {
+            if (searchType1 == null) {
+                campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInAll(searchWord));
+            } else {
+                switch (searchType1) {
+                    case ALL:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInAll(searchWord));
+                        break;
+                    case CAMPAIGN_TITLE:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInTitle(searchWord));
+                        break;
+                    case ID:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInUserEmail(searchWord));
+                        break;
+                    case COMPANY_NAME:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInTitle(searchWord));
+                        break;
+                    case PHONE_NUMBER:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInUserPhone(searchWord));
+                    default:
+                        throw new ValidException(ValidErrorCode.CAMPAIGN_TYPE_INVALID);
+                }
+            }
+        }
+
+        return campaignRepository.findAll(campaignSpecification, pageable).map(CampaignDto::from);
     }
 
 }
