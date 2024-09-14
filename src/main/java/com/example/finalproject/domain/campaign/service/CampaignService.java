@@ -1,38 +1,30 @@
 package com.example.finalproject.domain.campaign.service;
 
-import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
-import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
-import com.example.finalproject.domain.campaign.dto.Category;
-import com.example.finalproject.domain.campaign.dto.City;
-import com.example.finalproject.domain.campaign.dto.District;
-import com.example.finalproject.domain.campaign.dto.Sns;
-import com.example.finalproject.domain.campaign.dto.Type;
+import com.example.finalproject.domain.campaign.dto.*;
 import com.example.finalproject.domain.campaign.dto.request.CampaignSearch;
 import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.campaign.entity.CampaignPreference;
 import com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount;
+import com.example.finalproject.domain.campaign.entity.enums.FirstCampaignSearchType;
+import com.example.finalproject.domain.campaign.entity.enums.SecondCampaignSearchType;
 import com.example.finalproject.domain.campaign.repository.CampaignPreferenceRepository;
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
+import com.example.finalproject.domain.campaign.specification.CampaignSpecification;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
-import io.swagger.models.auth.In;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import org.springframework.data.jpa.domain.Specification;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -188,6 +180,42 @@ public class CampaignService {
 
     public Campaign getDetail(Integer id) {
         return campaignRepository.findById(id).orElse(null);
+    }
+
+    public Page<CampaignDto> findCampaignPage(FirstCampaignSearchType searchType1, SecondCampaignSearchType searchType2, String searchWord, Pageable pageable) {
+
+        Specification<Campaign> campaignSpecification = (root, query, criteriaBuilder) -> null;
+
+        if (searchType2 != null) {
+            campaignSpecification = campaignSpecification.and(CampaignSpecification.findByCampaignStatus(searchType2.getCode()));
+        }
+
+        if (searchWord != null && !searchWord.isEmpty()) {
+            if (searchType1 == null) {
+                campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInAll(searchWord));
+            } else {
+                switch (searchType1) {
+                    case ALL:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInAll(searchWord));
+                        break;
+                    case CAMPAIGN_TITLE:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInTitle(searchWord));
+                        break;
+                    case ID:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInUserEmail(searchWord));
+                        break;
+                    case COMPANY_NAME:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInTitle(searchWord));
+                        break;
+                    case PHONE_NUMBER:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInUserPhone(searchWord));
+                    default:
+                        throw new ValidException(ValidErrorCode.CAMPAIGN_TYPE_INVALID);
+                }
+            }
+        }
+
+        return campaignRepository.findAll(campaignSpecification, pageable).map(CampaignDto::from);
     }
 
 }
