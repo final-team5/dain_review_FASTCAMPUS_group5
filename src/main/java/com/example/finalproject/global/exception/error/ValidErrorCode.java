@@ -10,6 +10,7 @@ public enum ValidErrorCode implements ErrorCode {
 
     // Campaign
     CAMPAIGN_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 체험단에 대한 정보가 존재하지 않습니다."),
+    CAMPAIGN_TYPE_INVALID(HttpStatus.BAD_REQUEST, "검색 필터 타입이 올바르지 않습니다."),
 
     // Campaign Preference
     CAMPAIGN_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "찜 했던 내역이 존재하지 않습니다."),
