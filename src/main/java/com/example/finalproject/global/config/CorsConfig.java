@@ -16,12 +16,12 @@ public class CorsConfig {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration corsConfiguration = new CorsConfiguration();
 		corsConfiguration.setAllowCredentials(true);
-//		corsConfiguration.setAllowedOrigins(Arrays.asList(
-//				"http://localhost:8000",
-//				"http://localhost:3000",
-//				"https://dain-review.vercel.app"
-//		));
-		corsConfiguration.addAllowedOrigin("*");
+		corsConfiguration.setAllowedOrigins(Arrays.asList(
+				"http://localhost:8000",
+				"http://localhost:3000",
+				"https://dain-review.vercel.app"
+		));
+//		corsConfiguration.addAllowedOrigin("*");
 		corsConfiguration.addAllowedHeader("*");
 		corsConfiguration.addAllowedMethod("*");
 		corsConfiguration.addExposedHeader("Authorization");
