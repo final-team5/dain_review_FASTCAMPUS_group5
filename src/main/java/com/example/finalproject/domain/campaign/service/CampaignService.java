@@ -18,6 +18,7 @@ import com.example.finalproject.domain.campaign.repository.CampaignPreferenceRep
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.campaign.specification.CampaignSpecification;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
@@ -34,10 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
-import org.springframework.data.jpa.domain.Specification;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 @Service
