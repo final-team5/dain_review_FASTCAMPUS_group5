@@ -12,8 +12,11 @@ import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.campaign.entity.CampaignApplicants;
 import com.example.finalproject.domain.campaign.entity.CampaignPreference;
 import com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount;
+import com.example.finalproject.domain.campaign.entity.enums.FirstCampaignSearchType;
+import com.example.finalproject.domain.campaign.entity.enums.SecondCampaignSearchType;
 import com.example.finalproject.domain.campaign.repository.CampaignPreferenceRepository;
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
+import com.example.finalproject.domain.campaign.specification.CampaignSpecification;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
@@ -26,11 +29,15 @@ import javax.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -166,6 +173,7 @@ public class CampaignService {
 
                 // 프리미엄 여부 필터
                 if (search.isPremium()) {
+                    // tag가 null이 아니고, 현재 날짜가 신청 기간 내에 있는 경우
                     predicates.add(criteriaBuilder.isNotNull(root.get("tag")));
                     predicates.add(criteriaBuilder.between(
                         criteriaBuilder.currentDate(),
@@ -231,6 +239,42 @@ public class CampaignService {
             .city(campaign.getCity())
             .district(campaign.getDistrict())
             .build();
+    }
+
+    public Page<CampaignDto> findCampaignPage(FirstCampaignSearchType searchType1, SecondCampaignSearchType searchType2, String searchWord, Pageable pageable) {
+
+        Specification<Campaign> campaignSpecification = (root, query, criteriaBuilder) -> null;
+
+        if (searchType2 != null) {
+            campaignSpecification = campaignSpecification.and(CampaignSpecification.findByCampaignStatus(searchType2.getCode()));
+        }
+
+        if (searchWord != null && !searchWord.isEmpty()) {
+            if (searchType1 == null) {
+                campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInAll(searchWord));
+            } else {
+                switch (searchType1) {
+                    case ALL:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInAll(searchWord));
+                        break;
+                    case CAMPAIGN_TITLE:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInTitle(searchWord));
+                        break;
+                    case ID:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInUserEmail(searchWord));
+                        break;
+                    case COMPANY_NAME:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInTitle(searchWord));
+                        break;
+                    case PHONE_NUMBER:
+                        campaignSpecification = campaignSpecification.and(CampaignSpecification.findBySearchWordInUserPhone(searchWord));
+                    default:
+                        throw new ValidException(ValidErrorCode.CAMPAIGN_TYPE_INVALID);
+                }
+            }
+        }
+
+        return campaignRepository.findAll(campaignSpecification, pageable).map(CampaignDto::from);
     }
 
 }

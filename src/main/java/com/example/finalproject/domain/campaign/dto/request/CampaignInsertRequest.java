@@ -23,7 +23,7 @@ public class CampaignInsertRequest {
     @ApiModelProperty(value = "상품 URL", required = true, example = "https://example.com/campaign")
     private String campaignLink;
 
-    @ApiModelProperty(value = "카테고리", required = true, example = "여행")
+    @ApiModelProperty(value = "카테고리", required = true, example = "3")
     private int category;
 
     @ApiModelProperty(value = "도시 분류", required = true, example = "부산")

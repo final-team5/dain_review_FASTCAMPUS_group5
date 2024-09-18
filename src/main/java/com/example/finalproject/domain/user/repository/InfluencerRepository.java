@@ -5,7 +5,10 @@ import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface InfluencerRepository extends JpaRepository<Influencer, Integer> {
@@ -14,6 +17,9 @@ public interface InfluencerRepository extends JpaRepository<Influencer, Integer>
 	void deleteByUser(User user);
 
 	Optional<Influencer> findByUser(User user);
+
+	@Query("SELECT i FROM Influencer i JOIN i.user u JOIN CampaignApplicants ca ON ca.user = u WHERE ca.campaign.seq = :campaignSeq")
+	List<Influencer> findByCampaignSeq(@Param("campaignSeq") Long campaignSeq);
 
 	default Influencer getInfluencerByUserOrException(User user) {
 		return findByUser(user).orElseThrow(
