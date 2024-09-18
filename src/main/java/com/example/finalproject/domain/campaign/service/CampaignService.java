@@ -1,8 +1,15 @@
 package com.example.finalproject.domain.campaign.service;
 
-import com.example.finalproject.domain.campaign.dto.*;
+import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
+import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
+import com.example.finalproject.domain.campaign.dto.Category;
+import com.example.finalproject.domain.campaign.dto.City;
+import com.example.finalproject.domain.campaign.dto.Sns;
+import com.example.finalproject.domain.campaign.dto.Type;
 import com.example.finalproject.domain.campaign.dto.request.CampaignSearch;
+import com.example.finalproject.domain.campaign.dto.response.CampaignSearchResponse;
 import com.example.finalproject.domain.campaign.entity.Campaign;
+import com.example.finalproject.domain.campaign.entity.CampaignApplicants;
 import com.example.finalproject.domain.campaign.entity.CampaignPreference;
 import com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount;
 import com.example.finalproject.domain.campaign.entity.enums.FirstCampaignSearchType;
@@ -11,9 +18,15 @@ import com.example.finalproject.domain.campaign.repository.CampaignPreferenceRep
 import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.campaign.specification.CampaignSpecification;
 import com.example.finalproject.domain.user.entity.User;
+import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 @Service
@@ -112,8 +123,9 @@ public class CampaignService {
         return campaignWithApplicantCounts.map(CampaignWithApplicantCountDto::from);
     }
 
-    public List<Campaign> getCampaignList(CampaignSearch search) {
-        return campaignRepository.findAll(getCampaignSpecification(search));
+    public List<CampaignSearchResponse> getCampaignList(CampaignSearch search) {
+        List<Campaign> campaignList = campaignRepository.findAll(getCampaignSpecification(search));
+        return convertToCampaignSearchResponse(campaignList);
     }
 
     public long getCampaignListCount(CampaignSearch search) {
@@ -129,7 +141,7 @@ public class CampaignService {
 
                 // 검색어 필터
                 if (search.getSearchWord() != null && !search.getSearchWord().isEmpty()) {
-                    predicates.add(criteriaBuilder.like(root.get("title"), search.getSearchWord()));
+                    predicates.add(criteriaBuilder.like(root.get("title"), "%" + search.getSearchWord() + "%"));
                 }
 
                 // 도시 필터
@@ -139,12 +151,7 @@ public class CampaignService {
 
                 // 구 필터
                 if (search.getDistricts() != null && !search.getDistricts().isEmpty()) {
-                    predicates.add(root.get("district").in(
-                        search.getDistricts().stream()
-                            .map(districtValue -> District.fromValue(districtValue, City.fromValue(search.getCity()).name())) // 도시와 구 번호로 District를 가져옴
-                            .map(District::getDistrictName) // 구 이름만 추출
-                            .collect(Collectors.toList())
-                    ));
+                    predicates.add(root.get("district").in(search.getDistricts()));
                 }
 
                 // 카테고리 필터
@@ -174,12 +181,62 @@ public class CampaignService {
                 }
             }
 
+            // 정렬 처리
+            if (search.getOrderParam() != null) {
+                switch (search.getOrderParam()) {
+                    case "point":
+                        query.orderBy(criteriaBuilder.desc(root.get("point")));
+                        break;
+                    case "latest":
+                        query.orderBy(criteriaBuilder.desc(root.get("applicationStartDate")));
+                        break;
+                    case "deadline":
+                        query.orderBy(criteriaBuilder.asc(root.get("applicationEndDate")));
+                        break;
+                    case "popularity":
+                        Join<Campaign, CampaignApplicants> applicantsJoin = root.join("campaignApplicants", JoinType.LEFT);
+                        query.orderBy(criteriaBuilder.desc(applicantsJoin.get("seq")));
+                        break;
+                    default:
+                        // 기본 정렬은 tag에 따라
+                        query.orderBy(criteriaBuilder.asc(
+                            criteriaBuilder.selectCase()
+                                .when(criteriaBuilder.equal(root.get("tag"), "다인리뷰"), 1)
+                                .when(criteriaBuilder.equal(root.get("tag"), "프리미엄"), 2)
+                                .when(criteriaBuilder.isNull(root.get("tag")), 3)
+                                .otherwise(4)
+                        ));
+                        break;
+                }
+            }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 
     public Campaign getDetail(Integer id) {
         return campaignRepository.findById(id).orElse(null);
+    }
+
+    public List<CampaignSearchResponse> convertToCampaignSearchResponse(List<Campaign> campaigns) {
+        return campaigns.stream()
+            .map(this::mapToCampaignSearchResponse)
+            .collect(Collectors.toList());
+    }
+
+    private CampaignSearchResponse mapToCampaignSearchResponse(Campaign campaign) {
+        return CampaignSearchResponse.builder()
+            .title(campaign.getTitle())
+            .recruiter(campaign.getRecruiter())
+            .image(campaign.getImage())
+            .service(campaign.getService())
+            .applicationEndDate(campaign.getApplicationEndDate())
+            .segment(campaign.getSegment())
+            .platform(campaign.getPlatform())
+            .type(campaign.getType())
+            .city(campaign.getCity())
+            .district(campaign.getDistrict())
+            .build();
     }
 
     public Page<CampaignDto> findCampaignPage(FirstCampaignSearchType searchType1, SecondCampaignSearchType searchType2, String searchWord, Pageable pageable) {
