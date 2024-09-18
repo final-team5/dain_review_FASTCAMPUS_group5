@@ -16,7 +16,7 @@ public class CampaignSearch {
 
 	private String searchWord = "";
 	private Integer city;
-	private ArrayList<Integer> districts;
+	private ArrayList<String> districts;
 	private Integer typeSeq;
 	private Integer categorySeq;
 	private Integer platformSeq;

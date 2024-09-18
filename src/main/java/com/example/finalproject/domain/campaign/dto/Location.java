@@ -1,10 +1,9 @@
 package com.example.finalproject.domain.campaign.dto;
 
 
-import com.example.finalproject.domain.campaign.dto.City;
-import com.example.finalproject.domain.campaign.dto.District;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.ArrayList;
 import lombok.Data;
 
 @Data
@@ -12,5 +11,5 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Location {
 	private City city;
-	private District district;
+	private ArrayList<String> district;
 }
