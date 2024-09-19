@@ -17,8 +17,10 @@ import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostCommentService;
 import com.example.finalproject.domain.post.service.PostService;
+import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
 import com.example.finalproject.domain.user.dto.response.TokenRefreshResponse;
+import com.example.finalproject.domain.user.dto.response.UserResponse;
 import com.example.finalproject.domain.user.service.UserService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
@@ -217,5 +219,16 @@ public class UserController {
         TokenRefreshResponse tokenRefreshResponse = userService.refreshToken(userDetails.getUsername());
 
         return ResponseApi.success(HttpStatus.OK, tokenRefreshResponse);
+    }
+
+    @ApiOperation(value = "회원 정보 조회", tags = "사용자 - 회원")
+    @GetMapping(path = "/get-info")
+    public ResponseApi<UserResponse> getUserInfo(
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        UserInfo userInfo = userService.getUser(userDetails.getUsername(), 1);
+        UserResponse userResponse = UserResponse.from(userInfo);
+
+        return ResponseApi.success(HttpStatus.OK, userResponse);
     }
 }

@@ -255,8 +255,6 @@ public class PublicController {
 				.token(new_token)
 				.name(user.getName())
 				.expireDate(strNowDate)
-				.profileUrl(user.getProfileUrl())
-				.alarmCounts(user.getAlarmCounts())
 				.message("로그인 되었습니다.")
 				.build();
 	}
