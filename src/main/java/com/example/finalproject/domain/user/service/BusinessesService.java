@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.DateTime;
 import lombok.SneakyThrows;
+import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -180,12 +181,12 @@ public class BusinessesService {
      * @param time 시간 문자열 (HH:mm 형식)
      * @return RFC3339 형식의 DateTime 객체
      */
-    private DateTime formatTime(String date, String time) {
+    private Date formatTime(String date, String time) {
         if (date == null || time == null) {
             return null;
         }
         String dateTimeString = date + "T" + time + ":00Z";
-        return new DateTime(dateTimeString);
+        return new Date(dateTimeString);
     }
 
     /**

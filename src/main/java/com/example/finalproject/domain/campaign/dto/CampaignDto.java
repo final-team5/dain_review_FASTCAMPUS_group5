@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -46,8 +47,8 @@ public class CampaignDto {
     private Date applicationEndDate;
     private Date experienceStartDate;
     private Date experienceEndDate;
-    private DateTime experienceStartTime;
-    private DateTime experienceEndTime;
+    private Date experienceStartTime;
+    private Date experienceEndTime;
     private Date applicationParticipantsDate;
     private Date reviewEndDate;
     private Integer monday;
@@ -75,7 +76,7 @@ public class CampaignDto {
                                  String title, String contents, String service, String keyword1, String keyword2, String keyword3,
                                  String campaignLink, String mission, Integer recruiter, String image, String city, String district,
                                  Integer point, String tag, Integer status, Date applicationStartDate, Date applicationEndDate,
-                                 Date experienceStartDate, Date experienceEndDate, DateTime experienceStartTime, DateTime experienceEndTime,
+                                 Date experienceStartDate, Date experienceEndDate, Date experienceStartTime, Date experienceEndTime,
                                  Date applicationParticipantsDate, Date reviewEndDate, Integer monday, Integer tuesday, Integer wednesday,
                                  Integer thursday, Integer friday, Integer saturday, Integer sunday, Integer hashtag, Integer map, Integer link,
                                  Integer characters, Integer videoLength, Integer pictureCount, Integer accountTag, Integer sound, Integer advertisingDisplay,

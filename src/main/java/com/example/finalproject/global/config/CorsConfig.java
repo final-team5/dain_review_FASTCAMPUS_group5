@@ -21,7 +21,7 @@ public class CorsConfig {
 				"http://localhost:3000",
 				"https://dain-review.vercel.app"
 		));
-//		corsConfiguration.addAllowedOrigin("http://localhost:8000");
+//		corsConfiguration.addAllowedOrigin("*");
 		corsConfiguration.addAllowedHeader("*");
 		corsConfiguration.addAllowedMethod("*");
 		corsConfiguration.addExposedHeader("Authorization");
