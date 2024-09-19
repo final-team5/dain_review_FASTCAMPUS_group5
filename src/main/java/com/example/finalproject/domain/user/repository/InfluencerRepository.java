@@ -26,4 +26,7 @@ public interface InfluencerRepository extends JpaRepository<Influencer, Integer>
 				() -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
 		);
 	}
+
+	@Query("SELECT ca.application FROM CampaignApplicants ca WHERE ca.user.seq = :userSeq ORDER BY ca.seq DESC")
+	Optional<Integer> findLatestApplicationByUserSeq(@Param("userSeq") Integer userSeq);
 }
