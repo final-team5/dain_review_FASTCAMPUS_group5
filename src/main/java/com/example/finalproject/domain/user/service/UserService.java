@@ -2,6 +2,7 @@ package com.example.finalproject.domain.user.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.finalproject.domain.alarm.repository.AlarmRepository;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
@@ -41,6 +42,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
+	private final AlarmRepository alarmRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final TokenProvider tokenProvider;
 
@@ -61,6 +63,8 @@ public class UserService {
 			username = businesses.getCompany();
 		}
 
+		Integer alarmCounts = alarmRepository.countByUser(user);
+
 		return UserInfo.builder()
 				.seq(user.getSeq())
 				.email(user.getEmail())
@@ -79,7 +83,7 @@ public class UserService {
 				.penalty(user.getPenalty())
 				.type(user.getType())
 				.profileUrl(user.getProfile())
-				.alarmCounts(1)
+				.alarmCounts(alarmCounts)
 				.build()
 				;
 	}
