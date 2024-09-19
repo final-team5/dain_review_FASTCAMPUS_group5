@@ -51,26 +51,37 @@ public class UserService {
 
 	public UserInfo getUser(String email, Integer loginType) {
 		User user = userRepository.getByEmailAndLoginType(email, loginType);
+		String username = "";
+
+		if (user.getRole().equals("ROLE_INFLUENCER")) {
+			Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+			username = influencer.getNickname();
+		} else {
+			Businesses businesses = businessesRepository.getBusinessesByUserOrException(user);
+			username = businesses.getCompany();
+		}
 
 		return UserInfo.builder()
-			.seq(user.getSeq())
-			.email(user.getEmail())
-			.id(user.getId())
-			.pw(user.getPw())
-			.role(user.getRole())
-			.name(user.getName())
-			.phone(user.getPhone())
-			.signupSource(user.getSignupSource())
-			.postalCode(user.getPostalCode())
-			.address(user.getAddress())
-			.addressDetail(user.getAddressDetail())
-			.point(user.getPoint())
-			.status(user.getStatus())
-			.cancel(user.getCancel())
-			.penalty(user.getPenalty())
-			.type(user.getType())
-			.build()
-			;
+				.seq(user.getSeq())
+				.email(user.getEmail())
+				.id(user.getId())
+				.pw(user.getPw())
+				.role(user.getRole())
+				.name(username)
+				.phone(user.getPhone())
+				.signupSource(user.getSignupSource())
+				.postalCode(user.getPostalCode())
+				.address(user.getAddress())
+				.addressDetail(user.getAddressDetail())
+				.point(user.getPoint())
+				.status(user.getStatus())
+				.cancel(user.getCancel())
+				.penalty(user.getPenalty())
+				.type(user.getType())
+				.profileUrl(user.getProfile())
+				.alarmCounts(1)
+				.build()
+				;
 	}
 
 	public Optional<User> findByUser(String email, Integer loginType) {
