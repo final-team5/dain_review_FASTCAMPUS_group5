@@ -15,7 +15,5 @@ public class LoginResponse {
 	private String token;
 	private String name;
 	private String expireDate;
-	private String profileUrl;
-	private Integer alarmCounts;
 	private String message;
 }
