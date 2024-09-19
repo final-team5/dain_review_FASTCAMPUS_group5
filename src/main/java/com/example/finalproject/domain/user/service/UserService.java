@@ -2,6 +2,7 @@ package com.example.finalproject.domain.user.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.finalproject.domain.alarm.repository.AlarmRepository;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
@@ -41,6 +42,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
+	private final AlarmRepository alarmRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final TokenProvider tokenProvider;
 
@@ -51,26 +53,39 @@ public class UserService {
 
 	public UserInfo getUser(String email, Integer loginType) {
 		User user = userRepository.getByEmailAndLoginType(email, loginType);
+		String username = "";
+
+		if (user.getRole().equals("ROLE_INFLUENCER")) {
+			Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+			username = influencer.getNickname();
+		} else {
+			Businesses businesses = businessesRepository.getBusinessesByUserOrException(user);
+			username = businesses.getCompany();
+		}
+
+		Integer alarmCounts = alarmRepository.countByUser(user);
 
 		return UserInfo.builder()
-			.seq(user.getSeq())
-			.email(user.getEmail())
-			.id(user.getId())
-			.pw(user.getPw())
-			.role(user.getRole())
-			.name(user.getName())
-			.phone(user.getPhone())
-			.signupSource(user.getSignupSource())
-			.postalCode(user.getPostalCode())
-			.address(user.getAddress())
-			.addressDetail(user.getAddressDetail())
-			.point(user.getPoint())
-			.status(user.getStatus())
-			.cancel(user.getCancel())
-			.penalty(user.getPenalty())
-			.type(user.getType())
-			.build()
-			;
+				.seq(user.getSeq())
+				.email(user.getEmail())
+				.id(user.getId())
+				.pw(user.getPw())
+				.role(user.getRole())
+				.name(username)
+				.phone(user.getPhone())
+				.signupSource(user.getSignupSource())
+				.postalCode(user.getPostalCode())
+				.address(user.getAddress())
+				.addressDetail(user.getAddressDetail())
+				.point(user.getPoint())
+				.status(user.getStatus())
+				.cancel(user.getCancel())
+				.penalty(user.getPenalty())
+				.type(user.getType())
+				.profileUrl(user.getProfile())
+				.alarmCounts(alarmCounts)
+				.build()
+				;
 	}
 
 	public Optional<User> findByUser(String email, Integer loginType) {
