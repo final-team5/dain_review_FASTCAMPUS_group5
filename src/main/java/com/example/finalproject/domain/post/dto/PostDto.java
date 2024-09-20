@@ -1,10 +1,7 @@
 package com.example.finalproject.domain.post.dto;
 
 import com.example.finalproject.domain.post.entity.Post;
-import com.example.finalproject.domain.post.entity.PostCategories;
-import com.example.finalproject.domain.post.entity.PostTypes;
 import com.example.finalproject.domain.user.dto.UserDto;
-import com.example.finalproject.domain.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -34,12 +31,14 @@ public class PostDto {
 
     private Integer viewCount;
 
+    private Integer commentCount;
+
     private Timestamp registeredAt;
 
     private Timestamp updatedAt;
 
-    public static PostDto of(Integer seq, UserDto userDto, String postCategory, String postType, String title, String contents, Integer viewCount, Timestamp registeredAt, Timestamp updatedAt) {
-        return new PostDto(seq, userDto, postCategory, postType, title, contents, viewCount, registeredAt, updatedAt);
+    public static PostDto of(Integer seq, UserDto userDto, String postCategory, String postType, String title, String contents, Integer viewCount, Integer commentCount, Timestamp registeredAt, Timestamp updatedAt) {
+        return new PostDto(seq, userDto, postCategory, postType, title, contents, viewCount, commentCount, registeredAt, updatedAt);
     }
 
     public static PostDto from(Post post) {
@@ -51,6 +50,7 @@ public class PostDto {
                 post.getTitle(),
                 post.getContents(),
                 post.getViewCount(),
+                post.getComments().size(),
                 post.getRegisteredAt(),
                 post.getUpdatedAt()
         );
