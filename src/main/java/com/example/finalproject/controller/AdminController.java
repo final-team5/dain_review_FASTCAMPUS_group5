@@ -6,10 +6,9 @@ import com.example.finalproject.domain.campaign.dto.response.CampaignListRespons
 import com.example.finalproject.domain.campaign.entity.enums.FirstCampaignSearchType;
 import com.example.finalproject.domain.campaign.entity.enums.SecondCampaignSearchType;
 import com.example.finalproject.domain.campaign.service.CampaignService;
+import com.example.finalproject.domain.user.service.BusinessesService;
 import com.example.finalproject.global.util.ResponseApi;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.data.domain.Page;
@@ -33,6 +32,8 @@ public class AdminController {
 
     private final CampaignService campaignService;
 
+    private final BusinessesService businessesService;
+
     @ApiOperation(value = "체험 리스트", tags = "관리자 - 체험단")
     @GetMapping("/campaign")
     public ResponseApi<Page<CampaignListResponse>> findCampaignList(
@@ -53,5 +54,16 @@ public class AdminController {
         campaignService.campaignApproval(approval);
         JSONObject json = new JSONObject();
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "대행사 승인&반려", tags = "관리자 - 대행사", notes = "status = 1 (승인), 2 (반려)")
+    @PutMapping("/agency/approval")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "대행사 승인/반려 처리되었습니다."),
+            @ApiResponse(code = 404, message = "해당 대행사 신청이 존재하지 않습니다.")
+    })
+    public ResponseApi<?> approveAgency(@RequestParam Integer agencySeq, @RequestParam Integer status) {
+        businessesService.approveOrRejectAgency(agencySeq, status);
+        return ResponseApi.success(HttpStatus.OK, "대행사 승인/반려 처리되었습니다.");
     }
 }
