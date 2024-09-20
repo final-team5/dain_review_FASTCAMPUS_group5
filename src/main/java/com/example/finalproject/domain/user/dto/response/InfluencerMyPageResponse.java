@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 @Data
 @NoArgsConstructor
@@ -29,12 +30,12 @@ public class InfluencerMyPageResponse {
     private Integer selectedCounts;
     private Integer progressCounts;
 
-    private CampaignPreferenceListResponse campaignListResponse;
+    private Page<CampaignPreferenceListResponse> campaignListResponse;
 
     public static InfluencerMyPageResponse of(Integer seq, String role, String nickname, String profileUrl,
                                               String instagram, String blog, String youtube, String tiktok,
                                               Integer point, Integer applicationCounts, Integer selectedCounts,
-                                              Integer progressCounts, CampaignPreferenceListResponse campaignListResponse) {
+                                              Integer progressCounts, Page<CampaignPreferenceListResponse> campaignListResponse) {
         return new InfluencerMyPageResponse(seq, role, nickname, profileUrl, instagram, blog, youtube, tiktok,
                 point, applicationCounts, selectedCounts, progressCounts, campaignListResponse);
     }
