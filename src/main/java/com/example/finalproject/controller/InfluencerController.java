@@ -1,5 +1,7 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.campaign.dto.request.CampaignApplicantsRequest;
+import com.example.finalproject.domain.campaign.dto.request.CancelCampaignRequest;
 import com.example.finalproject.domain.post.dto.PostDto;
 import com.example.finalproject.domain.post.dto.PostWithCommentsDto;
 import com.example.finalproject.domain.post.dto.request.PostDeleteRequest;
@@ -11,6 +13,8 @@ import com.example.finalproject.domain.post.dto.response.PostResponse;
 import com.example.finalproject.domain.post.entity.enums.PostType;
 import com.example.finalproject.domain.post.entity.enums.SearchType;
 import com.example.finalproject.domain.post.service.PostService;
+import com.example.finalproject.domain.user.repository.UserRepository;
+import com.example.finalproject.domain.user.service.InfluencerService;
 import com.example.finalproject.global.util.ResponseApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +40,8 @@ import javax.validation.Valid;
 public class InfluencerController {
 
     private final PostService postService;
+    private final InfluencerService influencerService;
+    private final UserRepository userRepository;
 
     @ApiOperation(value = "커뮤니티 글 추가", tags = "인플루언서 - 커뮤니티", notes = "category : QUESTION, KNOW_HOW, ACCOMPANY, ETC 중")
     @PostMapping(path = "/communities")
@@ -102,5 +109,32 @@ public class InfluencerController {
         detailResponse.setPostAuthor(nicknameOrCompanyName);
 
         return ResponseApi.success(HttpStatus.OK, detailResponse);
+    }
+
+    @ApiOperation(value = "체험단 신청", tags = "인플루언서 - 체험단")
+    @PostMapping("/campaign/apply")
+    @PreAuthorize("hasRole('ROLE_INFLUENCER')")
+    public ResponseApi<?> applyForCampaign(
+            @RequestBody CampaignApplicantsRequest request,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails) {
+
+        Integer userSeq = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."))
+                .getSeq();
+
+        influencerService.applyForCampaign(request, userSeq);
+        return ResponseApi.success(HttpStatus.OK, "체험단 신청이 완료되었습니다.");
+    }
+
+
+    @ApiOperation(value = "체험단 신청 취소", tags = "인플루언서 - 체험단")
+    @PutMapping("/campaign/cancel")
+    @PreAuthorize("hasRole('ROLE_INFLUENCER')")
+    public ResponseApi<?> cancelCampaignApplication(
+            @RequestBody CancelCampaignRequest cancelRequest,
+            @ApiIgnore @AuthenticationPrincipal UserDetails userDetails) {
+
+        influencerService.cancelCampaignApplication(cancelRequest, userDetails.getUsername());
+        return ResponseApi.success(HttpStatus.OK, "체험단 신청이 취소되었습니다.");
     }
 }

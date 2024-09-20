@@ -115,8 +115,27 @@ public class BusinessesService {
         // TODO: 관리자 기능 구현
         Agency agency = new Agency();
         agency.setReason("신청 사유");
-        agency.setStatus(1);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
+        agency.setStatus(0);  // 초기 상태 (0: 검토 중, 1: 승인, 2: 거절)
         agency.setCreateDate(new Date());
+        agencyRepository.save(agency);
+    }
+
+    /**
+     * 대행사 신청 승인 및 거절 처리 메소드
+     *
+     * @param agencySeq 대행사 신청 ID
+     * @param status    승인 상태 (1: 승인, 2: 거절)
+     */
+    @Transactional
+    public void approveOrRejectAgency(Integer agencySeq, Integer status) {
+        Agency agency = agencyRepository.findById(agencySeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 대행사 신청이 존재하지 않습니다."));
+
+        if (status != 1 && status != 2) {
+            throw new IllegalArgumentException("잘못된 승인 상태입니다.");
+        }
+
+        agency.setStatus(status);
         agencyRepository.save(agency);
     }
 
