@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.print.Pageable;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -327,6 +328,16 @@ public class PublicController {
 	@GetMapping("/campaign/{id}")
 	public ResponseEntity<?> campaign(@PathVariable String id){
 		return new ResponseEntity<>(campaignService.getDetail(Integer.valueOf(id)), HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "마이페이지", tags = "공개 - 프로필")
+	@GetMapping(path = "/profile/{userId}")
+	public ResponseApi<?> getMyPage(
+			@PathVariable(name = "userId") Integer userId,
+			Pageable pageable
+	) {
+
+		return ResponseApi.success(HttpStatus.OK, userService.getMyPageInfo(userId, pageable));
 	}
 
 }
