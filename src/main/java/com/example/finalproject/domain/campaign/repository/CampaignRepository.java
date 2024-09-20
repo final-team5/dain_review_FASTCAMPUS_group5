@@ -40,4 +40,13 @@ public interface CampaignRepository extends JpaRepository<Campaign, Integer>,
                 () -> new ValidException(ValidErrorCode.CAMPAIGN_NOT_FOUND)
         );
     }
+
+    @Query(value =
+            "SELECT COUNT(c.seq) FROM Campaign c " +
+            "LEFT JOIN CampaignApplicants ca ON c.seq = ca.campaign.seq " +
+            "WHERE ca.user = :user AND ca.application = :application " +
+            "AND NOW() BETWEEN c.experienceStartDate AND c.experienceEndDate")
+    Integer countByUserAndApplication(
+            @Param(value = "user") User user,
+            @Param(value = "application") Integer application);
 }
