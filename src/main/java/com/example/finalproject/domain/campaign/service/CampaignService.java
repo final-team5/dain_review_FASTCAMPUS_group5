@@ -124,7 +124,7 @@ public class CampaignService {
     public Page<CampaignWithApplicantCountDto> getCampaignPreferenceList(String userEmail, Pageable pageable) {
         User user = userRepository.getUserByEmailOrException(userEmail);
 
-        Page<CampaignWithApplicantCount> campaignWithApplicantCounts = campaignRepository.findAllByUserAndStatus(user, 3, pageable);
+        Page<CampaignWithApplicantCount> campaignWithApplicantCounts = campaignRepository.findAllByUserAndStatusPreference(user, 3, pageable);
 
         return campaignWithApplicantCounts.map(CampaignWithApplicantCountDto::from);
     }

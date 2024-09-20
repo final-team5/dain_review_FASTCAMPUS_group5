@@ -15,19 +15,25 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
 
+    private Integer seq;
+    private String email;
     private String name;
     private String profileUrl;
     private Integer alarmCounts;
+    private String role;
 
-    public static UserResponse of(String name, String profileUrl, Integer alarmCounts) {
-        return new UserResponse(name, profileUrl, alarmCounts);
+    public static UserResponse of(Integer seq, String email, String name, String profileUrl, Integer alarmCounts, String role) {
+        return new UserResponse(seq, email, name, profileUrl, alarmCounts, role);
     }
 
     public static UserResponse from(UserInfo userInfo) {
         return UserResponse.of(
+                userInfo.getSeq(),
+                userInfo.getEmail(),
                 userInfo.getName(),
                 userInfo.getProfileUrl(),
-                userInfo.getAlarmCounts()
+                userInfo.getAlarmCounts(),
+                userInfo.getRole()
         );
     }
 }

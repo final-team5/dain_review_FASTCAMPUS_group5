@@ -30,4 +30,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 		);
 	}
 
+	default User getUserBySeqOrException(Integer seq) {
+		return findById(seq).orElseThrow(
+				() -> new ValidException(ValidErrorCode.USER_NOT_FOUND)
+		);
+	}
+
 }
