@@ -2,12 +2,12 @@ package com.example.finalproject.domain.campaign.entity;
 
 import com.example.finalproject.domain.user.entity.User;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "campaign_applicants")

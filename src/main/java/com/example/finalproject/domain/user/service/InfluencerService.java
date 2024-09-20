@@ -1,8 +1,17 @@
 package com.example.finalproject.domain.user.service;
 
+import com.example.finalproject.domain.campaign.dto.request.CampaignApplicantsRequest;
+import com.example.finalproject.domain.campaign.dto.request.CancelCampaignRequest;
+import com.example.finalproject.domain.campaign.entity.Campaign;
+import com.example.finalproject.domain.campaign.entity.CampaignApplicants;
+import com.example.finalproject.domain.campaign.repository.CampaignApplicantsRepository;
+import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.user.dto.response.InfluencerDetailResponse;
 import com.example.finalproject.domain.user.entity.Influencer;
+import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.domain.user.repository.InfluencerRepository;
+import com.example.finalproject.domain.user.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -10,13 +19,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class InfluencerService {
 
     private final InfluencerRepository influencerRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CampaignRepository campaignRepository;
+
+    @Autowired
+    private CampaignApplicantsRepository campaignApplicantsRepository;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -374,5 +394,51 @@ public class InfluencerService {
     private int parseVisitorsFromResponse(String responseBody) {
         // TODO: 파싱 구현
         return 0;
+    }
+
+    /**
+     * 인플루언서가 체험단에 등록하는 메서드
+     *
+     * @param request  체험단 신청 정보
+     * @param userSeq
+     */
+    @Transactional
+    public void applyForCampaign(CampaignApplicantsRequest request, Integer userSeq) {
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+        Campaign campaign = campaignRepository.findById(request.getCampaignSeq())
+                .orElseThrow(() -> new IllegalArgumentException("체험단을 찾을 수 없습니다."));
+
+        boolean alreadyApplied = campaignApplicantsRepository.existsByUserAndCampaign(user, campaign);
+        if (alreadyApplied) {
+            throw new IllegalStateException("이미 이 체험단에 신청하셨습니다.");
+        }
+
+        CampaignApplicants applicants = new CampaignApplicants();
+        applicants.setUser(user);
+        applicants.setCampaign(campaign);
+        applicants.setMessage(request.getMessage());
+        applicants.setApplication(1);  // 신청 상태
+
+        campaignApplicantsRepository.save(applicants);
+    }
+
+    /**
+     * 인플루언서가 체험단 신청을 취소하는 메서드
+     *
+     * @param cancelRequest 취소 요청 정보
+     * @param username 인플루언서의 사용자 이름
+     */
+    @Transactional
+    public void cancelCampaignApplication(CancelCampaignRequest cancelRequest, String username) {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        CampaignApplicants applicant = campaignApplicantsRepository.findByUserAndCampaignSeq(user.getSeq(), cancelRequest.getCampaignSeq())
+                .orElseThrow(() -> new IllegalArgumentException("신청한 체험단을 찾을 수 없습니다."));
+
+        applicant.setApplication(0);  // 취소 상태
+        campaignApplicantsRepository.save(applicant);
     }
 }
