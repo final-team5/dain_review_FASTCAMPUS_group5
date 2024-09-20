@@ -1,5 +1,6 @@
 package com.example.finalproject.domain.user.dto.response;
 
+import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceListResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -27,4 +28,14 @@ public class InfluencerMyPageResponse {
     private Integer applicationCounts;
     private Integer selectedCounts;
     private Integer progressCounts;
+
+    private CampaignPreferenceListResponse campaignListResponse;
+
+    public static InfluencerMyPageResponse of(Integer seq, String role, String nickname, String profileUrl,
+                                              String instagram, String blog, String youtube, String tiktok,
+                                              Integer point, Integer applicationCounts, Integer selectedCounts,
+                                              Integer progressCounts, CampaignPreferenceListResponse campaignListResponse) {
+        return new InfluencerMyPageResponse(seq, role, nickname, profileUrl, instagram, blog, youtube, tiktok,
+                point, applicationCounts, selectedCounts, progressCounts, campaignListResponse);
+    }
 }
