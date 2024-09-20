@@ -10,6 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface CampaignApplicantsRepository extends JpaRepository<CampaignApplicants, Integer> {
+    Integer countByUser(User user);
+
+    Integer countByUserAndApplication(User user, Integer application);
 
     boolean existsByUserAndCampaign(User user, Campaign campaign);
 

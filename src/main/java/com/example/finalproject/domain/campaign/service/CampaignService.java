@@ -1,5 +1,8 @@
 package com.example.finalproject.domain.campaign.service;
 
+import com.example.finalproject.domain.alarm.dto.CampaignApproval;
+import com.example.finalproject.domain.alarm.entity.Alarm;
+import com.example.finalproject.domain.alarm.repository.AlarmRepository;
 import com.example.finalproject.domain.campaign.dto.CampaignPreferenceDto;
 import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
 import com.example.finalproject.domain.campaign.dto.Category;
@@ -22,7 +25,9 @@ import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.user.repository.UserRepository;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.Join;
@@ -44,6 +49,7 @@ public class CampaignService {
     private final CampaignPreferenceRepository campaignPreferenceRepository;
     private final UserRepository userRepository;
     private final CampaignRepository campaignRepository;
+    private final AlarmRepository alarmRepository;
 
     /**
      * 체험단 찜 하기 기능.
@@ -118,7 +124,7 @@ public class CampaignService {
     public Page<CampaignWithApplicantCountDto> getCampaignPreferenceList(String userEmail, Pageable pageable) {
         User user = userRepository.getUserByEmailOrException(userEmail);
 
-        Page<CampaignWithApplicantCount> campaignWithApplicantCounts = campaignRepository.findAllByUserAndStatus(user, 3, pageable);
+        Page<CampaignWithApplicantCount> campaignWithApplicantCounts = campaignRepository.findAllByUserAndStatusPreference(user, 3, pageable);
 
         return campaignWithApplicantCounts.map(CampaignWithApplicantCountDto::from);
     }
@@ -226,6 +232,7 @@ public class CampaignService {
 
     private CampaignSearchResponse mapToCampaignSearchResponse(Campaign campaign) {
         return CampaignSearchResponse.builder()
+            .seq(campaign.getSeq())
             .title(campaign.getTitle())
             .recruiter(campaign.getRecruiter())
             .image(campaign.getImage())
@@ -273,6 +280,32 @@ public class CampaignService {
         }
 
         return campaignRepository.findAll(campaignSpecification, pageable).map(CampaignDto::from);
+    }
+
+    public void campaignApproval(CampaignApproval approval) {
+
+        Campaign campaign = campaignRepository.findBySeq(Integer.valueOf(approval.getCampaignId()));
+
+        if (approval.getApproval() == 1) {
+            campaign.setStatus(2);
+            campaignRepository.save(campaign);
+            Alarm alarm = Alarm.builder()
+                .targetSeq(campaign.getSeq())
+                .targetType(1)
+                .message(campaign.getTitle() + "체험단이 승인되었습니다.")
+                .build()
+                ;
+            alarmRepository.save(alarm);
+        } else if (approval.getApproval() == 0) {
+            campaignRepository.delete(campaign);
+            Alarm alarm = Alarm.builder()
+                .targetSeq(campaign.getUser().getSeq())
+                .targetType(2)
+                .message(campaign.getTitle() + "체험단이 반려되었습니다. \n반려 사유 : " + approval.getReason())
+                .build()
+                ;
+            alarmRepository.save(alarm);
+        }
     }
 
 }

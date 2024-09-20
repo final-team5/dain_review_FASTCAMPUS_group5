@@ -1,7 +1,6 @@
 package com.example.finalproject.domain.campaign.entity;
 
 import com.example.finalproject.domain.user.entity.User;
-import com.google.api.client.util.DateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +10,7 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -100,10 +100,10 @@ public class Campaign {
     private Date experienceEndDate;
 
     @Column(name = "experience_start_time")
-    private DateTime experienceStartTime;
+    private Date experienceStartTime;
 
     @Column(name = "experience_end_time")
-    private DateTime experienceEndTime;
+    private Date experienceEndTime;
 
     @Column(name = "application_participants_date")
     private Date applicationParticipantsDate;   // 선정자 발표

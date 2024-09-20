@@ -5,6 +5,7 @@ import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,7 +30,7 @@ public interface CampaignRepository extends JpaRepository<Campaign, Integer>,
         "WHERE cp.user = :user AND c.status = :status " +
         "GROUP BY c"
     )
-    Page<CampaignWithApplicantCount> findAllByUserAndStatus(
+    Page<CampaignWithApplicantCount> findAllByUserAndStatusPreference(
             @Param(value = "user") User user,
             @Param(value = "status") Integer status,
             Pageable pageable
@@ -40,4 +41,48 @@ public interface CampaignRepository extends JpaRepository<Campaign, Integer>,
                 () -> new ValidException(ValidErrorCode.CAMPAIGN_NOT_FOUND)
         );
     }
+
+	Campaign findBySeq(Integer seq);
+
+    @Query(value =
+            "SELECT COUNT(c.seq) FROM Campaign c " +
+            "LEFT JOIN CampaignApplicants ca ON c.seq = ca.campaign.seq " +
+            "WHERE ca.user = :user AND ca.application = :application " +
+            "AND NOW() BETWEEN c.experienceStartDate AND c.experienceEndDate")
+    Integer countByUserAndApplication(
+            @Param(value = "user") User user,
+            @Param(value = "application") Integer application);
+
+    Integer countByUser(User user);
+
+    @Query(value =
+            "SELECT new com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount(c, COUNT(ca)) " +
+                    "FROM Campaign c " +
+                    "LEFT JOIN CampaignApplicants ca ON ca.campaign.seq = c.seq " +
+                    "WHERE ca.user = :user AND c.status = :status " +
+                    "GROUP BY c"
+    )
+    Page<CampaignWithApplicantCount> findAllMyPageCampaign(
+            @Param(value = "user") User user,
+            @Param(value = "status") Integer status,
+            Pageable pageable
+    );
+
+    @Query(value =
+            "SELECT new com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount(c, COUNT(ca)) " +
+                    "FROM Campaign c " +
+                    "LEFT JOIN CampaignApplicants ca ON ca.campaign.seq = c.seq " +
+                    "WHERE ca.user = :user AND c.status = :status AND ca.application = :application " +
+                    "GROUP BY c"
+    )
+    Page<CampaignWithApplicantCount> findAllMyPageCampaignByApplication(
+            @Param(value = "user") User user,
+            @Param(value = "application") Integer application,
+            @Param(value = "status") Integer status,
+            Pageable pageable
+    );
+
+    Page<CampaignWithApplicantCount> findAllByUser(User user, Pageable pageable);
+
+    Page<CampaignWithApplicantCount> findAllByUserAndStatus(User user, Integer status, Pageable pageable);
 }

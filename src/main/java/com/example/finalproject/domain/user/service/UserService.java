@@ -2,9 +2,17 @@ package com.example.finalproject.domain.user.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.finalproject.domain.alarm.repository.AlarmRepository;
+import com.example.finalproject.domain.campaign.dto.CampaignWithApplicantCountDto;
+import com.example.finalproject.domain.campaign.dto.response.CampaignPreferenceListResponse;
+import com.example.finalproject.domain.campaign.entity.CampaignWithApplicantCount;
+import com.example.finalproject.domain.campaign.repository.CampaignApplicantsRepository;
+import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
+import com.example.finalproject.domain.user.dto.response.BusinessesMyPageResponse;
+import com.example.finalproject.domain.user.dto.response.InfluencerMyPageResponse;
 import com.example.finalproject.domain.user.dto.response.TokenRefreshResponse;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
@@ -18,6 +26,8 @@ import com.example.finalproject.global.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +51,9 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
+	private final CampaignApplicantsRepository campaignApplicantsRepository;
+	private final CampaignRepository campaignRepository;
+	private final AlarmRepository alarmRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final TokenProvider tokenProvider;
 
@@ -51,26 +64,39 @@ public class UserService {
 
 	public UserInfo getUser(String email, Integer loginType) {
 		User user = userRepository.getByEmailAndLoginType(email, loginType);
+		String username = "";
+
+		if (user.getRole().equals("ROLE_INFLUENCER")) {
+			Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+			username = influencer.getNickname();
+		} else {
+			Businesses businesses = businessesRepository.getBusinessesByUserOrException(user);
+			username = businesses.getCompany();
+		}
+
+		Integer alarmCounts = alarmRepository.countByUser(user);
 
 		return UserInfo.builder()
-			.seq(user.getSeq())
-			.email(user.getEmail())
-			.id(user.getId())
-			.pw(user.getPw())
-			.role(user.getRole())
-			.name(user.getName())
-			.phone(user.getPhone())
-			.signupSource(user.getSignupSource())
-			.postalCode(user.getPostalCode())
-			.address(user.getAddress())
-			.addressDetail(user.getAddressDetail())
-			.point(user.getPoint())
-			.status(user.getStatus())
-			.cancel(user.getCancel())
-			.penalty(user.getPenalty())
-			.type(user.getType())
-			.build()
-			;
+				.seq(user.getSeq())
+				.email(user.getEmail())
+				.id(user.getId())
+				.pw(user.getPw())
+				.role(user.getRole())
+				.name(username)
+				.phone(user.getPhone())
+				.signupSource(user.getSignupSource())
+				.postalCode(user.getPostalCode())
+				.address(user.getAddress())
+				.addressDetail(user.getAddressDetail())
+				.point(user.getPoint())
+				.status(user.getStatus())
+				.cancel(user.getCancel())
+				.penalty(user.getPenalty())
+				.type(user.getType())
+				.profileUrl(user.getProfile())
+				.alarmCounts(alarmCounts)
+				.build()
+				;
 	}
 
 	public Optional<User> findByUser(String email, Integer loginType) {
@@ -247,6 +273,102 @@ public class UserService {
 		String strNowDate = simpleDateFormat.format(expireDate);
 
 		return TokenRefreshResponse.of(token, email, strNowDate);
+	}
+
+
+	public Object getMyPageInfo(Integer userSeq, String searchType, Pageable pageable) {
+		User user = userRepository.getUserBySeqOrException(userSeq);
+		String role = user.getRole();
+		Page<CampaignWithApplicantCount> myPageCampaign;
+
+		if (role.equals("ROLE_INFLUENCER")) {
+			Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+			Integer applicationCounts = campaignApplicantsRepository.countByUser(user);
+			Integer selectedCounts = campaignApplicantsRepository.countByUserAndApplication(user, 2);
+			Integer progressCounts = campaignRepository.countByUserAndApplication(user, 2);
+
+			switch (searchType) {
+				case "ALL":
+					myPageCampaign = campaignRepository.findAllMyPageCampaign(user, 3, pageable);
+					break;
+				case "APPLICATION":
+					myPageCampaign = campaignRepository.findAllMyPageCampaignByApplication(user, 1, 3, pageable);
+					break;
+				case "SELECTED":
+					myPageCampaign = campaignRepository.findAllMyPageCampaignByApplication(user, 2, 3, pageable);
+					break;
+				case "PROGRESSING":
+					myPageCampaign = campaignRepository.findAllMyPageCampaignByApplication(user, 3, 3, pageable);
+					break;
+				case "COMPLETED":
+					myPageCampaign = campaignRepository.findAllMyPageCampaignByApplication(user, 4, 3, pageable);
+					break;
+				default:
+					myPageCampaign = campaignRepository.findAllMyPageCampaign(user, 3, pageable);
+			}
+
+			Page<CampaignWithApplicantCountDto> campaignWithApplicantCountDtos = myPageCampaign.map(CampaignWithApplicantCountDto::from);
+			Page<CampaignPreferenceListResponse> campaignMyPageResponse = campaignWithApplicantCountDtos.map(CampaignPreferenceListResponse::from);
+
+			return InfluencerMyPageResponse.of(
+					userSeq,
+					role,
+					influencer.getNickname(),
+					user.getProfile(),
+					influencer.getInstagramLink(),
+					influencer.getBlogLink(),
+					influencer.getYoutubeLink(),
+					influencer.getTiktokLink(),
+					user.getPoint(),
+					applicationCounts,
+					selectedCounts,
+					progressCounts,
+					campaignMyPageResponse
+			);
+		} else {
+			Businesses businesses = businessesRepository.getBusinessesByUserOrException(user);
+			Integer progressCounts = campaignRepository.countByUser(user);
+
+			switch (searchType) {
+				case "ALL":
+					myPageCampaign = campaignRepository.findAllByUser(user, pageable);
+					break;
+				case "DRAFT":
+					myPageCampaign = campaignRepository.findAllByUserAndStatus(user, 1, pageable);
+					break;
+				case "READY":
+					myPageCampaign = campaignRepository.findAllByUserAndStatus(user, 2, pageable);
+					break;
+				case "ACTIVE":
+					myPageCampaign = campaignRepository.findAllByUserAndStatus(user, 3, pageable);
+					break;
+				case "COMPLETE":
+					myPageCampaign = campaignRepository.findAllByUserAndStatus(user, 4, pageable);
+					break;
+				case "CANCELED":
+					myPageCampaign = campaignRepository.findAllByUserAndStatus(user, 5, pageable);
+					break;
+				case "DELETED":
+					myPageCampaign = campaignRepository.findAllByUserAndStatus(user, 6, pageable);
+					break;
+				default:
+					myPageCampaign = campaignRepository.findAllByUser(user, pageable);
+			}
+
+			Page<CampaignWithApplicantCountDto> campaignWithApplicantCountDtos = myPageCampaign.map(CampaignWithApplicantCountDto::from);
+			Page<CampaignPreferenceListResponse> campaignMyPageResponse = campaignWithApplicantCountDtos.map(CampaignPreferenceListResponse::from);
+
+
+			return BusinessesMyPageResponse.of(
+					userSeq,
+					role,
+					businesses.getCompany(),
+					user.getProfile(),
+					user.getPoint(),
+					progressCounts,
+					campaignMyPageResponse
+			);
+		}
 	}
 
 	private File convert(MultipartFile file) throws IOException {

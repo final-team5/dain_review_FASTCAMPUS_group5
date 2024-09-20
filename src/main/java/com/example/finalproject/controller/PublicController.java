@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
@@ -252,11 +253,11 @@ public class PublicController {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String strNowDate = simpleDateFormat.format(tokenProvider.getExpireDate(new_token));
 		return LoginResponse.builder()
-			.token(new_token)
-			.name(user.getName())
-			.expireDate(strNowDate)
-			.message("로그인 되었습니다.")
-			.build();
+				.token(new_token)
+				.name(user.getName())
+				.expireDate(strNowDate)
+				.message("로그인 되었습니다.")
+				.build();
 	}
 
 	private SocialInfo getSocialInfo(String accessToken, Integer loginType) {
@@ -327,6 +328,17 @@ public class PublicController {
 	@GetMapping("/campaign/{id}")
 	public ResponseEntity<?> campaign(@PathVariable String id){
 		return new ResponseEntity<>(campaignService.getDetail(Integer.valueOf(id)), HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "마이페이지", tags = "공개 - 프로필")
+	@GetMapping(path = "/profile/{userId}")
+	public ResponseApi<?> getMyPage(
+			@PathVariable(name = "userId") Integer userId,
+			@ApiParam(value = "인플루언서 : ALL/APPLICATION/SELECTED/PROGRESSING/COMPLETED, 사업주 : ALL/DRAFT/READY/ACTIVE/COMPLETE/CANCELED/DELETED") @RequestParam String searchType,
+			Pageable pageable
+	) {
+
+		return ResponseApi.success(HttpStatus.OK, userService.getMyPageInfo(userId, searchType, pageable));
 	}
 
 }
