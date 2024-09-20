@@ -334,10 +334,11 @@ public class PublicController {
 	@GetMapping(path = "/profile/{userId}")
 	public ResponseApi<?> getMyPage(
 			@PathVariable(name = "userId") Integer userId,
+			@ApiParam(value = "인플루언서 : ALL/APPLICATION/SELECTED/PROGRESSING/COMPLETED, 사업주 : ALL/DRAFT/READY/ACTIVE/COMPLETE/CANCELED/DELETED") @RequestParam String searchType,
 			Pageable pageable
 	) {
 
-		return ResponseApi.success(HttpStatus.OK, userService.getMyPageInfo(userId, pageable));
+		return ResponseApi.success(HttpStatus.OK, userService.getMyPageInfo(userId, searchType, pageable));
 	}
 
 }
