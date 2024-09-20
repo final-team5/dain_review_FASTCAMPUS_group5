@@ -5,6 +5,7 @@ import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.user.entity.User;
 import com.example.finalproject.global.exception.error.ValidErrorCode;
 import com.example.finalproject.global.exception.type.ValidException;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,4 +41,6 @@ public interface CampaignRepository extends JpaRepository<Campaign, Integer>,
                 () -> new ValidException(ValidErrorCode.CAMPAIGN_NOT_FOUND)
         );
     }
+
+	Campaign findBySeq(Integer seq);
 }
