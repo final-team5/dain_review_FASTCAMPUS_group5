@@ -1,7 +1,9 @@
 package com.example.finalproject.domain.alarm.entity;
 
+import io.swagger.models.auth.In;
 import com.example.finalproject.domain.user.entity.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
@@ -40,4 +42,11 @@ public class Alarm {
 
     @Column(name = "`check`")
     private Integer check;
+
+    @Builder
+    public Alarm(Integer targetSeq, Integer targetType, String message) {
+        this.targetSeq = targetSeq;
+        this.targetType = targetType;
+        this.message = message;
+    }
 }
