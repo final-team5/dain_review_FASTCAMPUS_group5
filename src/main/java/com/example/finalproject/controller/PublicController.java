@@ -252,11 +252,11 @@ public class PublicController {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String strNowDate = simpleDateFormat.format(tokenProvider.getExpireDate(new_token));
 		return LoginResponse.builder()
-			.token(new_token)
-			.name(user.getName())
-			.expireDate(strNowDate)
-			.message("로그인 되었습니다.")
-			.build();
+				.token(new_token)
+				.name(user.getName())
+				.expireDate(strNowDate)
+				.message("로그인 되었습니다.")
+				.build();
 	}
 
 	private SocialInfo getSocialInfo(String accessToken, Integer loginType) {

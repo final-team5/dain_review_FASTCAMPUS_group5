@@ -31,11 +31,13 @@ public class UserInfo {
 	private Integer cancel;
 	private Integer penalty;
 	private Integer type;
+	private String profileUrl;
+	private Integer alarmCounts;
 
 	public static UserInfo of(Integer seq, String email, String id, String pw, String role, String name, String phone,
 							  Date createDate, String signupSource, Integer postalCode, String address, String addressDetail,
-							  Integer point, Integer status, Integer cancel, Integer penalty, Integer type) {
-		return new UserInfo(seq, email, id, pw, role, name, phone, createDate, signupSource, postalCode, address, addressDetail, point, status, cancel, penalty, type);
+							  Integer point, Integer status, Integer cancel, Integer penalty, Integer type, String profileUrl, Integer alarmCounts) {
+		return new UserInfo(seq, email, id, pw, role, name, phone, createDate, signupSource, postalCode, address, addressDetail, point, status, cancel, penalty, type, profileUrl, alarmCounts);
 	}
 
 	public static UserInfo from(User user) {
@@ -56,7 +58,9 @@ public class UserInfo {
 				user.getStatus(),
 				user.getCancel(),
 				user.getPenalty(),
-				user.getType()
+				user.getType(),
+				user.getProfile(),
+				1
 		);
 	}
 }
