@@ -3,9 +3,12 @@ package com.example.finalproject.domain.user.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.finalproject.domain.alarm.repository.AlarmRepository;
+import com.example.finalproject.domain.campaign.repository.CampaignApplicantsRepository;
+import com.example.finalproject.domain.campaign.repository.CampaignRepository;
 import com.example.finalproject.domain.user.dto.Register;
 import com.example.finalproject.domain.user.dto.UserInfo;
 import com.example.finalproject.domain.user.dto.request.ChangePasswordRequest;
+import com.example.finalproject.domain.user.dto.response.InfluencerMyPageResponse;
 import com.example.finalproject.domain.user.dto.response.TokenRefreshResponse;
 import com.example.finalproject.domain.user.entity.Businesses;
 import com.example.finalproject.domain.user.entity.Influencer;
@@ -19,12 +22,12 @@ import com.example.finalproject.global.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.print.Pageable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,6 +46,8 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final InfluencerRepository influencerRepository;
 	private final BusinessesRepository businessesRepository;
+	private final CampaignApplicantsRepository campaignApplicantsRepository;
+	private final CampaignRepository campaignRepository;
 	private final AlarmRepository alarmRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final TokenProvider tokenProvider;
@@ -271,7 +276,26 @@ public class UserService {
 		String role = user.getRole();
 
 		if (role.equals("ROLE_INFLUENCER")) {
-			return null;
+			Influencer influencer = influencerRepository.getInfluencerByUserOrException(user);
+			Integer applicationCounts = campaignApplicantsRepository.countByUser(user);
+			Integer selectedCounts = campaignApplicantsRepository.countByUserAndApplication(user, 1);
+			Integer progressCounts = campaignRepository.countByUserAndApplication(user, 1);
+
+			return InfluencerMyPageResponse.of(
+					userSeq,
+					role,
+					influencer.getNickname(),
+					user.getProfile(),
+					influencer.getInstagramLink(),
+					influencer.getBlogLink(),
+					influencer.getYoutubeLink(),
+					influencer.getTiktokLink(),
+					user.getPoint(),
+					applicationCounts,
+					selectedCounts,
+					progressCounts,
+					null
+			);
 		} else {
 			return null;
 		}
