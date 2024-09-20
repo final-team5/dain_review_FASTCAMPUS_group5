@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.print.Pageable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -262,6 +263,18 @@ public class UserService {
 		String strNowDate = simpleDateFormat.format(expireDate);
 
 		return TokenRefreshResponse.of(token, email, strNowDate);
+	}
+
+
+	public Object getMyPageInfo(Integer userSeq, Pageable pageable) {
+		User user = userRepository.getUserBySeqOrException(userSeq);
+		String role = user.getRole();
+
+		if (role.equals("ROLE_INFLUENCER")) {
+			return null;
+		} else {
+			return null;
+		}
 	}
 
 	private File convert(MultipartFile file) throws IOException {
