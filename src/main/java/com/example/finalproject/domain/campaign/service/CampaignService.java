@@ -162,7 +162,7 @@ public class CampaignService {
 
                 // 카테고리 필터
                 if (search.getCategorySeq() != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("category"), Category.fromValue(search.getCategorySeq()).name()));
+                    predicates.add(criteriaBuilder.equal(root.get("category"), String.valueOf(Category.fromValue(search.getCategorySeq()).getValue())));
                 }
 
                 // 유형 필터
