@@ -42,7 +42,7 @@ public interface CampaignRepository extends JpaRepository<Campaign, Integer>,
         );
     }
 
-	Campaign findBySeq(Integer seq);
+    Campaign findBySeq(Integer seq);
 
     @Query(value =
             "SELECT COUNT(c.seq) FROM Campaign c " +
