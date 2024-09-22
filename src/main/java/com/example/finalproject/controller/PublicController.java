@@ -1,6 +1,9 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.domain.campaign.dto.CampaignDto;
 import com.example.finalproject.domain.campaign.dto.request.CampaignSearch;
+import com.example.finalproject.domain.campaign.dto.response.CampaignResponse;
+import com.example.finalproject.domain.campaign.entity.Campaign;
 import com.example.finalproject.domain.campaign.service.CampaignService;
 import com.example.finalproject.domain.user.dto.LoginResponse;
 import com.example.finalproject.domain.user.dto.Register;
@@ -326,10 +329,12 @@ public class PublicController {
 
 	@ApiOperation(value = "체험단 상세", tags = "공개 - 체험단")
 	@GetMapping("/campaign/{id}")
-	public ResponseEntity<?> campaign(@PathVariable String id){
-		JSONObject json = new JSONObject();
-		json.put("campaign", campaignService.getDetail(Integer.valueOf(id)));
-		return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+	public ResponseEntity<ResponseApi<CampaignResponse>> campaign(@PathVariable String id){
+		Campaign campaign = campaignService.getDetail(Integer.valueOf(id));
+		CampaignDto campaignDto = CampaignDto.from(campaign);
+		CampaignResponse campaignResponse = CampaignResponse.from(campaignDto);
+
+		return ResponseEntity.ok(ResponseApi.success(HttpStatus.OK, campaignResponse));
 	}
 
 	@ApiOperation(value = "마이페이지", tags = "공개 - 프로필")
