@@ -327,7 +327,9 @@ public class PublicController {
 	@ApiOperation(value = "체험단 상세", tags = "공개 - 체험단")
 	@GetMapping("/campaign/{id}")
 	public ResponseEntity<?> campaign(@PathVariable String id){
-		return new ResponseEntity<>(campaignService.getDetail(Integer.valueOf(id)), HttpStatus.OK);
+		JSONObject json = new JSONObject();
+		json.put("campaign", campaignService.getDetail(Integer.valueOf(id)));
+		return new ResponseEntity<>(json.toString(), HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "마이페이지", tags = "공개 - 프로필")
